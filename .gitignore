@@ -1,0 +1,60 @@
+# macOS and editor files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Local agent and workspace metadata
+.agents/
+.codex/
+skills-lock.json
+
+# Java and Maven build output
+target/
+*.class
+*.war
+
+# Docker and Jenkins local state
+.docker/
+docker-data/
+jenkins_home/
+.jenkins/
+*.log
+
+# Node and browser test output
+node_modules/
+playwright-report/
+test-results/
+.playwright/
+blob-report/
+
+# Gatling output
+gatling-results/
+results/
+
+# Evidence output
+output/**
+!output/
+!output/.gitkeep
+
+# Course material and PDFs
+classes/
+*.pdf
+*.side
+
+# Environment and secrets
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.jks
+secrets/
+credentials/
+
+# Temporary files
+tmp/
+temp/
+.cache/
+.rtk/
+*.tmp
