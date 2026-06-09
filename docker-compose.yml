@@ -1,0 +1,38 @@
+name: meta
+
+services:
+  tomcat:
+    image: ${TOMCAT_IMAGE:-tomcat:8.5.100-jdk17-temurin}
+    container_name: meta-tomcat
+    ports:
+      - "${TOMCAT_HOST_PORT:-8080}:8080"
+    volumes:
+      - type: volume
+        source: tomcat_webapps
+        target: /usr/local/tomcat/webapps
+    networks:
+      - meta
+
+  jenkins:
+    image: ${JENKINS_IMAGE:-jenkins/jenkins:2.528.1-lts-jdk21}
+    container_name: meta-jenkins
+    ports:
+      - "${JENKINS_HOST_PORT:-8081}:8080"
+    volumes:
+      - type: volume
+        source: jenkins_home
+        target: /var/jenkins_home
+      - type: bind
+        source: .
+        target: /workspace/final-project
+    networks:
+      - meta
+
+volumes:
+  tomcat_webapps: {}
+  jenkins_home: {}
+
+networks:
+  meta:
+    name: meta
+    driver: bridge

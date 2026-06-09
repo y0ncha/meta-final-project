@@ -6,6 +6,7 @@ This file is the active constraints and compliance source for the MTA 2026 Semes
 
 - For every new implementation plan, create a new Git branch before making implementation changes.
 - Implement the plan on that branch, not directly on the main/default branch.
+- Use one canonical branch per plan. If a branch already exists for a plan, switch to that branch and continue there instead of creating a separate planning branch and a separate implementation branch.
 - Keep each branch scoped to one plan unless explicitly instructed otherwise.
 - Do not merge a plan branch back into the main/default branch until explicitly asked.
 - If branch creation is blocked by uncommitted work, report the current Git state and ask how to handle the existing changes before switching or creating branches.
@@ -17,7 +18,8 @@ This file is the active constraints and compliance source for the MTA 2026 Semes
 - Treat version notes as a current-machine snapshot, not permanent truth. Re-check before relying on them.
 - Do not upgrade, reinstall, or replace tools unless explicitly requested.
 - If a required tool is missing, report it and recommend the smallest install path that satisfies the project.
-- Current observed examples from 2026-06-09: Java `21.0.9`, Maven `3.9.15`, Node `v22.15.0`, npm/npx `11.8.0`, bun `1.3.14`, Git `2.50.1`, Docker `29.4.0`, RTK `0.40.0`, host Tomcat `/usr/local/tomcat8` running Apache Tomcat `8.5.100`, and Jenkins home `/Users/yonatan/.jenkins` with Jenkins `2.528.1`.
+- Current observed examples from 2026-06-09: Java `21.0.9`, Maven `3.9.15`, Node `v22.15.0`, npm/npx `11.8.0`, bun `1.3.14`, Git `2.50.1`, Docker `29.4.0`, and RTK `0.40.0`.
+- Host Tomcat and host Jenkins installs are not project runtime dependencies. Do not document commands, evidence, or setup steps that rely on `/usr/local/tomcat8` or `/Users/yonatan/.jenkins`.
 - Current missing-on-PATH examples from 2026-06-09: `gatling`, `jenkins`, `catalina`, `playwright`, and `playwright-cli`.
 
 ## Assignment Override Warning
@@ -35,7 +37,7 @@ This file is the active constraints and compliance source for the MTA 2026 Semes
 - Run the Playwright test runner in Docker for repeatable browser automation from Jenkins or local scripts.
 - Use UptimeRobot SaaS for official availability-monitor evidence unless explicitly replaced by the instructor; it is listed by the assignment and gives stronger public-target evidence than a local monitor.
 - Keep Git/GitHub as real host/public source control. Do not containerize GitHub.
-- Host Tomcat at `/usr/local/tomcat8` remains a fallback/reference installation only. Do not use it as the default runtime unless containers become blocked.
+- Host Tomcat and host Jenkins remain outside the project runtime. If the containerized runtime is blocked, fix the containerized path or document the blocker instead of falling back to local host installs.
 - For public-IP bonus work, run the same Docker Compose stack on the public VM and point monitoring, Playwright, and Gatling at the public Tomcat URL.
 
 ## Core Scope
