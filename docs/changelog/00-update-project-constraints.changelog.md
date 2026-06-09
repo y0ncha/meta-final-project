@@ -23,7 +23,7 @@ Plan 00 makes the repository instructions match the instructor-approved containe
 - `rtk read .agents/plans/00-update-project-constraints.md`: confirmed the plan deliverables and validation expectations.
 - `rg -n "Container Approval|Tomcat.*8080|Jenkins.*8081|UptimeRobot|Playwright|Gatling|completed|changelog|plans" contribution.md AGENTS.md .agents/rules/contribution.md`: confirmed `contribution.md` contains the required container, port, monitoring, Playwright, and Gatling policy text.
 - `rg --files .agents/plans`: confirmed the atomic plan directory exists and includes plans `00` through `11`.
-- `git diff --cached --name-status`: confirmed the tracked closeout includes `AGENTS.md`, `contribution.md`, `docs/changelog/01-git-and-repo-baseline.md`, and `docs/repository-baseline.md` before this 00 changelog was added.
+- `git diff --cached --name-status`: confirmed the tracked closeout includes `AGENTS.md`, `contribution.md`, `docs/changelog/01-git-and-repo-baseline.changelog.md`, and `docs/repository-baseline.md` before this 00 changelog was added.
 
 ## Remaining Risks And Follow-Up
 

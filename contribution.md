@@ -28,10 +28,17 @@ This file is the active constraints and compliance source for the MTA 2026 Semes
 - This project instruction overrides that browser-test tool choice: use Playwright instead of Selenium.
 - This is an accepted grading compliance risk under the "Selenium IDE or similar" wording unless the lecturer later requires Selenium IDE specifically.
 
+## Context Path Override Warning
+
+- The original PDF asks for the Tomcat deployment folder/context to include the group members' names.
+- This project instruction sets the Maven coordinate to `mta.devops:meta:1.0.0` and uses `meta` as the WAR name and Tomcat context path.
+- Serve the local application at `http://localhost:8080/meta/` unless the lecturer later requires group-member names in the URL.
+- This is an accepted grading compliance risk; if the lecturer requires names specifically, update the Maven `finalName`, deployment paths, monitoring targets, Playwright base URL, Gatling base URL, HAR target, screenshots, and submission notes before final evidence capture.
+
 ## Container Approval And Runtime Topology
 
 - The instructor approved using containers for the project tools. Use the containerized track as the default implementation path.
-- Run Apache Tomcat 8.5.x in Docker as the JSP production runtime. It must still deploy the app under Tomcat `webapps` and serve the app at `http://localhost:8080/<group-names>/` for local evidence.
+- Run Apache Tomcat 8.5.x in Docker as the JSP production runtime. It must still deploy the app under Tomcat `webapps` and serve the app at `http://localhost:8080/meta/` for local evidence.
 - Run Jenkins in Docker as the CI/CD orchestrator. Jenkins must use a persistent volume and must not claim port `8080`; expose Jenkins at `http://localhost:8081/`.
 - Run Gatling in Docker for max-limit, 5-minute load, and 5-minute stress testing.
 - Run the Playwright test runner in Docker for repeatable browser automation from Jenkins or local scripts.
@@ -45,7 +52,7 @@ This file is the active constraints and compliance source for the MTA 2026 Semes
 - Build or adapt a simple JSP web application.
 - The JSP app must include at least one link, one button, and one input text box.
 - Store all application code in Git and GitHub.
-- Deploy to containerized Tomcat 8.5.x under `webapps` in a context/folder whose name includes the group members' names.
+- Deploy to containerized Tomcat 8.5.x under `webapps` in the `meta` context/folder, per the Context Path Override Warning.
 - Use containerized Jenkins to move code from Git/GitHub into Tomcat production.
 - Treat deployment, monitoring, Playwright, and Gatling as one CI/CD pipeline flow unless there is a documented reason to split jobs.
 

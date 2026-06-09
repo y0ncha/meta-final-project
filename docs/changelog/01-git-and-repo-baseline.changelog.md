@@ -24,7 +24,7 @@ Plan 01 establishes a small, defensible Git baseline before adding the JSP appli
 - `git rev-parse --is-inside-work-tree`: returned `true`.
 - `git log --oneline -1`: returned `dbfe721 chore: initialize devops final project repository`.
 - `git check-ignore -v .DS_Store skills-lock.json final-project.pdf classes/DevOps_Final\ Project_MTA_2026_SemB.pdf .agents/plans/01-git-and-repo-baseline.md output/playwright/report.html`: exited `0` and reported each path ignored by `.gitignore`.
-- `git ls-files`: returned `.gitignore`, `AGENTS.md`, `README.md`, `contribution.md`, `docs/changelog/01-git-and-repo-baseline.md`, `docs/repository-baseline.md`, `output/.gitkeep`, and `scripts/README.md`.
+- `git ls-files`: returned `.gitignore`, `AGENTS.md`, `README.md`, `contribution.md`, `docs/changelog/01-git-and-repo-baseline.changelog.md`, `docs/repository-baseline.md`, `output/.gitkeep`, and `scripts/README.md`.
 - `git remote -v`: produced no output, matching the documented state that no public GitHub remote is configured yet.
 - `git status --short --branch`: confirmed the closeout work is staged on `feature-finish-plans-00-01` before commit.
 

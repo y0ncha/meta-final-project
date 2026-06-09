@@ -6,10 +6,10 @@ This repository contains the JSP app, containerized Tomcat deployment, Jenkins C
 
 ## Local URLs
 
-- Tomcat application: `http://localhost:8080/<group-names>/`
+- Tomcat application: `http://localhost:8080/meta/`
 - Jenkins: `http://localhost:8081/`
 
-The `<group-names>` context path is an assignment variable until the real group-member deployment name is selected in `.agents/plans/03-jsp-maven-war-app.md`.
+The `meta` context path is defined by the Maven WAR final name in `docs/plans/03-jsp-maven-war-app.md`.
 
 ## Repository Status
 
