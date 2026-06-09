@@ -17,6 +17,7 @@
 - `.gitignore`
 - `README.md`
 - `AGENTS.md`
+- `contribution.md`
 - `docs/repository-baseline.md`
 - `scripts/README.md`
 - `output/.gitkeep`
