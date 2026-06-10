@@ -35,23 +35,13 @@ pipeline {
   }
 
   stages {
-    stage('Checkout') {
+    stage('Build WAR') {
       steps {
         script {
           def scmVars = checkout scm
           env.CHECKED_OUT_COMMIT = scmVars.GIT_COMMIT ?: sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
         }
-      }
-    }
-
-    stage('Prepare Evidence Workspace') {
-      steps {
         sh 'rm -rf output/gatling output/playwright output/har output/reports'
-      }
-    }
-
-    stage('Build WAR') {
-      steps {
         sh 'mvn -B clean package'
         archiveArtifacts artifacts: 'target/meta.war', fingerprint: true
       }
@@ -191,16 +181,20 @@ NODE'''
           ])
         }
 
+        if (fileExists('scripts/generate-playwright-jenkins-report') && fileExists('output/playwright/junit.xml')) {
+          sh './scripts/generate-playwright-jenkins-report'
+        }
+
         if (fileExists('output/playwright/junit.xml')) {
           junit testResults: 'output/playwright/junit.xml', allowEmptyResults: true
         }
 
-        if (fileExists('output/playwright/playwright-report/index.html')) {
+        if (fileExists('output/playwright/jenkins-report/index.html')) {
           publishHTML(target: [
             allowMissing: true,
             alwaysLinkToLastBuild: true,
             keepAll: true,
-            reportDir: 'output/playwright/playwright-report',
+            reportDir: 'output/playwright/jenkins-report',
             reportFiles: 'index.html',
             reportName: 'Playwright Report'
           ])

@@ -1,42 +1,52 @@
 # Plan 09 Changelog - Monitoring And Jenkins Schedule
 
-## 2026-06-10 Separate Jenkins Availability Monitoring Job
+## 2026-06-10 Separate Jenkins Monitoring Job
 
 ### What Changed
 
-- Split Jenkins availability monitoring out of `meta-container-ci-cd`.
+- Split Jenkins monitoring out of `meta-container-ci-cd`.
 - Removed `cron('H/5 * * * *')` and all `TimerTrigger` gating from `Jenkinsfile`.
 - Renamed the CI/CD reachability stage from `Availability Check` to `Verify Tomcat`.
-- Added `Jenkinsfile.availability` for separate Jenkins job `meta-availability-monitor`.
-- Configured `Jenkinsfile.availability` to run `curl -fsS "$APP_BASE_URL" >/dev/null` every 5 minutes against `http://tomcat:8080/meta/`.
-- Added archived monitoring evidence at `output/monitoring/latest-check.txt`.
+- Added separate Jenkins monitoring job documentation and monitoring evidence path `output/monitoring/latest-check.txt`.
 - Updated compliance policy, Jenkins documentation, architecture documentation, submission checklist, Gatling documentation, Plan 05, Plan 08, and the pipeline report generator to reflect the two-job design.
-- Added `docs/monitoring.md` as the defense reference for the monitoring job.
 
 ### Why It Changed
 
-- The instructor confirmed that availability monitoring should be a separate Jenkins job.
-- The previous trigger-aware design kept monitoring inside the CI/CD job and was therefore harder to defend against the instructor's clarification.
-- A separate source-controlled Pipeline job keeps the monitoring implementation reproducible without adding Job DSL, JCasC, freestyle jobs, or UI-only shell scripts.
+- The instructor confirmed that monitoring should be a separate Jenkins job.
+- The previous trigger-aware design kept monitoring inside the CI/CD job and was harder to defend after the instructor clarification.
+
+## 2026-06-11 Freestyle Monitoring Correction
+
+### What Changed
+
+- Removed the old monitoring Pipeline file because Jenkins Freestyle jobs do not execute Jenkinsfiles.
+- Added `scripts/run-monitoring-check` as the source-controlled shell command for Freestyle job `meta-monitoring`.
+- Updated `rules/compliance.md` to require separate Jenkins Freestyle monitoring job `meta-monitoring`.
+- Updated `docs/monitoring.md`, `docs/jenkins.md`, `docs/architecture.md`, `docs/submission.md`, and `docs/gatling.md` to document Freestyle setup.
+- Rewrote `docs/plans/09-monitoring-and-jenkins-schedule.md` so the current plan says Freestyle + UptimeRobot/SiteMonitorLite, not Pipeline.
+- Updated Plan 05 references to point to Freestyle monitoring through `scripts/run-monitoring-check`.
+
+### Why It Changed
+
+- Freestyle is the better fit for the simple instructor-facing requirement: one separate Jenkins job that checks monitoring every 5 minutes.
+- Keeping the shell command in `scripts/run-monitoring-check` preserves source-controlled reviewability while avoiding the false implication that a Freestyle job reads a Jenkinsfile.
+- UptimeRobot remains the preferred official monitor screenshot source, while SiteMonitorLite stays allowed as a documented fallback.
 
 ### Validation
 
-- `rtk git status`: confirmed branch `feature/09-monitoring-and-jenkins-schedule` with scoped tracked changes.
+- `rtk git status`: confirmed branch `feature/09-monitoring-and-jenkins-schedule` with scoped Plan 09 changes.
+- Removed-file check for the old monitoring Pipeline file: passed.
+- `test -x scripts/run-monitoring-check`: passed.
+- `sh -n scripts/run-monitoring-check`: passed.
+- Stale-reference scan for the removed monitoring Pipeline file, the old monitor job name, and the old Pipeline-monitoring setup: passed with no current required setup references.
+- `rg -n "meta-monitoring|scripts/run-monitoring-check|Freestyle|UptimeRobot|SiteMonitorLite" docs rules scripts`: passed and showed the new monitoring setup.
 - `docker compose config --quiet`: passed.
-- `sh -n scripts/generate-pipeline-report`: passed.
-- `if rg -n "cron\\('H/5|TimerTrigger" Jenkinsfile; then exit 1; fi`: passed; no matches.
-- `rg -n "cron\\('H/5 \\* \\* \\* \\*'\\)" Jenkinsfile.availability`: passed; found the monitoring cron.
-- `if rg -n "mvn -B clean package|scripts/deploy-war|run-playwright|run-gatling|RUN_GATLING" Jenkinsfile.availability; then exit 1; fi`: passed; no matches.
-- `docker compose ps jenkins`: passed after Docker socket approval; `meta-jenkins` was running on `0.0.0.0:8081->8080/tcp`.
-- Jenkins declarative linter for `/workspace/final-project/Jenkinsfile`: passed with `Jenkinsfile successfully validated.`
-- Jenkins declarative linter for `/workspace/final-project/Jenkinsfile.availability`: passed with `Jenkinsfile successfully validated.`
-- `python3 .agents/skills/compliance-validator/scripts/validate_compliance.py --target . --rules rules/compliance.md`: passed with `pass=71`, `warn=0`, `fail=0`, and `manual=9`.
-- `git diff --check`: passed.
+- `python3 .agents/skills/compliance-validator/scripts/validate_compliance.py --target . --rules rules/compliance.md`: passed with zero failures; 9 manual review items remain for negative or defense-readiness rules.
+- Optional local runtime check `APP_BASE_URL=http://localhost:8080/meta/ ./scripts/run-monitoring-check`: blocked because no service was listening on localhost port 8080 during validation.
 
 ### Evidence Paths
 
-- `Jenkinsfile`
-- `Jenkinsfile.availability`
+- `scripts/run-monitoring-check`
 - `docs/monitoring.md`
 - `docs/jenkins.md`
 - `docs/plans/09-monitoring-and-jenkins-schedule.md`
@@ -44,6 +54,7 @@
 
 ### Remaining Risks
 
-- Final submission still needs a real UptimeRobot or approved monitor passed screenshot.
-- Jenkins UI must be configured with separate Pipeline job `meta-availability-monitor`, script path `Jenkinsfile.availability`, and the same branch as the CI/CD job during branch validation.
-- The live scheduled monitoring build evidence must be captured after the branch is committed and the Jenkins monitoring job checks out the updated source.
+- Final submission still needs a real UptimeRobot or documented SiteMonitorLite passed screenshot.
+- Jenkins UI must be configured with Freestyle job `meta-monitoring`, trigger `H/5 * * * *`, Execute shell command `./scripts/run-monitoring-check`, and archive pattern `output/monitoring/**/*`.
+- The live scheduled monitoring build evidence must be captured from Jenkins after the Freestyle job is configured.
+- Local script runtime evidence still needs to be captured after Tomcat is running at `http://localhost:8080/meta/`.

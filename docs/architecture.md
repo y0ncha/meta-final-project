@@ -2,7 +2,7 @@
 
 ## Overview
 
-The project uses two Jenkins Pipeline jobs for a JSP application. The CI/CD job pulls code from GitHub, builds the WAR, deploys it to Tomcat, verifies the app, and runs the required automated checks. The separate availability job checks the deployed app every 5 minutes, matching the instructor-confirmed monitoring split.
+The project uses a Jenkins Pipeline job for CI/CD and a Jenkins Freestyle job for monitoring. The CI/CD job pulls code from GitHub, builds the WAR, deploys it to Tomcat, verifies the app, and runs the required automated checks. The separate monitoring job checks the deployed app every 5 minutes, matching the instructor-confirmed monitoring split.
 
 ```mermaid
 flowchart LR
@@ -15,13 +15,13 @@ flowchart LR
   Playwright -->|test app| Tomcat
   CICD -->|run performance tests| Gatling["Gatling containers"]
   Gatling -->|load/stress app| Tomcat
-  MonitorJob["Jenkins job: meta-availability-monitor"] -->|5-minute check| Monitor["Availability check"]
+  MonitorJob["Jenkins Freestyle job: meta-monitoring"] -->|5-minute check| Monitor["Monitoring check"]
   Monitor -->|curl app| Tomcat
 ```
 
 ## CI/CD Pipeline
 
-The CI/CD job is `meta-container-ci-cd` and uses script path `Jenkinsfile`. It runs on SCM polling or manual execution. It does not contain the availability-monitor schedule.
+The CI/CD job is `meta-container-ci-cd` and uses script path `Jenkinsfile`. It runs on SCM polling or manual execution. It does not contain the monitoring schedule.
 
 ```mermaid
 flowchart TD
@@ -33,15 +33,15 @@ flowchart TD
   Perf --> Done["Archive evidence"]
 ```
 
-## Availability Monitoring Job
+## Monitoring Job
 
-The availability job is `meta-availability-monitor` and uses script path `Jenkinsfile.availability`. It runs every 5 minutes and performs only a `curl` availability check.
+The monitoring job is `meta-monitoring`. It is a Freestyle project with a periodic trigger and an Execute shell step that runs `./scripts/run-monitoring-check`.
 
 ```mermaid
 flowchart TD
-  Start["Jenkins job: meta-availability-monitor"] --> Schedule["H/5 * * * *"]
-  Schedule --> Availability["curl http://tomcat:8080/meta/"]
-  Availability --> Evidence["Archive output/monitoring/latest-check.txt"]
+  Start["Jenkins Freestyle job: meta-monitoring"] --> Schedule["H/5 * * * *"]
+  Schedule --> Check["./scripts/run-monitoring-check"]
+  Check --> Evidence["Archive output/monitoring/latest-check.txt"]
   Evidence --> Done["Finish"]
 ```
 
