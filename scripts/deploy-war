@@ -3,7 +3,8 @@ set -eu
 
 # Optional environment variables:
 # TOMCAT_SERVICE, TOMCAT_CONTEXT, TOMCAT_WEBAPPS_DIR, TOMCAT_HOST_PORT,
-# DEPLOY_TIMEOUT_SECONDS, WAR_SOURCE.
+# DEPLOY_TIMEOUT_SECONDS, WAR_SOURCE, SKIP_BUILD, DEPLOY_CHECK_URL,
+# TOMCAT_SHARED_WEBAPPS_DIR.
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 PROJECT_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd -P)
@@ -15,11 +16,21 @@ TOMCAT_WEBAPPS_DIR="${TOMCAT_WEBAPPS_DIR:-/usr/local/tomcat/webapps}"
 TOMCAT_HOST_PORT="${TOMCAT_HOST_PORT:-8080}"
 DEPLOY_TIMEOUT_SECONDS="${DEPLOY_TIMEOUT_SECONDS:-60}"
 WAR_SOURCE="${WAR_SOURCE:-target/meta.war}"
+SKIP_BUILD="${SKIP_BUILD:-0}"
+TOMCAT_SHARED_WEBAPPS_DIR="${TOMCAT_SHARED_WEBAPPS_DIR:-}"
 
 if [ "$TOMCAT_CONTEXT" != "meta" ]; then
   printf '%s\n' "TOMCAT_CONTEXT must remain meta for this coursework plan" >&2
   exit 2
 fi
+
+case "$SKIP_BUILD" in
+  0|1) ;;
+  *)
+    printf '%s\n' "SKIP_BUILD must be 0 or 1" >&2
+    exit 2
+    ;;
+esac
 
 case "$DEPLOY_TIMEOUT_SECONDS" in
   ''|*[!0-9]*)
@@ -53,18 +64,36 @@ case "$TOMCAT_WEBAPPS_DIR" in
     ;;
 esac
 
-mvn clean package
+if [ -n "$TOMCAT_SHARED_WEBAPPS_DIR" ]; then
+  case "$TOMCAT_SHARED_WEBAPPS_DIR" in
+    /*) ;;
+    *)
+      printf '%s\n' "TOMCAT_SHARED_WEBAPPS_DIR must be an absolute container path" >&2
+      exit 2
+      ;;
+  esac
+fi
+
+DEPLOY_CHECK_URL="${DEPLOY_CHECK_URL:-http://localhost:$TOMCAT_HOST_PORT/$TOMCAT_CONTEXT/}"
+
+if [ "$SKIP_BUILD" = "0" ]; then
+  mvn clean package
+fi
 test -f "$WAR_SOURCE"
 
-docker compose up -d "$TOMCAT_SERVICE"
-docker compose exec -T "$TOMCAT_SERVICE" sh -c 'rm -rf "$1/$2" "$1/$2.war"' sh "$TOMCAT_WEBAPPS_DIR" "$TOMCAT_CONTEXT"
-docker compose cp "$WAR_SOURCE" "$TOMCAT_SERVICE:$TOMCAT_WEBAPPS_DIR/$TOMCAT_CONTEXT.war"
+if [ -n "$TOMCAT_SHARED_WEBAPPS_DIR" ]; then
+  rm -rf "$TOMCAT_SHARED_WEBAPPS_DIR/$TOMCAT_CONTEXT" "$TOMCAT_SHARED_WEBAPPS_DIR/$TOMCAT_CONTEXT.war"
+  cp "$WAR_SOURCE" "$TOMCAT_SHARED_WEBAPPS_DIR/$TOMCAT_CONTEXT.war"
+else
+  docker compose up -d "$TOMCAT_SERVICE"
+  docker compose exec -T "$TOMCAT_SERVICE" sh -c 'rm -rf "$1/$2" "$1/$2.war"' sh "$TOMCAT_WEBAPPS_DIR" "$TOMCAT_CONTEXT"
+  docker compose cp "$WAR_SOURCE" "$TOMCAT_SERVICE:$TOMCAT_WEBAPPS_DIR/$TOMCAT_CONTEXT.war"
+fi
 
-DEPLOY_URL="http://localhost:$TOMCAT_HOST_PORT/$TOMCAT_CONTEXT/"
 elapsed=0
-while ! curl -fsS "$DEPLOY_URL" >/dev/null 2>&1; do
+while ! curl -fsS "$DEPLOY_CHECK_URL" >/dev/null 2>&1; do
   if [ "$elapsed" -ge "$DEPLOY_TIMEOUT_SECONDS" ]; then
-    printf '%s\n' "Timed out waiting for $DEPLOY_URL" >&2
+    printf '%s\n' "Timed out waiting for $DEPLOY_CHECK_URL" >&2
     docker compose logs --tail=80 "$TOMCAT_SERVICE" >&2
     exit 1
   fi
@@ -72,4 +101,4 @@ while ! curl -fsS "$DEPLOY_URL" >/dev/null 2>&1; do
   elapsed=$((elapsed + 1))
 done
 
-printf '%s\n' "Deployed URL: $DEPLOY_URL"
+printf '%s\n' "Deployed URL: $DEPLOY_CHECK_URL"

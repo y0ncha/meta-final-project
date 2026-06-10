@@ -14,8 +14,14 @@ services:
       - meta
 
   jenkins:
-    image: ${JENKINS_IMAGE:-jenkins/jenkins:2.528.1-lts-jdk21}
+    build:
+      context: .
+      dockerfile: ops/jenkins/Dockerfile
+      args:
+        JENKINS_BASE_IMAGE: ${JENKINS_IMAGE:-jenkins/jenkins:2.528.1-lts-jdk21}
+    image: ${META_JENKINS_IMAGE:-meta-jenkins:2.528.1-lts-jdk21}
     container_name: meta-jenkins
+    user: root
     ports:
       - "${JENKINS_HOST_PORT:-8081}:8080"
     volumes:
@@ -25,6 +31,9 @@ services:
       - type: bind
         source: .
         target: /workspace/final-project
+      - type: volume
+        source: tomcat_webapps
+        target: /tomcat-webapps
     networks:
       - meta
 
