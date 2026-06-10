@@ -2,18 +2,17 @@
 set -eu
 
 # Optional environment variables:
-# PLAYWRIGHT_IMAGE, PLAYWRIGHT_NETWORK, APP_BASE_URL, HAR_PATH, LOG_FILE,
-# HAR_CONTAINER_NAME.
+# PLAYWRIGHT_IMAGE, APP_BASE_URL, HAR_PATH, LOG_FILE, HAR_CONTAINER_NAME.
 
 PROJECT_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
 cd "$PROJECT_ROOT"
 
 PLAYWRIGHT_IMAGE="${PLAYWRIGHT_IMAGE:-mcr.microsoft.com/playwright:v1.60.0-noble}"
-PLAYWRIGHT_NETWORK="${PLAYWRIGHT_NETWORK:-meta}"
 APP_BASE_URL="${APP_BASE_URL:-http://tomcat:8080/meta/}"
 HAR_PATH="${HAR_PATH:-output/har/meta-functional-flow.har}"
 LOG_FILE="${LOG_FILE:-output/har/07-har-capture.log}"
 HAR_CONTAINER_NAME="${HAR_CONTAINER_NAME:-meta-har-${BUILD_NUMBER:-local}}"
+HAR_SERVICE="har-runner"
 
 mkdir -p output/har
 
@@ -31,15 +30,18 @@ if ! command -v docker >/dev/null 2>&1; then
   exit 127
 fi
 
-run_and_log docker run --rm \
+if [ -f /var/jenkins_home/config.xml ]; then
+  HAR_SERVICE="har-runner-jenkins"
+fi
+
+export PLAYWRIGHT_IMAGE HAR_PATH
+
+run_and_log docker compose --profile tools run --rm --no-deps \
   --name "$HAR_CONTAINER_NAME" \
-  --network "$PLAYWRIGHT_NETWORK" \
-  -v "$PROJECT_ROOT:/work" \
-  -w /work \
   -e APP_BASE_URL="$APP_BASE_URL" \
   -e HAR_PATH="$HAR_PATH" \
   -e CI=true \
-  "$PLAYWRIGHT_IMAGE" \
+  "$HAR_SERVICE" \
   /bin/bash -lc 'npm ci && node tests/playwright/capture-har.js'
 
 printf '%s\n' 'HAR evidence:'

@@ -4,7 +4,7 @@
 Assemble the final email package with all 12 required assignment items and real evidence.
 
 ## Deliverables
-- `docs/submission-checklist.md`.
+- `docs/submission.md`.
 - Final screenshots and files grouped by requirement.
 - Written explanations for Playwright validations, HAR scenario, max limit, and Gatling graphs.
 

@@ -64,15 +64,17 @@ The source-controlled `Jenkinsfile` handles two different trigger classes:
 - Timer builds run only the Jenkins-side availability check every five minutes.
 
 1. `Checkout`: Runs `checkout scm` only for non-timer builds. This makes Jenkins fetch the repository and branch configured in the Pipeline job, so the build uses GitHub source code instead of files copied manually into the Jenkins container.
-2. `Build WAR`: Runs `mvn -B clean package` and archives `target/meta.war` only for non-timer builds. Maven turns the JSP application into the WAR file Tomcat can deploy; archiving the WAR gives Jenkins build evidence and a traceable artifact.
-3. `Deploy Tomcat`: Runs `./scripts/deploy-war` with `SKIP_BUILD=1`, `TOMCAT_SHARED_WEBAPPS_DIR=/tomcat-webapps`, and `DEPLOY_CHECK_URL="$DEPLOY_CHECK_URL"` only for non-timer builds. This reuses the repository deployment script, avoids rebuilding the WAR twice, writes the WAR into the shared Tomcat webapps volume, and waits until Tomcat serves the deployed app.
-4. `Verify Tomcat`: Runs `curl -fsS "$APP_BASE_URL" >/dev/null` only for non-timer builds. This proves the deployment is not just copied to disk but reachable through Tomcat at `http://tomcat:8080/meta/` from inside the Docker network.
-5. `Availability Check`: Runs `curl -fsS "$APP_BASE_URL" >/dev/null` only for timer-triggered builds. This is the Jenkins-side five-minute availability monitor evidence required by the project; it does not rebuild, redeploy, or run Gatling.
-6. `Playwright Functional Test`: Runs `./scripts/run-playwright-container` only for non-timer builds and only when that script exists. The Plan 06 follow-up uses this script to start the official Playwright container from Jenkins, run the functional test, and write ignored evidence under `output/playwright/`.
-7. `Gatling Load Test`: Runs `./scripts/run-gatling-load-5m` only for non-timer builds and only when that script exists. This is the hook for the required five-minute Gatling load test once the Gatling plan adds the script.
-8. `Gatling Stress Test`: Runs `./scripts/run-gatling-stress-5m` only for non-timer builds and only when that script exists. This is the hook for the required five-minute Gatling stress test once the Gatling plan adds the script.
+2. `Prepare Evidence Workspace`: Removes generated `output/gatling`, `output/playwright`, `output/har`, and `output/reports` directories only for non-timer builds so published artifacts cannot come from a previous workspace run.
+3. `Build WAR`: Runs `mvn -B clean package` and archives `target/meta.war` only for non-timer builds. Maven turns the JSP application into the WAR file Tomcat can deploy; archiving the WAR gives Jenkins build evidence and a traceable artifact.
+4. `Deploy Tomcat`: Runs `./scripts/deploy-war` with `SKIP_BUILD=1`, `TOMCAT_SHARED_WEBAPPS_DIR=/tomcat-webapps`, and `DEPLOY_CHECK_URL="$DEPLOY_CHECK_URL"` only for non-timer builds. This reuses the repository deployment script, avoids rebuilding the WAR twice, writes the WAR into the shared Tomcat webapps volume, and waits until Tomcat serves the deployed app.
+5. `Verify Tomcat`: Runs `curl -fsS "$APP_BASE_URL" >/dev/null` only for non-timer builds. This proves the deployment is not just copied to disk but reachable through Tomcat at `http://tomcat:8080/meta/` from inside the Docker network.
+6. `Availability Check`: Runs `curl -fsS "$APP_BASE_URL" >/dev/null` only for timer-triggered builds. This is the Jenkins-side five-minute availability monitor evidence required by the project; it does not rebuild, redeploy, or run Gatling.
+7. `Playwright Functional Test`: Runs `./scripts/run-playwright-container` only for non-timer builds and only when that script exists. The Plan 06 follow-up uses this script to start Compose one-shot service `playwright-runner-jenkins`, run the functional test in the official Playwright image, and write ignored evidence under `output/playwright/`.
+8. `Gatling Max Limit`: Runs `./scripts/run-gatling-max-limit` only for non-timer builds, only when that script exists, and only when build parameter `RUN_GATLING_MAX_LIMIT=true`. This keeps disruptive max-limit discovery out of ordinary CI/CD runs while still making it Jenkins-runnable for evidence capture.
+9. `Gatling Load Test`: Runs `./scripts/run-gatling-load-5m` only for non-timer builds and only when that script exists. This is the required five-minute Gatling load test.
+10. `Gatling Stress Test`: Runs `./scripts/run-gatling-stress-5m` only for non-timer builds and only when that script exists. This is the required five-minute Gatling stress test.
 
-The `post` block always archives `output/**/*` if files exist. When present, it also publishes Playwright JUnit XML, the Playwright HTML report, and Gatling HTML/PDF reports from `output/gatling/max-limit/`, `output/gatling/load-5m/`, and `output/gatling/stress-5m/`. `gatlingArchive()` is intentionally deferred until Plan 08 validates the Gatling output shape expected by the Jenkins Gatling plugin.
+The `post` block performs administrative finalization after validation stages finish. It exports PDFs for the Gatling HTML reports that exist in the build workspace, generates `output/reports/pipeline-report.html`, archives `output/**/*`, publishes the final Pipeline HTML report, publishes Playwright JUnit XML and HTML reports, and publishes Gatling HTML/PDF reports from `output/gatling/max-limit/`, `output/gatling/load-5m/`, and `output/gatling/stress-5m/`. Jenkins runs the PDF exporter with `GATLING_PDF_REQUIRE_ALL=false` because the max-limit stage is optional. `gatlingArchive()` is intentionally deferred until Plan 08 validates the Gatling output shape expected by the Jenkins Gatling plugin.
 
 ## Schedule
 
@@ -85,8 +87,8 @@ The `post` block always archives `output/**/*` if files exist. When present, it 
 
 ## Security Notes
 
-- Jenkins mounts `/var/run/docker.sock` for this coursework stack so it can run disposable test containers such as the official Playwright image.
-- Playwright runs in `mcr.microsoft.com/playwright:v1.60.0-noble`, not directly in the Jenkins image. The 2026-06-10 Plan 06 follow-up supersedes the original no-Docker-socket decision in favor of one consistent Playwright execution model.
+- Jenkins mounts `/var/run/docker.sock` for this coursework stack so it can run Compose one-shot test containers such as the official Playwright image and the Gatling image.
+- Playwright runs in `mcr.microsoft.com/playwright:v1.60.0-noble`, not directly in the Jenkins image. Functional Playwright and HAR capture use separate Compose one-shot containers so validation stages do not share browser or filesystem state.
 - The Jenkins image installs Docker CLI and Docker Compose from Docker's official Debian apt repository so Jenkins-side diagnostics and test-container orchestration can use `docker` and `docker compose`.
 - Jenkins deploys by writing `meta.war` into the shared Docker volume mounted at `/tomcat-webapps`.
 - The Jenkins service currently runs as `root` inside the container so it can write to the Tomcat `webapps` volume. This is a local coursework tradeoff and must not be described as production-secure.
@@ -110,9 +112,12 @@ The `post` block always archives `output/**/*` if files exist. When present, it 
   - `output/playwright/screenshots/06-valid-submit.png`
   - `output/playwright/screenshots/06-empty-submit.png`
 - Jenkins published report evidence:
+  - Consolidated final Pipeline HTML report from `output/reports/pipeline-report.html`.
   - Playwright JUnit result from `output/playwright/junit.xml`.
   - Playwright HTML report from `output/playwright/playwright-report/index.html`.
-  - Gatling HTML/PDF reports from `output/gatling/max-limit/`, `output/gatling/load-5m/`, and `output/gatling/stress-5m/` after Plan 08 generates them.
+  - Gatling max-limit HTML/PDF report from `output/gatling/max-limit/`.
+  - Gatling load-test HTML/PDF report from `output/gatling/load-5m/`.
+  - Gatling stress-test HTML/PDF report from `output/gatling/stress-5m/`.
 - Previous Plan 05 remote-backed Jenkins evidence, captured before the trigger split:
   - Build `#7`: `SUCCESS`
   - Source: `https://github.com/y0ncha/meta-final-project.git`

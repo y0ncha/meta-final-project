@@ -2,20 +2,18 @@
 set -eu
 
 # Optional environment variables:
-# PLAYWRIGHT_IMAGE, PLAYWRIGHT_NETWORK, APP_BASE_URL, JENKINS_CONTAINER,
-# PLAYWRIGHT_CONTAINER_NAME.
+# PLAYWRIGHT_IMAGE, APP_BASE_URL, PLAYWRIGHT_CONTAINER_NAME.
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 PROJECT_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd -P)
 cd "$PROJECT_ROOT"
 
 PLAYWRIGHT_IMAGE="${PLAYWRIGHT_IMAGE:-mcr.microsoft.com/playwright:v1.60.0-noble}"
-PLAYWRIGHT_NETWORK="${PLAYWRIGHT_NETWORK:-meta}"
 HOST_APP_BASE_URL="${APP_BASE_URL:-http://tomcat:8080/meta/}"
-JENKINS_CONTAINER="${JENKINS_CONTAINER:-meta-jenkins}"
 PLAYWRIGHT_CONTAINER_NAME="${PLAYWRIGHT_CONTAINER_NAME:-meta-playwright-${BUILD_NUMBER:-local}}"
 OUTPUT_DIR="output/playwright"
 LOG_FILE="$OUTPUT_DIR/06-playwright-run.log"
+PLAYWRIGHT_SERVICE="playwright-runner"
 
 mkdir -p \
   "$OUTPUT_DIR" \
@@ -38,26 +36,17 @@ if ! command -v docker >/dev/null 2>&1; then
 fi
 
 if [ -f /var/jenkins_home/config.xml ]; then
-  run_and_log docker run --rm \
-    --name "$PLAYWRIGHT_CONTAINER_NAME" \
-    --network "$PLAYWRIGHT_NETWORK" \
-    --volumes-from "$JENKINS_CONTAINER" \
-    -w "$PROJECT_ROOT" \
-    -e APP_BASE_URL="$HOST_APP_BASE_URL" \
-    -e CI=true \
-    "$PLAYWRIGHT_IMAGE" \
-    /bin/bash -lc 'npm ci && npx playwright test'
-else
-  run_and_log docker run --rm \
-    --name "$PLAYWRIGHT_CONTAINER_NAME" \
-    --network "$PLAYWRIGHT_NETWORK" \
-    -v "$PROJECT_ROOT:/work" \
-    -w /work \
-    -e APP_BASE_URL="$HOST_APP_BASE_URL" \
-    -e CI=true \
-    "$PLAYWRIGHT_IMAGE" \
-    /bin/bash -lc 'npm ci && npx playwright test'
+  PLAYWRIGHT_SERVICE="playwright-runner-jenkins"
 fi
+
+export PLAYWRIGHT_IMAGE
+
+run_and_log docker compose --profile tools run --rm --no-deps \
+  --name "$PLAYWRIGHT_CONTAINER_NAME" \
+  -e APP_BASE_URL="$HOST_APP_BASE_URL" \
+  -e CI=true \
+  "$PLAYWRIGHT_SERVICE" \
+    /bin/bash -lc 'npm ci && npx playwright test'
 
 printf '%s\n' 'Playwright evidence:'
 printf '%s\n' "  $LOG_FILE"

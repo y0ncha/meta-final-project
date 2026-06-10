@@ -23,6 +23,8 @@ Follow-up update on 2026-06-10: Jenkins now starts the official Playwright conta
 
 Follow-up update on 2026-06-10: Jenkins now publishes Playwright JUnit and HTML evidence through Jenkins report plugins when the generated files exist. Playwright execution remains containerized.
 
+Follow-up update on 2026-06-10: `scripts/run-playwright-container` now launches profiled Compose one-shot service `playwright-runner` or `playwright-runner-jenkins` instead of invoking raw `docker run`. The Playwright functional test remains isolated from HAR capture; those validations use separate one-shot containers.
+
 ## 1. Requirements & Constraints
 
 - **REQ-001**: Implement browser automation for the JSP app served at `http://localhost:8080/meta/` from the host and `http://tomcat:8080/meta/` from Docker network `meta`.
@@ -115,12 +117,23 @@ Follow-up update on 2026-06-10: Jenkins now publishes Playwright JUnit and HTML 
 | TASK-036 | Create `docs/changelog/06-playwright-container-functional-test.changelog.md` with what changed, why it changed, exact validation commands, generated evidence paths, and remaining risks. | ✅ | 2026-06-10 |
 | TASK-037 | Update this plan's front matter status to `Completed`, update the badge color to `brightgreen`, and mark completed tasks with date `2026-06-10` only after TASK-028 through TASK-036 pass. | ✅ | 2026-06-10 |
 
+### Implementation Phase 5
+
+- GOAL-005: Convert the Playwright runner from raw Docker invocation to Compose one-shot execution without changing the public command.
+
+| Task | Description | Completed | Date |
+|------|-------------|-----------|------|
+| TASK-038 | Add Compose service `playwright-runner` for local one-shot Playwright execution. | ✅ | 2026-06-10 |
+| TASK-039 | Add Compose service `playwright-runner-jenkins` for Jenkins one-shot Playwright execution with inherited Jenkins workspace volumes. | ✅ | 2026-06-10 |
+| TASK-040 | Update `scripts/run-playwright-container` to call `docker compose --profile tools run --rm --no-deps` while preserving evidence paths. | ✅ | 2026-06-10 |
+| TASK-041 | Document that Playwright functional validation and HAR capture use separate fresh one-shot containers. | ✅ | 2026-06-10 |
+
 ## 3. Alternatives
 
 - **ALT-001**: Use Selenium IDE and commit a `.side` file. Rejected because `rules/compliance.md` records the accepted project override to use Playwright, while preserving the PDF mismatch as a grading risk.
 - **ALT-002**: Run Playwright directly on the host. Rejected because `rules/compliance.md` requires Dockerized, repeatable browser automation and the project must not install browser tooling on the host.
 - **ALT-003**: Run Playwright directly inside Jenkins with Jenkins-installed Node, npm, and Chromium. Rejected by the 2026-06-10 follow-up because the user prioritized one official-container execution model for local and Jenkins runs.
-- **ALT-004**: Add a long-running Playwright service to `docker-compose.yml`. Rejected because Playwright is a test runner, not a production service, and the existing Jenkins stage only needs an executable command.
+- **ALT-004**: Add a long-running Playwright service to `docker-compose.yml`. Rejected because Playwright is a test runner, not a production service, and validation stages must not share container state. Profiled Compose one-shot services are accepted.
 - **ALT-005**: Use screenshots only without Playwright assertions. Rejected because the assignment requires functional browser automation with validations, not manual visual evidence.
 
 ## 4. Dependencies

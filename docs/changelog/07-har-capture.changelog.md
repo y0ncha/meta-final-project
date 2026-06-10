@@ -58,3 +58,9 @@ The HAR contains the expected local Tomcat `JSESSIONID` cookie for the JSP sessi
 
 - The HAR uses Docker-network URL `http://tomcat:8080/meta/`; the separate final Tomcat screenshot still needs a browser address bar showing `http://localhost:8080/meta/`.
 - The assignment PDF names Selenium IDE, while this project uses Playwright under the documented accepted override in `rules/compliance.md`.
+
+## 2026-06-10 Compose One-Shot Runner Follow-Up
+
+- Updated `scripts/capture-har` to launch profiled Compose one-shot service `har-runner` instead of invoking raw `docker run`.
+- Added Jenkins-specific Compose service `har-runner-jenkins` so Jenkins-side HAR capture can inherit the Jenkins workspace volumes.
+- Kept HAR capture isolated from the Playwright functional-test container so browser cache, test output, and temporary files cannot affect HAR validation evidence.

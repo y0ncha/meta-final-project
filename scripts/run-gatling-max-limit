@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+set -eu
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
+exec env GATLING_RUN_TYPE=max-limit "$SCRIPT_DIR/run-gatling-container"

@@ -1,0 +1,124 @@
+#!/usr/bin/env sh
+set -eu
+
+# Optional environment variables:
+# GATLING_IMAGE, GATLING_PLATFORM, APP_BASE_URL, GATLING_CONTAINER_NAME,
+# GATLING_SIMULATION_CLASS, GATLING_* load values.
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
+PROJECT_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd -P)
+cd "$PROJECT_ROOT"
+
+GATLING_RUN_TYPE="${GATLING_RUN_TYPE:-}"
+case "$GATLING_RUN_TYPE" in
+  max-limit|load-5m|stress-5m) ;;
+  *)
+    printf '%s\n' 'GATLING_RUN_TYPE must be max-limit, load-5m, or stress-5m' >&2
+    exit 2
+    ;;
+esac
+
+GATLING_IMAGE="${GATLING_IMAGE:-denvazh/gatling:3.2.1}"
+GATLING_PLATFORM="${GATLING_PLATFORM:-linux/amd64}"
+APP_BASE_URL="${APP_BASE_URL:-http://tomcat:8080/meta/}"
+GATLING_CONTAINER_NAME="${GATLING_CONTAINER_NAME:-meta-gatling-${GATLING_RUN_TYPE}-${BUILD_NUMBER:-local}}"
+GATLING_LOAD_USERS_PER_SEC="${GATLING_LOAD_USERS_PER_SEC:-5}"
+GATLING_STRESS_START_USERS_PER_SEC="${GATLING_STRESS_START_USERS_PER_SEC:-5}"
+GATLING_STRESS_TARGET_USERS_PER_SEC="${GATLING_STRESS_TARGET_USERS_PER_SEC:-50}"
+GATLING_MAX_START_USERS_PER_SEC="${GATLING_MAX_START_USERS_PER_SEC:-5}"
+GATLING_MAX_STEP_USERS_PER_SEC="${GATLING_MAX_STEP_USERS_PER_SEC:-5}"
+GATLING_MAX_LEVEL_COUNT="${GATLING_MAX_LEVEL_COUNT:-10}"
+GATLING_MAX_LEVEL_SECONDS="${GATLING_MAX_LEVEL_SECONDS:-30}"
+GATLING_MAX_RAMP_SECONDS="${GATLING_MAX_RAMP_SECONDS:-10}"
+SIMULATION_CLASS="${GATLING_SIMULATION_CLASS:-MetaSimulation}"
+GATLING_SERVICE="gatling-runner"
+
+OUTPUT_DIR="output/gatling/$GATLING_RUN_TYPE"
+RAW_DIR="$OUTPUT_DIR/raw"
+LOG_FILE="$OUTPUT_DIR/${GATLING_RUN_TYPE}-run.log"
+
+mkdir -p "$OUTPUT_DIR" "$RAW_DIR" output/gatling/screenshots
+find "$OUTPUT_DIR" -mindepth 1 -maxdepth 1 ! -name raw -exec rm -rf {} +
+
+if ! command -v docker >/dev/null 2>&1; then
+  printf '%s\n' 'docker is required to run Gatling' >&2
+  exit 127
+fi
+
+run_and_log() {
+  set +e
+  "$@" > "$LOG_FILE" 2>&1
+  status=$?
+  set -e
+  cat "$LOG_FILE"
+  return "$status"
+}
+
+if [ -f /var/jenkins_home/config.xml ]; then
+  CONTAINER_PROJECT_ROOT="$PROJECT_ROOT"
+  GATLING_SERVICE="gatling-runner-jenkins"
+else
+  CONTAINER_PROJECT_ROOT="/work"
+fi
+
+export \
+  GATLING_IMAGE \
+  GATLING_PLATFORM \
+  APP_BASE_URL \
+  GATLING_RUN_TYPE \
+  GATLING_LOAD_USERS_PER_SEC \
+  GATLING_STRESS_START_USERS_PER_SEC \
+  GATLING_STRESS_TARGET_USERS_PER_SEC \
+  GATLING_MAX_START_USERS_PER_SEC \
+  GATLING_MAX_STEP_USERS_PER_SEC \
+  GATLING_MAX_LEVEL_COUNT \
+  GATLING_MAX_LEVEL_SECONDS \
+  GATLING_MAX_RAMP_SECONDS
+
+gatling_status=0
+run_and_log docker compose --profile tools run --rm --no-deps \
+  --name "$GATLING_CONTAINER_NAME" \
+  -e APP_BASE_URL="$APP_BASE_URL" \
+  -e GATLING_RUN_TYPE="$GATLING_RUN_TYPE" \
+  -e GATLING_LOAD_USERS_PER_SEC="$GATLING_LOAD_USERS_PER_SEC" \
+  -e GATLING_STRESS_START_USERS_PER_SEC="$GATLING_STRESS_START_USERS_PER_SEC" \
+  -e GATLING_STRESS_TARGET_USERS_PER_SEC="$GATLING_STRESS_TARGET_USERS_PER_SEC" \
+  -e GATLING_MAX_START_USERS_PER_SEC="$GATLING_MAX_START_USERS_PER_SEC" \
+  -e GATLING_MAX_STEP_USERS_PER_SEC="$GATLING_MAX_STEP_USERS_PER_SEC" \
+  -e GATLING_MAX_LEVEL_COUNT="$GATLING_MAX_LEVEL_COUNT" \
+  -e GATLING_MAX_LEVEL_SECONDS="$GATLING_MAX_LEVEL_SECONDS" \
+  -e GATLING_MAX_RAMP_SECONDS="$GATLING_MAX_RAMP_SECONDS" \
+  "$GATLING_SERVICE" \
+    -sf "$CONTAINER_PROJECT_ROOT/src/gatling/user-files/simulations" \
+    -rf "$CONTAINER_PROJECT_ROOT/$RAW_DIR" \
+    -s "$SIMULATION_CLASS" || gatling_status=$?
+
+REPORT_INDEX=$(find "$RAW_DIR" -mindepth 2 -maxdepth 2 -name index.html -type f -print | sort | tail -n 1)
+if [ -z "$REPORT_INDEX" ]; then
+  if [ "$gatling_status" -ne 0 ]; then
+    printf '%s\n' "Gatling exited with status $gatling_status and no report index.html was created under $RAW_DIR" >&2
+    exit "$gatling_status"
+  fi
+  printf '%s\n' "Gatling report index.html was not created under $RAW_DIR" >&2
+  exit 1
+fi
+
+REPORT_DIR=${REPORT_INDEX%/index.html}
+if [ ! -s "$REPORT_DIR/index.html" ]; then
+  printf '%s\n' "Gatling report index.html was not created under $RAW_DIR" >&2
+  exit 1
+fi
+
+cp -R "$REPORT_DIR"/. "$OUTPUT_DIR"/
+test -s "$OUTPUT_DIR/index.html"
+test -s "$LOG_FILE"
+
+printf '%s\n' 'Gatling evidence:'
+printf '%s\n' "  $LOG_FILE"
+printf '%s\n' "  $OUTPUT_DIR/index.html"
+printf '%s\n' "  $RAW_DIR"
+
+if [ "$gatling_status" -ne 0 ]; then
+  printf '%s\n' "Gatling exited with status $gatling_status after report normalization" >&2
+  exit "$gatling_status"
+fi

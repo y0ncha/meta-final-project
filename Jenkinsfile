@@ -8,6 +8,10 @@ pipeline {
     buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '10'))
   }
 
+  parameters {
+    booleanParam(name: 'RUN_GATLING_MAX_LIMIT', defaultValue: false, description: 'Run Gatling max-limit discovery for performance evidence')
+  }
+
   triggers {
     cron('H/5 * * * *')
     pollSCM('H/2 * * * *')
@@ -28,6 +32,17 @@ pipeline {
       }
       steps {
         checkout scm
+      }
+    }
+
+    stage('Prepare Evidence Workspace') {
+      when {
+        not {
+          triggeredBy 'TimerTrigger'
+        }
+      }
+      steps {
+        sh 'rm -rf output/gatling output/playwright output/har output/reports'
       }
     }
 
@@ -88,6 +103,21 @@ pipeline {
       }
     }
 
+    stage('Gatling Max Limit') {
+      when {
+        allOf {
+          not {
+            triggeredBy 'TimerTrigger'
+          }
+          expression { params.RUN_GATLING_MAX_LIMIT }
+          expression { fileExists('scripts/run-gatling-max-limit') }
+        }
+      }
+      steps {
+        sh './scripts/run-gatling-max-limit'
+      }
+    }
+
     stage('Gatling Load Test') {
       when {
         allOf {
@@ -119,8 +149,36 @@ pipeline {
 
   post {
     always {
+      script {
+        if (
+          fileExists('scripts/export-gatling-pdfs') &&
+          (
+            fileExists('output/gatling/max-limit/index.html') ||
+            fileExists('output/gatling/load-5m/index.html') ||
+            fileExists('output/gatling/stress-5m/index.html')
+          )
+        ) {
+          sh 'GATLING_PDF_REQUIRE_ALL=false ./scripts/export-gatling-pdfs'
+        }
+
+        if (fileExists('scripts/generate-pipeline-report')) {
+          sh './scripts/generate-pipeline-report'
+        }
+      }
+
       archiveArtifacts artifacts: 'output/**/*', allowEmptyArchive: true
       script {
+        if (fileExists('output/reports/pipeline-report.html')) {
+          publishHTML(target: [
+            allowMissing: true,
+            alwaysLinkToLastBuild: true,
+            keepAll: true,
+            reportDir: 'output/reports',
+            reportFiles: 'pipeline-report.html',
+            reportName: 'Pipeline Final Report'
+          ])
+        }
+
         if (fileExists('output/playwright/junit.xml')) {
           junit testResults: 'output/playwright/junit.xml', allowEmptyResults: true
         }

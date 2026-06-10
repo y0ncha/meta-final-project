@@ -24,7 +24,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DevOps Final Project</title>
+  <title>MeTA</title>
   <style>
     body {
       margin: 0;
@@ -109,8 +109,8 @@
 </head>
 <body>
   <main>
-    <h1 id="pageTitle">DevOps Final Project</h1>
-    <p>This JSP page is packaged as a Maven WAR and prepared for deployment on Tomcat 8.5.</p>
+    <h1 id="pageTitle">MeTA</h1>
+    <p>MeTA is a JSP application for validating the containerized DevOps workflow: source control, Tomcat deployment, browser checks, HAR capture, and Gatling evidence.</p>
     <p><a id="aboutLink" href="#about">About this app</a></p>
 
     <form id="nameForm" method="post" action="index.jsp">

@@ -3,7 +3,7 @@ const { test, expect } = require('@playwright/test');
 test('JSP app supports the required functional flow', async ({ page }) => {
   await test.step('page shell is visible', async () => {
     await page.goto('./');
-    await expect(page.locator('#pageTitle')).toHaveText('DevOps Final Project');
+    await expect(page.locator('#pageTitle')).toHaveText('MeTA');
     await expect(page.locator('#submitButton')).toBeVisible();
     await expect(page.locator('#nameInput')).toBeVisible();
   });

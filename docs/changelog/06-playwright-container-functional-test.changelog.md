@@ -83,6 +83,12 @@ Plan 06 satisfies the browser automation deliverable from `final-project.pdf` us
 - Verified Jenkins declarative linter accepted the updated `Jenkinsfile`.
 - Verified Jenkins image plugins include `htmlpublisher`; raw Playwright evidence remains archived through `output/**/*`.
 
+## 2026-06-10 Compose One-Shot Runner Follow-Up
+
+- Updated the Playwright public runner command to launch profiled Compose one-shot service `playwright-runner` instead of invoking raw `docker run`.
+- Added Jenkins-specific Compose service `playwright-runner-jenkins` so Jenkins socket-launched containers inherit the Jenkins workspace volumes instead of relying on a host bind path from inside the Jenkins container.
+- Kept Playwright functional validation isolated from HAR capture; each command starts a fresh one-shot container and does not reuse browser or filesystem state across validation stages.
+
 ## Remaining Risks And Follow-Up
 
 - `final-project.pdf` names Selenium IDE `.side`; Playwright remains an explicit accepted override and should be explained during defense if asked.
