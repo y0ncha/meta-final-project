@@ -71,6 +71,12 @@ Previous local validation setup used for Plan 05:
 - Console line showing `./scripts/deploy-war`.
 - Console line showing `curl -fsS http://tomcat:8080/meta/`.
 - Tomcat app screenshot with `http://localhost:8080/meta/` visible.
+- Current remote-backed Jenkins evidence:
+  - Build `#6`: `SUCCESS`
+  - Source: `https://github.com/y0ncha/meta-final-project.git`
+  - Revision: `e2f355d4f7f69f44bdafdf3c77b679faa9c71e56`
+  - Branch: `refs/remotes/origin/feature/plan-05-jenkins-container-ci-cd`
+  - Console evidence includes `Obtained Jenkinsfile from git`, `mvn -B clean package`, `./scripts/deploy-war`, and two `curl -fsS http://tomcat:8080/meta/` checks.
 - Current local evidence files:
   - `output/jenkins/05-manual-build-1-console.log`
   - `output/jenkins/05-scheduled-build-2-console.log`
