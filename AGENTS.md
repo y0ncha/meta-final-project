@@ -18,5 +18,6 @@
 ## Project Constraints And Compliance
 
 - Read `contribution.md` from the project root before implementation work.
-- Treat `contribution.md` as the active source for tool constraints, assignment compliance, evidence standards, and submission requirements.
-- If an implementation plan conflicts with `contribution.md`, stop and report the conflict before editing files or running mutating commands.
+- Treat `contribution.md` as the active source for the repository contribution workflow.
+- Read `rules/compliance.md` for tool constraints, assignment compliance, evidence standards, and submission requirements.
+- If an implementation plan conflicts with `rules/compliance.md`, stop and report the conflict before editing files or running mutating commands.

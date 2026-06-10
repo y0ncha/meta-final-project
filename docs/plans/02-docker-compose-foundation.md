@@ -96,8 +96,8 @@ This plan defines and records the completed implementation steps for Plan 02: cr
 
 ## 3. Alternatives
 
-- **ALT-001**: Use host Tomcat or host Jenkins installations. Rejected because `contribution.md` defines the containerized runtime path as the project runtime and local host installs are not project dependencies.
-- **ALT-002**: Add Playwright and Gatling services to `docker-compose.yml` in this plan. Rejected because Plan 02 is only the Tomcat/Jenkins foundation and `contribution.md` requires Playwright and Gatling to be handled as later repeatable test flows.
+- **ALT-001**: Use host Tomcat or host Jenkins installations. Rejected because `rules/compliance.md` defines the containerized runtime path as the project runtime and local host installs are not project dependencies.
+- **ALT-002**: Add Playwright and Gatling services to `docker-compose.yml` in this plan. Rejected because Plan 02 is only the Tomcat/Jenkins foundation and `rules/compliance.md` requires Playwright and Gatling to be handled as later repeatable test flows.
 - **ALT-003**: Use legacy `docker-compose` syntax and a top-level Compose `version` key. Rejected because Compose v2 `docker compose` is the preferred workflow and the `version` key is obsolete for current Compose files.
 - **ALT-004**: Store Jenkins home and Tomcat webapps under tracked repository directories. Rejected because generated runtime state must remain outside Git-tracked files.
 
@@ -139,5 +139,6 @@ This plan defines and records the completed implementation steps for Plan 02: cr
 
 ## 8. Related Specifications / Further Reading
 
-- [Project contribution and compliance guide](../../contribution.md)
+- [Project contribution workflow](../../contribution.md)
+- [Project compliance rules](../../rules/compliance.md)
 - [Repository baseline](../repository-baseline.md)

@@ -35,7 +35,7 @@ This plan creates the required MTA DevOps final-project JSP application as a Mav
 - **REQ-011**: The JSP must require no backend database, no external SaaS call, no Java servlet class, and no runtime secrets.
 - **REQ-012**: The JSP must be simple enough to defend live and modify quickly during the 15-20 minute project defense.
 - **CON-001**: Read `contribution.md` from the repository root before implementation and stop if any task conflicts with it.
-- **CON-002**: Use the containerized project runtime defined by `contribution.md`; do not document or depend on host Tomcat or host Jenkins.
+- **CON-002**: Use the containerized project runtime defined by `rules/compliance.md`; do not document or depend on host Tomcat or host Jenkins.
 - **CON-003**: Do not deploy the WAR to Tomcat in this plan; Plan 04 owns deployment into Docker-managed Tomcat `webapps`.
 - **CON-004**: Do not add Playwright, Gatling, HAR, Jenkins, monitoring, or public VM implementation files in this plan.
 - **CON-005**: Do not install, upgrade, reinstall, or replace Java, Maven, Docker, Tomcat, Jenkins, Playwright, Gatling, Node, Bun, or other tools while executing this plan.
@@ -55,7 +55,7 @@ This plan creates the required MTA DevOps final-project JSP application as a Mav
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-001 | Run `rtk read contribution.md` from the repository root and confirm Plan 03 uses containerized Tomcat only as the later runtime, creates a JSP app with one link, one button, and one text input, and does not conflict with `contribution.md`. | ✅ | 2026-06-10 |
+| TASK-001 | Run `rtk read contribution.md` and `rtk read rules/compliance.md` from the repository root and confirm Plan 03 uses containerized Tomcat only as the later runtime, creates a JSP app with one link, one button, and one text input, and does not conflict with `rules/compliance.md`. | ✅ | 2026-06-10 |
 | TASK-002 | Run `git status --short --branch` from the repository root. If unrelated uncommitted changes exist outside `docs/plans/`, stop and report the exact output before creating a branch or editing implementation files. | ✅ | 2026-06-10 |
 | TASK-003 | Create or switch to branch `feature/plan-03-jsp-maven-war-app` before mutating tracked implementation files. If branch creation is blocked by uncommitted work, stop and report the exact `git status --short --branch` output. | ✅ | 2026-06-10 |
 | TASK-004 | Run `mvn --version` and `java -version`; record the exact observed Maven and Java versions in `docs/changelog/03-jsp-maven-war-app.changelog.md` during closeout. | ✅ | 2026-06-10 |
@@ -127,7 +127,7 @@ This plan creates the required MTA DevOps final-project JSP application as a Mav
 - **FILE-001**: `pom.xml` will define the Maven WAR project, Maven coordinates, Java compatibility, WAR plugin configuration, and final WAR name.
 - **FILE-002**: `src/main/webapp/index.jsp` will contain the complete JSP UI and server-side form behavior.
 - **FILE-003**: `docs/changelog/03-jsp-maven-war-app.changelog.md` will record implementation summary, current-machine tool versions, validation commands, and WAR output evidence after execution.
-- **FILE-004**: `contribution.md` will define the accepted `meta` context-path override and remain the project compliance source.
+- **FILE-004**: `rules/compliance.md` defines the accepted `meta` context-path override and remains the project compliance source.
 - **FILE-005**: `README.md` will document `http://localhost:8080/meta/` as the local Tomcat application URL.
 - **FILE-006**: `docs/plans/04-tomcat-container-deployment.md`, `docs/plans/05-jenkins-container-ci-cd.md`, `docs/plans/09-monitoring-and-jenkins-schedule.md`, and `docs/plans/10-public-vm-bonus.md` will use `/meta/` for downstream deployment, CI, monitoring, and public VM references.
 - **FILE-007**: `.gitignore` will be read to confirm `target/` and `*.war` remain ignored; it will be modified only if generated Maven output is not ignored.
@@ -148,14 +148,15 @@ This plan creates the required MTA DevOps final-project JSP application as a Mav
 - **RISK-002**: `mvn clean package` may need network access if `maven-war-plugin:3.4.0` is not already cached locally.
 - **RISK-003**: JSP scriptlets are acceptable for this small coursework app but should not become a pattern for larger production applications.
 - **RISK-004**: This plan does not prove Tomcat deployment; Plan 04 must deploy the WAR and capture the `localhost:8080/meta/` evidence.
-- **RISK-005**: The project handbook intentionally uses Playwright instead of Selenium IDE; this plan creates selectors for Playwright but does not eliminate the assignment override risk documented in `contribution.md`.
+- **RISK-005**: The project compliance rules intentionally use Playwright instead of Selenium IDE; this plan creates selectors for Playwright but does not eliminate the assignment override risk documented in `rules/compliance.md`.
 - **ASSUMPTION-001**: The requested Maven coordinate is interpreted as `mta.devops:meta:1.0.0`, so the initial WAR/context name is `meta`.
 - **ASSUMPTION-002**: The app should remain dependency-light and not use databases, sessions, authentication, external APIs, or frontend package managers.
 - **ASSUMPTION-003**: Plan 06 will implement the five functional validations using the stable element IDs defined in this plan.
 
 ## 8. Related Specifications / Further Reading
 
-- [Project contribution and compliance guide](../../contribution.md)
+- [Project contribution workflow](../../contribution.md)
+- [Project compliance rules](../../rules/compliance.md)
 - [Docker Compose foundation plan](./02-docker-compose-foundation.md)
 - [Tomcat container deployment plan](./04-tomcat-container-deployment.md)
 - [Playwright container functional test plan](./06-playwright-container-functional-test.md)

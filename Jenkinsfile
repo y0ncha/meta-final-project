@@ -10,6 +10,7 @@ pipeline {
 
   triggers {
     cron('H/5 * * * *')
+    pollSCM('H/2 * * * *')
   }
 
   environment {
@@ -20,12 +21,22 @@ pipeline {
 
   stages {
     stage('Checkout') {
+      when {
+        not {
+          triggeredBy 'TimerTrigger'
+        }
+      }
       steps {
         checkout scm
       }
     }
 
     stage('Build WAR') {
+      when {
+        not {
+          triggeredBy 'TimerTrigger'
+        }
+      }
       steps {
         sh 'mvn -B clean package'
         archiveArtifacts artifacts: 'target/meta.war', fingerprint: true
@@ -33,18 +44,31 @@ pipeline {
     }
 
     stage('Deploy Tomcat') {
+      when {
+        not {
+          triggeredBy 'TimerTrigger'
+        }
+      }
       steps {
         sh 'SKIP_BUILD=1 TOMCAT_SHARED_WEBAPPS_DIR=/tomcat-webapps DEPLOY_CHECK_URL="$DEPLOY_CHECK_URL" ./scripts/deploy-war'
       }
     }
 
     stage('Verify Tomcat') {
+      when {
+        not {
+          triggeredBy 'TimerTrigger'
+        }
+      }
       steps {
         sh 'curl -fsS "$APP_BASE_URL" >/dev/null'
       }
     }
 
     stage('Availability Check') {
+      when {
+        triggeredBy 'TimerTrigger'
+      }
       steps {
         sh 'curl -fsS "$APP_BASE_URL" >/dev/null'
       }
@@ -52,7 +76,12 @@ pipeline {
 
     stage('Playwright Functional Test') {
       when {
-        expression { fileExists('scripts/run-playwright-container') }
+        allOf {
+          not {
+            triggeredBy 'TimerTrigger'
+          }
+          expression { fileExists('scripts/run-playwright-container') }
+        }
       }
       steps {
         sh './scripts/run-playwright-container'
@@ -61,7 +90,12 @@ pipeline {
 
     stage('Gatling Load Test') {
       when {
-        expression { fileExists('scripts/run-gatling-load-5m') }
+        allOf {
+          not {
+            triggeredBy 'TimerTrigger'
+          }
+          expression { fileExists('scripts/run-gatling-load-5m') }
+        }
       }
       steps {
         sh './scripts/run-gatling-load-5m'
@@ -70,7 +104,12 @@ pipeline {
 
     stage('Gatling Stress Test') {
       when {
-        expression { fileExists('scripts/run-gatling-stress-5m') }
+        allOf {
+          not {
+            triggeredBy 'TimerTrigger'
+          }
+          expression { fileExists('scripts/run-gatling-stress-5m') }
+        }
       }
       steps {
         sh './scripts/run-gatling-stress-5m'

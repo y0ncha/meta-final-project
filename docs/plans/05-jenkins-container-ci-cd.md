@@ -29,7 +29,8 @@ This plan implements the containerized Jenkins CI/CD path for the MTA DevOps fin
 - **REQ-005**: `Jenkinsfile` must use Declarative Pipeline syntax with a top-level `pipeline { agent any ... }` structure.
 - **REQ-006**: `Jenkinsfile` must include stages named exactly `Checkout`, `Build WAR`, `Deploy Tomcat`, `Verify Tomcat`, `Availability Check`, `Playwright Functional Test`, `Gatling Load Test`, and `Gatling Stress Test`.
 - **REQ-007**: `Jenkinsfile` must archive `target/meta.war` with fingerprinting after the build stage succeeds.
-- **REQ-008**: `Jenkinsfile` must run on a five-minute schedule using Jenkins cron expression `H/5 * * * *`.
+- **REQ-008**: `Jenkinsfile` must run the availability check on a five-minute timer using Jenkins cron expression `H/5 * * * *`, without rebuilding or redeploying on timer-triggered runs.
+- **REQ-008A**: `Jenkinsfile` must support SCM-change detection for the CI/CD path. For the local defense setup, use `pollSCM('H/2 * * * *')`; if Jenkins is exposed through a stable public URL, a GitHub webhook may trigger the same job instead.
 - **REQ-009**: `Jenkinsfile` must prevent overlapping builds with `disableConcurrentBuilds()`.
 - **REQ-010**: `Jenkinsfile` must enforce a bounded pipeline runtime with `timeout(time: 30, unit: 'MINUTES')`.
 - **REQ-011**: `Jenkinsfile` must set `APP_BASE_URL` to `http://tomcat:8080/meta/` for Jenkins-container internal checks.
@@ -43,10 +44,10 @@ This plan implements the containerized Jenkins CI/CD path for the MTA DevOps fin
 - **REQ-018**: Jenkins setup documentation must define the final Pipeline job name as `meta-container-ci-cd`.
 - **REQ-019**: Jenkins setup documentation must define the Pipeline job script path as `Jenkinsfile`.
 - **REQ-020**: Jenkins setup documentation must record manual UI steps needed to unlock Jenkins, create the admin user, install plugins, create the Pipeline job, and configure `Pipeline script from SCM` against `https://github.com/y0ncha/meta-final-project.git`.
-- **REQ-021**: Jenkins evidence must include a successful manual build log and a successful scheduled build log or screenshot.
+- **REQ-021**: Jenkins evidence must include a successful manual or SCM-triggered CI/CD build log and a successful scheduled availability build log or screenshot.
 - **REQ-022**: Later plans must be able to activate Playwright and Gatling stages by adding the scripts those stages check for; Plan 05 must not hard-fail while those later plan files do not exist.
-- **REQ-023**: The pipeline must fail if `Deploy Tomcat`, `Verify Tomcat`, or `Availability Check` cannot reach `http://tomcat:8080/meta/`.
-- **CON-001**: Read `contribution.md` from the repository root before implementation and stop if any task conflicts with it.
+- **REQ-023**: Non-timer CI/CD builds must fail if `Deploy Tomcat` or `Verify Tomcat` cannot reach `http://tomcat:8080/meta/`; timer-triggered availability builds must fail if `Availability Check` cannot reach the same target.
+- **CON-001**: Read `contribution.md` and `rules/compliance.md` from the repository root before implementation and stop if any task conflicts with the compliance rules.
 - **CON-002**: Create or switch to branch `feature/plan-05-jenkins-container-ci-cd` before mutating tracked files for this plan.
 - **CON-003**: Do not use host Jenkins, `/Users/yonatan/.jenkins`, host Tomcat, `/usr/local/tomcat8`, host Catalina scripts, or non-containerized project runtime services.
 - **CON-004**: Do not change the Maven coordinate `mta.devops:meta:1.0.0` or the Maven `<finalName>meta</finalName>` value.
@@ -58,11 +59,11 @@ This plan implements the containerized Jenkins CI/CD path for the MTA DevOps fin
 - **SEC-003**: Use public GitHub repository checkout without credentials when the repository is public; if credentials are required, store them only in Jenkins credentials and reference only the credential ID in documentation.
 - **GUD-001**: Prefer a source-controlled `Jenkinsfile` over UI-only freestyle commands because Jenkins documents it as the auditable, reviewable Pipeline source of truth.
 - **GUD-002**: Use Declarative Pipeline stages and `sh` steps for this Linux-based Jenkins container runtime.
-- **GUD-003**: Use Jenkins `H/5 * * * *` cron syntax instead of `*/5 * * * *` so Jenkins can hash scheduling load.
+- **GUD-003**: Use Jenkins hashed schedules such as `H/5 * * * *` and `H/2 * * * *` instead of fixed-minute schedules so Jenkins can spread scheduling load.
 - **GUD-004**: Prefer `docker compose` v2 commands over legacy `docker-compose` commands.
 - **GUD-005**: Use `rtk read`, `rtk grep`, `rtk find`, `rtk diff`, and `rtk docker` for noisy reads, searches, diffs, and Docker output when they preserve required detail.
 - **PAT-001**: Follow the repository pattern of tracked automation in `scripts/`, source plans in `docs/plans/`, implementation closeout in `docs/changelog/`, and generated evidence under ignored `output/`.
-- **PAT-002**: Keep Jenkins pipeline behavior idempotent so repeated scheduled executions replace the deployed `meta` WAR without requiring manual Tomcat volume cleanup.
+- **PAT-002**: Keep Jenkins pipeline behavior idempotent for CI/CD builds, and keep timer-triggered availability checks read-only so repeated scheduled executions do not rebuild or replace the deployed `meta` WAR.
 
 ## 2. Implementation Steps
 
@@ -72,7 +73,7 @@ This plan implements the containerized Jenkins CI/CD path for the MTA DevOps fin
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-001 | Run `rtk read contribution.md` from the repository root and confirm Plan 05 uses containerized Jenkins on `http://localhost:8081/`, containerized Tomcat on `http://localhost:8080/meta/`, and no host Jenkins or host Tomcat runtime. | ✅ | 2026-06-10 |
+| TASK-001 | Run `rtk read contribution.md` and `rtk read rules/compliance.md` from the repository root and confirm Plan 05 uses containerized Jenkins on `http://localhost:8081/`, containerized Tomcat on `http://localhost:8080/meta/`, and no host Jenkins or host Tomcat runtime. | ✅ | 2026-06-10 |
 | TASK-002 | Run `git status --short --branch` from the repository root. If unrelated uncommitted changes exist, stop and report the exact output before switching branches or editing files. | ✅ | 2026-06-10 |
 | TASK-003 | Create or switch to branch `feature/plan-05-jenkins-container-ci-cd`. If branch creation is blocked by uncommitted work, stop and report the exact `git status --short --branch` output. | ✅ | 2026-06-10 |
 | TASK-004 | Run `docker --version`, `docker compose version`, `mvn --version`, `java -version`, `git --version`, and `curl --version`; record exact observed versions in `docs/changelog/05-jenkins-container-ci-cd.changelog.md` during closeout. | ✅ | 2026-06-10 |
@@ -107,15 +108,15 @@ This plan implements the containerized Jenkins CI/CD path for the MTA DevOps fin
 | TASK-019 | In `scripts/deploy-war`, add environment variable `DEPLOY_CHECK_URL="${DEPLOY_CHECK_URL:-http://localhost:$TOMCAT_HOST_PORT/$TOMCAT_CONTEXT/}"` after `TOMCAT_HOST_PORT` validation and before the polling loop. | ✅ | 2026-06-10 |
 | TASK-020 | In `scripts/deploy-war`, change the polling loop to run `curl -fsS "$DEPLOY_CHECK_URL"` instead of constructing a local-only URL inside the loop. | ✅ | 2026-06-10 |
 | TASK-021 | In `scripts/deploy-war`, keep default local output compatible with Plan 04 by printing `Deployed URL: $DEPLOY_CHECK_URL` after successful validation. | ✅ | 2026-06-10 |
-| TASK-022 | Create root-level `Jenkinsfile` using Declarative Pipeline syntax with `agent any`, `options { timestamps(); disableConcurrentBuilds(); timeout(time: 30, unit: 'MINUTES'); buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '10')) }`, `triggers { cron('H/5 * * * *') }`, and environment values `APP_BASE_URL = 'http://tomcat:8080/meta/'`, `DEPLOY_CHECK_URL = 'http://tomcat:8080/meta/'`, and `TOMCAT_CONTEXT = 'meta'`. | ✅ | 2026-06-10 |
-| TASK-023 | In `Jenkinsfile`, implement stage `Checkout` with `checkout scm`. | ✅ | 2026-06-10 |
-| TASK-024 | In `Jenkinsfile`, implement stage `Build WAR` with `sh 'mvn -B clean package'` and `archiveArtifacts artifacts: 'target/meta.war', fingerprint: true`. | ✅ | 2026-06-10 |
-| TASK-025 | In `Jenkinsfile`, implement stage `Deploy Tomcat` with `sh 'SKIP_BUILD=1 TOMCAT_SHARED_WEBAPPS_DIR=/tomcat-webapps DEPLOY_CHECK_URL="$DEPLOY_CHECK_URL" ./scripts/deploy-war'`. | ✅ | 2026-06-10 |
-| TASK-026 | In `Jenkinsfile`, implement stage `Verify Tomcat` with `sh 'curl -fsS "$APP_BASE_URL" >/dev/null'`. | ✅ | 2026-06-10 |
-| TASK-027 | In `Jenkinsfile`, implement stage `Availability Check` with `sh 'curl -fsS "$APP_BASE_URL" >/dev/null'` so the five-minute scheduled run produces Jenkins evidence for the availability check. | ✅ | 2026-06-10 |
-| TASK-028 | In `Jenkinsfile`, implement stage `Playwright Functional Test` with `when { expression { fileExists('scripts/run-playwright-container') } }` and `steps { sh './scripts/run-playwright-container' }`. | ✅ | 2026-06-10 |
-| TASK-029 | In `Jenkinsfile`, implement stage `Gatling Load Test` with `when { expression { fileExists('scripts/run-gatling-load-5m') } }` and `steps { sh './scripts/run-gatling-load-5m' }`. | ✅ | 2026-06-10 |
-| TASK-030 | In `Jenkinsfile`, implement stage `Gatling Stress Test` with `when { expression { fileExists('scripts/run-gatling-stress-5m') } }` and `steps { sh './scripts/run-gatling-stress-5m' }`. | ✅ | 2026-06-10 |
+| TASK-022 | Create root-level `Jenkinsfile` using Declarative Pipeline syntax with `agent any`, `options { timestamps(); disableConcurrentBuilds(); timeout(time: 30, unit: 'MINUTES'); buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '10')) }`, `triggers { cron('H/5 * * * *'); pollSCM('H/2 * * * *') }`, and environment values `APP_BASE_URL = 'http://tomcat:8080/meta/'`, `DEPLOY_CHECK_URL = 'http://tomcat:8080/meta/'`, and `TOMCAT_CONTEXT = 'meta'`. | ✅ | 2026-06-10 |
+| TASK-023 | In `Jenkinsfile`, implement stage `Checkout` with `checkout scm` and skip it for timer-triggered availability builds. | ✅ | 2026-06-10 |
+| TASK-024 | In `Jenkinsfile`, implement stage `Build WAR` with `sh 'mvn -B clean package'` and `archiveArtifacts artifacts: 'target/meta.war', fingerprint: true`, and skip it for timer-triggered availability builds. | ✅ | 2026-06-10 |
+| TASK-025 | In `Jenkinsfile`, implement stage `Deploy Tomcat` with `sh 'SKIP_BUILD=1 TOMCAT_SHARED_WEBAPPS_DIR=/tomcat-webapps DEPLOY_CHECK_URL="$DEPLOY_CHECK_URL" ./scripts/deploy-war'`, and skip it for timer-triggered availability builds. | ✅ | 2026-06-10 |
+| TASK-026 | In `Jenkinsfile`, implement stage `Verify Tomcat` with `sh 'curl -fsS "$APP_BASE_URL" >/dev/null'`, and skip it for timer-triggered availability builds. | ✅ | 2026-06-10 |
+| TASK-027 | In `Jenkinsfile`, implement stage `Availability Check` with `sh 'curl -fsS "$APP_BASE_URL" >/dev/null'` and `triggeredBy 'TimerTrigger'` gating so the five-minute scheduled run produces Jenkins evidence for the availability check without running build, deploy, Playwright, or Gatling stages. | ✅ | 2026-06-10 |
+| TASK-028 | In `Jenkinsfile`, implement stage `Playwright Functional Test` with script-existence and non-timer gating, then `steps { sh './scripts/run-playwright-container' }`. | ✅ | 2026-06-10 |
+| TASK-029 | In `Jenkinsfile`, implement stage `Gatling Load Test` with script-existence and non-timer gating, then `steps { sh './scripts/run-gatling-load-5m' }`. | ✅ | 2026-06-10 |
+| TASK-030 | In `Jenkinsfile`, implement stage `Gatling Stress Test` with script-existence and non-timer gating, then `steps { sh './scripts/run-gatling-stress-5m' }`. | ✅ | 2026-06-10 |
 | TASK-031 | In `Jenkinsfile`, add `post { always { archiveArtifacts artifacts: 'output/**/*', allowEmptyArchive: true } }` so later Playwright and Gatling evidence can be archived when present. | ✅ | 2026-06-10 |
 
 ### Implementation Phase 4
@@ -128,9 +129,9 @@ This plan implements the containerized Jenkins CI/CD path for the MTA DevOps fin
 | TASK-033 | In `docs/jenkins.md` section `Runtime`, document Jenkins URL `http://localhost:8081/`, Tomcat host URL `http://localhost:8080/meta/`, internal Docker URL `http://tomcat:8080/meta/`, Compose service names `jenkins` and `tomcat`, and Jenkins home volume `jenkins_home`. | ✅ | 2026-06-10 |
 | TASK-034 | In `docs/jenkins.md` section `Manual Jenkins Setup`, document unlocking Jenkins, creating the admin user, installing required plugins `Git`, `Pipeline`, `Pipeline: SCM Step`, `Pipeline: Declarative`, `Pipeline: Stage View`, and `HTML Publisher` if report archival is needed. | ✅ | 2026-06-10 |
 | TASK-035 | In `docs/jenkins.md` section `Pipeline Job`, document creating a Pipeline job named `meta-container-ci-cd`, selecting `Pipeline script from SCM`, selecting Git, entering `https://github.com/y0ncha/meta-final-project.git`, setting script path `Jenkinsfile`, and leaving credentials empty for a public repository. Also document the previous local validation fallback separately so it is not used as final evidence. | ✅ | 2026-06-10 |
-| TASK-036 | In `docs/jenkins.md` section `Schedule`, document that the source-controlled cron expression is `H/5 * * * *` and that it runs the `Availability Check` stage every five minutes. | ✅ | 2026-06-10 |
+| TASK-036 | In `docs/jenkins.md` section `Schedule`, document that the source-controlled cron expression `H/5 * * * *` runs only the `Availability Check` stage every five minutes, while SCM/manual builds run the CI/CD stages. | ✅ | 2026-06-10 |
 | TASK-037 | In `docs/jenkins.md` section `Security Notes`, document that Jenkins does not mount `/var/run/docker.sock`; if `user: root` is required, document that it is limited to writing the shared Tomcat webapps volume in this local coursework stack. | ✅ | 2026-06-10 |
-| TASK-038 | In `docs/jenkins.md` section `Evidence To Capture`, list required screenshots or logs: Jenkins dashboard with URL `localhost:8081`, successful manual `meta-container-ci-cd` build, successful scheduled build, console log showing `mvn -B clean package`, console log showing `./scripts/deploy-war`, console log showing `curl -fsS http://tomcat:8080/meta/`, and Tomcat app visible at `http://localhost:8080/meta/`. | ✅ | 2026-06-10 |
+| TASK-038 | In `docs/jenkins.md` section `Evidence To Capture`, list required screenshots or logs: Jenkins dashboard with URL `localhost:8081`, successful manual or SCM-triggered `meta-container-ci-cd` build, successful scheduled availability build, console log showing `mvn -B clean package`, console log showing `./scripts/deploy-war`, console log showing `curl -fsS http://tomcat:8080/meta/`, and Tomcat app visible at `http://localhost:8080/meta/`. | ✅ | 2026-06-10 |
 | TASK-039 | Create `docs/changelog/05-jenkins-container-ci-cd.changelog.md` during implementation closeout and record changed files, exact observed tool versions, Docker image names, Jenkins job name, schedule, validation commands, and evidence paths. | ✅ | 2026-06-10 |
 
 ### Implementation Phase 5
@@ -146,7 +147,7 @@ This plan implements the containerized Jenkins CI/CD path for the MTA DevOps fin
 | TASK-044 | Run `docker compose exec -T jenkins sh -lc 'curl -fsS http://tomcat:8080/meta/ >/dev/null'` and confirm it exits with status `0`. | ✅ | 2026-06-10 |
 | TASK-045 | Run `curl -f http://localhost:8080/meta/` from the host repository root and confirm it exits with status `0`. | ✅ | 2026-06-10 |
 | TASK-046 | In Jenkins at `http://localhost:8081/`, create or update Pipeline job `meta-container-ci-cd` using `docs/jenkins.md`, run a manual build, and confirm the build exits with status `SUCCESS`. Local validation may use the authenticated Jenkins API to avoid inventing a GitHub SCM URL before a remote exists. | ✅ | 2026-06-10 |
-| TASK-047 | Wait for one scheduled run from cron `H/5 * * * *`; confirm Jenkins records a scheduled `SUCCESS` build that includes the `Availability Check` stage. | ✅ | 2026-06-10 |
+| TASK-047 | Wait for one scheduled run from cron `H/5 * * * *`; confirm Jenkins records a scheduled `SUCCESS` build that includes the `Availability Check` stage and skips build, deploy, Playwright, and Gatling stages. | ✅ | 2026-06-10 |
 | TASK-048 | Save Jenkins and Tomcat evidence under ignored paths `output/jenkins/` and `output/screenshots/`; confirm generated evidence remains untracked. | ✅ | 2026-06-10 |
 | TASK-049 | Run `git diff -- Jenkinsfile docker-compose.yml scripts/deploy-war ops/jenkins/Dockerfile docs/jenkins.md docs/changelog/05-jenkins-container-ci-cd.changelog.md docs/plans/05-jenkins-container-ci-cd.md | rtk diff -` and verify the diff contains no secrets, no generated WAR content, no screenshots, and no unrelated files. | ✅ | 2026-06-10 |
 | TASK-050 | Run `git status --short --branch` and confirm Plan 05 tracked changes are limited to `Jenkinsfile`, `docker-compose.yml`, `scripts/deploy-war`, `ops/jenkins/Dockerfile`, `docs/jenkins.md`, `docs/changelog/05-jenkins-container-ci-cd.changelog.md`, and `docs/plans/05-jenkins-container-ci-cd.md`; document any unrelated pre-existing tracked diff separately instead of reverting it. | ✅ | 2026-06-10 |
@@ -154,12 +155,12 @@ This plan implements the containerized Jenkins CI/CD path for the MTA DevOps fin
 ## 3. Alternatives
 
 - **ALT-001**: Configure a Jenkins freestyle job entirely through the UI. Rejected because the pipeline would not be source-controlled, reviewable, or reproducible from Git.
-- **ALT-002**: Run Jenkins directly on the host at `/Users/yonatan/.jenkins`. Rejected because `contribution.md` requires containerized Jenkins and forbids host Jenkins as a project runtime dependency.
+- **ALT-002**: Run Jenkins directly on the host at `/Users/yonatan/.jenkins`. Rejected because `rules/compliance.md` requires containerized Jenkins and forbids host Jenkins as a project runtime dependency.
 - **ALT-003**: Use the stock `jenkins/jenkins:2.528.1-lts-jdk21` image without adding command-line tools. Rejected because the current pipeline requires `mvn` and `curl` inside the Jenkins runtime.
 - **ALT-004**: Deploy by copying the WAR into a host Tomcat folder. Rejected because Tomcat must be containerized and deployed through Docker Compose service `tomcat`.
-- **ALT-005**: Use a separate Jenkins job for each future Playwright, Gatling load, and Gatling stress action. Rejected for Plan 05 because `contribution.md` prefers one CI/CD flow unless a documented blocker requires splitting jobs.
+- **ALT-005**: Use a separate Jenkins job for each future Playwright, Gatling load, and Gatling stress action. Rejected for Plan 05 because one source-controlled Pipeline job can handle SCM/manual CI/CD builds and timer-triggered availability checks with explicit stage gating.
 - **ALT-006**: Run Playwright and Gatling stages unconditionally before Plans 06 and 08 create their scripts. Rejected because Plan 05 must produce a Jenkins deployment pipeline that can pass before later plan files exist.
-- **ALT-007**: Use `*/5 * * * *` for the Jenkins schedule. Rejected because Jenkins convention prefers hashed schedules such as `H/5 * * * *` to avoid synchronized load.
+- **ALT-007**: Use `*/5 * * * *` for the Jenkins availability schedule. Rejected because Jenkins convention prefers hashed schedules such as `H/5 * * * *` to avoid synchronized load.
 - **ALT-008**: Mount `/var/run/docker.sock` into Jenkins and run `docker compose` from inside the Jenkins container. Rejected after validation because the default Jenkins user cannot access the socket and running Jenkins as root with host Docker daemon control is a worse security tradeoff than mounting the shared `tomcat_webapps` volume.
 
 ## 4. Dependencies
@@ -208,9 +209,9 @@ This plan implements the containerized Jenkins CI/CD path for the MTA DevOps fin
 - **TEST-008**: `docker compose exec -T jenkins sh -lc 'curl -fsS http://tomcat:8080/meta/ >/dev/null'` must exit with status `0`.
 - **TEST-009**: `curl -f http://localhost:8080/meta/` from the host repository root must exit with status `0`.
 - **TEST-010**: Jenkins Pipeline job `meta-container-ci-cd` must complete a manual build with result `SUCCESS`.
-- **TEST-011**: Jenkins Pipeline job `meta-container-ci-cd` must complete at least one scheduled build with result `SUCCESS`.
-- **TEST-012**: Jenkins console output must show stage names `Checkout`, `Build WAR`, `Deploy Tomcat`, `Verify Tomcat`, and `Availability Check`.
-- **TEST-013**: Jenkins console output must show `mvn -B clean package`, `./scripts/deploy-war`, and `curl -fsS http://tomcat:8080/meta/`.
+- **TEST-011**: Jenkins Pipeline job `meta-container-ci-cd` must complete at least one timer-triggered availability build with result `SUCCESS`, and that build must skip CI/CD stages.
+- **TEST-012**: Jenkins console output for a non-timer build must show stage names `Checkout`, `Build WAR`, `Deploy Tomcat`, and `Verify Tomcat`; timer build output must show `Availability Check`.
+- **TEST-013**: Jenkins console output for a non-timer build must show `mvn -B clean package`, `./scripts/deploy-war`, and `curl -fsS http://tomcat:8080/meta/`.
 - **TEST-014**: Jenkins archived artifacts must include `target/meta.war` for the successful build.
 - **TEST-015**: `git diff -- Jenkinsfile docker-compose.yml scripts/deploy-war ops/jenkins/Dockerfile docs/jenkins.md docs/changelog/05-jenkins-container-ci-cd.changelog.md docs/plans/05-jenkins-container-ci-cd.md | rtk diff -` must show no secrets and no generated artifacts.
 - **TEST-016**: `git status --short --branch` must show no tracked `target/`, `*.war`, Jenkins home data, Docker volume state, screenshots, logs, Playwright reports, Gatling reports, credentials, or `.env` files. Any unrelated tracked diff must be called out separately.
@@ -222,7 +223,7 @@ This plan implements the containerized Jenkins CI/CD path for the MTA DevOps fin
 - **RISK-003**: Direct shared-volume deployment bypasses `docker compose cp` inside Jenkins, so `scripts/deploy-war` must preserve the Plan 04 Docker Compose path for local host execution.
 - **RISK-004**: The Jenkins first-run unlock, admin setup, plugin installation, and Pipeline job creation require screenshots or logs for evidence. Historical local validation used the authenticated Jenkins API before a GitHub remote existed; final evidence should use the SCM-backed job.
 - **RISK-005**: Local ports `8080` or `8081` may already be occupied; do not silently change ports because assignment evidence expects those URLs.
-- **RISK-006**: The scheduled pipeline runs every five minutes and may create noisy Jenkins history; use `buildDiscarder` to bound retained build records.
+- **RISK-006**: The scheduled availability check runs every five minutes and may create noisy Jenkins history; use `buildDiscarder` to bound retained build records.
 - **RISK-007**: Later Playwright and Gatling stages are gated by script existence, so Plan 05 alone proves Jenkins deployment and availability checks but not final browser or performance compliance.
 - **RISK-008**: Tomcat may need several seconds to expand `meta.war` after Jenkins replaces it in the shared volume; the deployment script must wait on `http://tomcat:8080/meta/`.
 - **ASSUMPTION-001**: The GitHub repository `https://github.com/y0ncha/meta-final-project.git` is public by the time the final Jenkins Pipeline job is configured from SCM. During earlier local Plan 05 validation, the repository had no Git remote, so Jenkins read the mounted source-controlled `Jenkinsfile` directly.
@@ -233,7 +234,8 @@ This plan implements the containerized Jenkins CI/CD path for the MTA DevOps fin
 
 ## 8. Related Specifications / Further Reading
 
-- [Project contribution and compliance guide](../../contribution.md)
+- [Project contribution workflow](../../contribution.md)
+- [Project compliance rules](../../rules/compliance.md)
 - [Docker Compose foundation plan](./02-docker-compose-foundation.md)
 - [JSP Maven WAR application plan](./03-jsp-maven-war-app.md)
 - [Tomcat container deployment plan](./04-tomcat-container-deployment.md)

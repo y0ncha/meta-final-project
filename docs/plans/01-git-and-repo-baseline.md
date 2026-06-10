@@ -28,7 +28,7 @@ Create a clean Git repository baseline for the MTA 2026 Semester B DevOps final 
 - **REQ-008**: Keep generated evidence out of Git, including Playwright reports, screenshots, HAR files, Gatling reports, Gatling PDFs, Jenkins logs, Docker volumes, and temporary runtime files.
 - **REQ-009**: Keep lecture PDFs and assignment PDFs out of Git because the public GitHub repository should contain the project implementation and defensible evidence references, not copied course material.
 - **REQ-010**: Keep local agent/workflow metadata out of Git, including `.agents/`, `.codex/`, `skills-lock.json`, and editor/system files.
-- **REQ-011**: Keep `AGENTS.md` and `contribution.md` tracked unless a later explicit decision removes them; `AGENTS.md` is the local agent operating handbook, and `contribution.md` contains the assignment compliance rules used by the implementation plans.
+- **REQ-011**: Keep `AGENTS.md`, `contribution.md`, and `rules/compliance.md` tracked unless a later explicit decision removes them; `AGENTS.md` is the local agent operating handbook, `contribution.md` contains the contribution workflow, and `rules/compliance.md` contains assignment compliance rules used by implementation plans.
 - **REQ-012**: Do not configure a GitHub remote in this phase unless the exact repository URL is already known.
 - **REQ-013**: If no GitHub remote is configured, `README.md` must state `Public GitHub repository: not configured yet`.
 - **SEC-001**: Do not commit credentials, tokens, `.env` files, private keys, Jenkins secrets, Docker volume contents, or UptimeRobot credentials.
@@ -141,7 +141,8 @@ Create a clean Git repository baseline for the MTA 2026 Semester B DevOps final 
 - **FILE-001**: `.gitignore` - root ignore rules for local metadata, build output, generated evidence, course PDFs, and secrets.
 - **FILE-002**: `README.md` - public-facing repository overview and current local URL documentation.
 - **FILE-003**: `AGENTS.md` - tracked project operating handbook that points agents to the compliance source.
-- **FILE-004**: `contribution.md` - tracked project constraints, compliance rules, tool version policy, evidence standards, and submission checklist.
+- **FILE-004**: `contribution.md` - tracked repository contribution workflow.
+- **FILE-004A**: `rules/compliance.md` - tracked project constraints, compliance rules, tool version policy, evidence standards, and submission checklist.
 - **FILE-005**: `docs/repository-baseline.md` - audit note for the baseline repository decisions and validation commands.
 - **FILE-006**: `scripts/README.md` - tracked scripts directory marker.
 - **FILE-007**: `output/.gitkeep` - tracked evidence root marker while generated evidence remains ignored.
@@ -159,7 +160,7 @@ Create a clean Git repository baseline for the MTA 2026 Semester B DevOps final 
 ## 7. Risks & Assumptions
 
 - **RISK-001**: Ignoring all `*.pdf` files prevents accidental course-material commits, but it also means final Gatling report PDFs under `output/` will not be tracked. This is intentional because final evidence is submitted by email, not committed by default.
-- **RISK-002**: Tracking `AGENTS.md` and `contribution.md` exposes the local operating and compliance handbooks in the public repository. This is acceptable because they contain no secrets and help defend implementation decisions, but they can be removed later if the team wants a cleaner public repository.
+- **RISK-002**: Tracking `AGENTS.md`, `contribution.md`, and `rules/compliance.md` exposes the local operating, contribution, and compliance handbooks in the public repository. This is acceptable because they contain no secrets and help defend implementation decisions, but they can be removed later if the team wants a cleaner public repository.
 - **RISK-003**: The `<group-names>` context path is not known in this phase. The README keeps it as a documented assignment variable until plan `03-jsp-maven-war-app.md` sets the real context name.
 - **RISK-004**: OneDrive sync may create transient files during implementation. The `.gitignore` must be created before broad staging.
 - **ASSUMPTION-001**: The public GitHub repository has not been created or selected yet.
@@ -170,7 +171,8 @@ Create a clean Git repository baseline for the MTA 2026 Semester B DevOps final 
 ## 8. Related Specifications / Further Reading
 
 - `AGENTS.md` - local agent operating handbook that points implementation work to `contribution.md`.
-- `contribution.md` - local project compliance rules, tool version policy, container topology, Playwright override, evidence standards, and submission checklist.
+- `contribution.md` - local contribution workflow.
+- `rules/compliance.md` - local project compliance rules, tool version policy, container topology, Playwright override, evidence standards, and submission checklist.
 - `.agents/plans/00-update-project-constraints.md` - preceding plan that defines the container-first project constraints.
 - `.agents/plans/02-docker-compose-foundation.md` - next plan after the Git baseline is committed.
 - `final-project.pdf` - assignment contract; do not commit this file to the public Git repository.

@@ -34,7 +34,7 @@ This plan deploys the Maven-built JSP WAR `target/meta.war` into the containeriz
 - **REQ-010**: Deployment evidence must include the deployed WAR path, the expanded application directory, a successful HTTP check, and a browser-visible local URL.
 - **CON-001**: Read `contribution.md` from the repository root before implementation and stop if any task conflicts with it.
 - **CON-002**: Create or switch to branch `feature/plan-04-tomcat-container-deployment` before mutating tracked files for this plan.
-- **CON-003**: Use the containerized runtime defined by `contribution.md`; do not use host Tomcat, `/usr/local/tomcat8`, host Catalina scripts, or `/Users/yonatan/devops/tools/tomcat8`.
+- **CON-003**: Use the containerized runtime defined by `rules/compliance.md`; do not use host Tomcat, `/usr/local/tomcat8`, host Catalina scripts, or `/Users/yonatan/devops/tools/tomcat8`.
 - **CON-004**: Do not change the Maven coordinate `mta.devops:meta:1.0.0` or the Maven `<finalName>meta</finalName>` value created by Plan 03.
 - **CON-005**: Do not change the Tomcat host port from `8080` unless implementation is blocked by a real port conflict and the conflict is documented.
 - **CON-006**: Do not commit generated `target/` output, generated `*.war` files, Tomcat expanded webapps output, screenshots, logs, or Docker volume state.
@@ -109,11 +109,11 @@ This plan deploys the Maven-built JSP WAR `target/meta.war` into the containeriz
 
 ## 3. Alternatives
 
-- **ALT-001**: Copy `target/meta.war` into a host Tomcat installation under `/usr/local/tomcat8/webapps`. Rejected because `contribution.md` explicitly requires containerized Tomcat as the project runtime and forbids relying on host Tomcat.
+- **ALT-001**: Copy `target/meta.war` into a host Tomcat installation under `/usr/local/tomcat8/webapps`. Rejected because `rules/compliance.md` explicitly requires containerized Tomcat as the project runtime and forbids relying on host Tomcat.
 - **ALT-002**: Replace the Docker-managed `tomcat_webapps` named volume with a bind mount to a repository directory. Rejected because Plan 02 already defines the Docker-managed volume and repository directories must not hold generated Tomcat runtime state.
 - **ALT-003**: Build the WAR outside the deployment script and require a manual copy step. Rejected because the deployment must be repeatable from one repository command and defensible during the live project demo.
 - **ALT-004**: Run Tomcat through Maven plugins such as Cargo or embedded Jetty. Rejected because the assignment evidence must show deployment into Apache Tomcat `webapps` and the project runtime is already Docker Compose Tomcat.
-- **ALT-005**: Change the context path to include group member names. Rejected for this plan because `contribution.md` records the accepted override to use the Maven `meta` final name unless the lecturer later requires names specifically.
+- **ALT-005**: Change the context path to include group member names. Rejected for this plan because `rules/compliance.md` records the accepted override to use the Maven `meta` final name unless the lecturer later requires names specifically.
 
 ## 4. Dependencies
 
@@ -168,7 +168,8 @@ This plan deploys the Maven-built JSP WAR `target/meta.war` into the containeriz
 
 ## 8. Related Specifications / Further Reading
 
-- [Project contribution and compliance guide](../../contribution.md)
+- [Project contribution workflow](../../contribution.md)
+- [Project compliance rules](../../rules/compliance.md)
 - [Docker Compose foundation plan](./02-docker-compose-foundation.md)
 - [JSP Maven WAR application plan](./03-jsp-maven-war-app.md)
 - [Jenkins container CI/CD plan](./05-jenkins-container-ci-cd.md)
