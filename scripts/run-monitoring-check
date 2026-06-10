@@ -1,0 +1,25 @@
+#!/usr/bin/env sh
+set -eu
+
+: "${APP_BASE_URL:=http://tomcat:8080/meta/}"
+: "${JOB_NAME:=meta-monitoring}"
+: "${BUILD_NUMBER:=local}"
+
+OUTPUT_DIR="output/monitoring"
+OUTPUT_FILE="$OUTPUT_DIR/latest-check.txt"
+
+mkdir -p "$OUTPUT_DIR"
+checked_at="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+
+curl --connect-timeout 5 --max-time 15 -fsS "$APP_BASE_URL" >/dev/null
+
+{
+  printf 'status=up\n'
+  printf 'target=%s\n' "$APP_BASE_URL"
+  printf 'checked_at=%s\n' "$checked_at"
+  printf 'job=%s\n' "$JOB_NAME"
+  printf 'build=%s\n' "$BUILD_NUMBER"
+} > "$OUTPUT_FILE"
+
+printf 'Monitoring check passed for %s\n' "$APP_BASE_URL"
+printf 'Evidence written to %s\n' "$OUTPUT_FILE"

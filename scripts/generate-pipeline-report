@@ -3,11 +3,12 @@ set -eu
 
 OUTPUT_DIR="output/reports"
 REPORT_FILE="$OUTPUT_DIR/pipeline-report.html"
+CSS_FILE="$OUTPUT_DIR/pipeline-report.css"
 
 mkdir -p "$OUTPUT_DIR"
 
 generated_at=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
-build_label="${JOB_NAME:-meta-container-ci-cd}"
+build_label="${JOB_NAME:-meta-ci-cd}"
 build_number="${BUILD_NUMBER:-local}"
 build_url="${BUILD_URL:-}"
 branch_name="${BRANCH_NAME:-${GIT_BRANCH:-unknown}}"
@@ -29,57 +30,406 @@ artifact_href() {
   path="$1"
   if [ -n "$build_url" ]; then
     printf '%sartifact/%s' "$build_url" "$path"
-  else
-    case "$path" in
-      output/*) printf '../%s' "${path#output/}" ;;
-      *) printf '../%s' "$path" ;;
-    esac
+    return
   fi
+
+  case "$path" in
+    output/*) printf '../%s' "${path#output/}" ;;
+    target/*) printf '../../%s' "$path" ;;
+    *) printf '../%s' "$path" ;;
+  esac
 }
 
 artifact_status() {
   path="$1"
+  mode="${2:-required}"
+
   if [ -s "$path" ]; then
     printf 'Available'
+  elif [ "$mode" = "opt-in" ]; then
+    printf 'Opt-in / not run'
   else
-    printf 'Missing or not run'
-  fi
-}
-
-artifact_link() {
-  path="$1"
-  if [ -s "$path" ]; then
-    href=$(artifact_href "$path")
-    printf '<a href="%s">%s</a>' "$href" "$path"
-  else
-    printf '<span class="muted">%s</span>' "$path"
+    printf 'Missing'
   fi
 }
 
 status_class() {
   status="$1"
   case "$status" in
-    Available) printf 'ok' ;;
-    *) printf 'warn' ;;
+    Available) printf 'status-ok' ;;
+    "Console log") printf 'status-log' ;;
+    "Opt-in / not run") printf 'status-opt-in' ;;
+    Partial) printf 'status-partial' ;;
+    *) printf 'status-missing' ;;
   esac
 }
 
-write_artifact_row() {
-  name="$1"
-  path="$2"
-  kind="$3"
-  status=$(artifact_status "$path")
+status_badge() {
+  status="$1"
   class=$(status_class "$status")
-  link=$(artifact_link "$path")
-  printf '<tr><td>%s</td><td>%s</td><td class="%s">%s</td><td>%s</td></tr>\n' "$name" "$kind" "$class" "$status" "$link" >> "$REPORT_FILE"
+  status_escaped=$(html_escape "$status")
+  printf '<span class="status %s">%s</span>' "$class" "$status_escaped"
+}
+
+artifact_link() {
+  path="$1"
+  status="$2"
+
+  if [ "$status" = "Available" ]; then
+    href=$(artifact_href "$path")
+    href_escaped=$(html_escape "$href")
+    path_escaped=$(html_escape "$path")
+    printf '<a href="%s">%s</a>' "$href_escaped" "$path_escaped"
+  else
+    path_escaped=$(html_escape "$path")
+    printf '<span class="muted">%s</span>' "$path_escaped"
+  fi
+}
+
+artifact_ref() {
+  path="$1"
+  label="$2"
+
+  label_escaped=$(html_escape "$label")
+  if [ -s "$path" ]; then
+    href=$(artifact_href "$path")
+    href_escaped=$(html_escape "$href")
+    printf '<a class="ref" href="%s">%s</a>' "$href_escaped" "$label_escaped"
+  else
+    printf '<span class="ref ref-missing">%s</span>' "$label_escaped"
+  fi
+}
+
+write_reference_row() {
+  group="$1"
+  name="$2"
+  status="$3"
+  references="$4"
+  note="${5:-}"
+
+  badge=$(status_badge "$status")
+
+  if [ -n "$note" ]; then
+    note_escaped=$(html_escape "$note")
+    note_html="<p class=\"row-note\">$note_escaped</p>"
+  else
+    note_html=""
+  fi
+  group_escaped=$(html_escape "$group")
+  name_escaped=$(html_escape "$name")
+
+  printf '<tr><td class="artifact-group">%s</td><td>%s%s</td><td>%s</td><td class="refs">%s</td></tr>\n' \
+    "$group_escaped" \
+    "$name_escaped" \
+    "$note_html" \
+    "$badge" \
+    "$references" >> "$REPORT_FILE"
+}
+
+available_count() {
+  count=0
+  for path in "$@"; do
+    if [ -s "$path" ]; then
+      count=$((count + 1))
+    fi
+  done
+  printf '%s' "$count"
+}
+
+bundle_status() {
+  mode="$1"
+  shift
+  total=$#
+  count=$(available_count "$@")
+
+  if [ "$count" -eq "$total" ]; then
+    printf 'Available'
+  elif [ "$mode" = "opt-in" ] && [ "$count" -eq 0 ]; then
+    printf 'Opt-in / not run'
+  elif [ "$count" -gt 0 ]; then
+    printf 'Partial'
+  else
+    printf 'Missing'
+  fi
+}
+
+ref_join() {
+  first=1
+  for ref in "$@"; do
+    if [ "$first" -eq 1 ]; then
+      printf '%s' "$ref"
+      first=0
+    else
+      printf ' %s' "$ref"
+    fi
+  done
+}
+
+write_single_ref_row() {
+  group="$1"
+  name="$2"
+  path="$3"
+  label="$4"
+  mode="${5:-required}"
+  note="${6:-}"
+
+  status=$(artifact_status "$path" "$mode")
+  ref=$(artifact_ref "$path" "$label")
+  write_reference_row "$group" "$name" "$status" "$ref" "$note"
+}
+
+write_bundle_row() {
+  group="$1"
+  name="$2"
+  mode="$3"
+  note="$4"
+  log_path="$5"
+  html_path="$6"
+  pdf_path="$7"
+
+  status=$(bundle_status "$mode" "$log_path" "$html_path" "$pdf_path")
+  log_ref=$(artifact_ref "$log_path" "Log")
+  html_ref=$(artifact_ref "$html_path" "HTML")
+  pdf_ref=$(artifact_ref "$pdf_path" "PDF")
+  refs=$(ref_join "$log_ref" "$html_ref" "$pdf_ref")
+  write_reference_row "$group" "$name" "$status" "$refs" "$note"
 }
 
 write_stage_row() {
   name="$1"
   evidence="$2"
-  notes="$3"
-  printf '<tr><td>%s</td><td>%s</td><td>%s</td></tr>\n' "$name" "$evidence" "$notes" >> "$REPORT_FILE"
+  status="$3"
+  notes="$4"
+  badge=$(status_badge "$status")
+  name_escaped=$(html_escape "$name")
+  evidence_escaped=$(html_escape "$evidence")
+  notes_escaped=$(html_escape "$notes")
+  printf '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n' \
+    "$name_escaped" \
+    "$evidence_escaped" \
+    "$badge" \
+    "$notes_escaped" >> "$REPORT_FILE"
 }
+
+cat > "$CSS_FILE" <<'EOF'
+:root {
+  color-scheme: light;
+  --bg: #f6f8fb;
+  --panel: #ffffff;
+  --text: #172033;
+  --muted: #667085;
+  --line: #d8dee8;
+  --head: #edf2f7;
+  --ok-bg: #dcfce7;
+  --ok-text: #166534;
+  --log-bg: #e0f2fe;
+  --log-text: #075985;
+  --opt-bg: #fef3c7;
+  --opt-text: #92400e;
+  --missing-bg: #fee2e2;
+  --missing-text: #991b1b;
+  --accent: #1d4ed8;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.report-header {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  line-height: 1.15;
+}
+
+h2 {
+  margin: 24px 0 12px;
+  font-size: 18px;
+}
+
+p { margin: 0; }
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover { text-decoration: underline; }
+
+code {
+  font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  margin: 18px 0 0;
+}
+
+.meta-grid div {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: #fbfcfe;
+}
+
+.meta-grid dt {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.meta-grid dd {
+  margin: 4px 0 0;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border-bottom: 1px solid var(--line);
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  background: var(--head);
+  font-weight: 700;
+}
+
+tr:last-child td { border-bottom: 0; }
+
+.artifact-group {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.artifact-table .refs {
+  min-width: 180px;
+}
+
+.format {
+  display: inline-block;
+  min-width: 46px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-ok {
+  background: var(--ok-bg);
+  color: var(--ok-text);
+}
+
+.status-log {
+  background: var(--log-bg);
+  color: var(--log-text);
+}
+
+.status-opt-in {
+  background: var(--opt-bg);
+  color: var(--opt-text);
+}
+
+.status-missing {
+  background: var(--missing-bg);
+  color: var(--missing-text);
+}
+
+.status-partial {
+  background: var(--opt-bg);
+  color: var(--opt-text);
+}
+
+.refs {
+  white-space: nowrap;
+}
+
+.ref {
+  display: inline-block;
+  margin: 0 6px 6px 0;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  padding: 3px 9px;
+  background: #eff6ff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ref-missing {
+  border-color: var(--line);
+  background: #f8fafc;
+  color: var(--muted);
+}
+
+.row-note {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.callout {
+  margin-top: 14px;
+  border-left: 4px solid #f59e0b;
+  padding: 10px 12px;
+  background: #fffbeb;
+  color: #78350f;
+}
+EOF
 
 cat > "$REPORT_FILE" <<EOF
 <!doctype html>
@@ -88,130 +438,89 @@ cat > "$REPORT_FILE" <<EOF
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MeTA Jenkins Pipeline Report</title>
-  <style>
-    :root {
-      color-scheme: light;
-      --bg: #f7f8fa;
-      --panel: #ffffff;
-      --text: #1f2937;
-      --muted: #6b7280;
-      --line: #d7dce2;
-      --ok: #0f766e;
-      --warn: #a16207;
-      --accent: #1d4ed8;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-    header, main { max-width: 1120px; margin: 0 auto; padding: 24px; }
-    header { padding-bottom: 8px; }
-    h1 { margin: 0 0 8px; font-size: 28px; font-weight: 700; }
-    h2 { margin: 28px 0 12px; font-size: 18px; }
-    .summary {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
-      margin-top: 16px;
-    }
-    .metric {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      padding: 12px;
-    }
-    .metric span {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: .04em;
-    }
-    .metric strong { display: block; margin-top: 4px; font-size: 15px; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      overflow: hidden;
-    }
-    th, td {
-      border-bottom: 1px solid var(--line);
-      padding: 10px 12px;
-      text-align: left;
-      vertical-align: top;
-    }
-    th { background: #eef1f5; font-weight: 650; }
-    tr:last-child td { border-bottom: 0; }
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .ok { color: var(--ok); font-weight: 650; }
-    .warn { color: var(--warn); font-weight: 650; }
-    .muted { color: var(--muted); }
-  </style>
+  <link rel="stylesheet" href="pipeline-report.css">
 </head>
 <body>
-  <header>
-    <h1>MeTA Jenkins Pipeline Report</h1>
-    <p class="muted">Consolidated build evidence for the JSP deployment, Playwright validation, and Gatling performance stages. Availability monitoring is handled by the separate Jenkins job <code>meta-availability-monitor</code>.</p>
-    <section class="summary">
-      <div class="metric"><span>Job</span><strong>$build_label_html</strong></div>
-      <div class="metric"><span>Build</span><strong>$build_number_html</strong></div>
-      <div class="metric"><span>Branch</span><strong>$branch_name_html</strong></div>
-      <div class="metric"><span>Generated</span><strong>$generated_at_html</strong></div>
-    </section>
-  </header>
-  <main>
-    <h2>Pipeline Stages</h2>
-    <table>
-      <thead><tr><th>Stage</th><th>Primary Evidence</th><th>Notes</th></tr></thead>
-      <tbody>
+  <div class="page">
+    <header class="report-header">
+      <h1>MeTA Jenkins Pipeline Report</h1>
+      <p class="muted">Consolidated build evidence for the JSP deployment, Playwright validation, and Gatling performance stages. Monitoring is handled by the separate Jenkins Freestyle job <code>meta-monitoring</code>.</p>
+      <dl class="meta-grid">
+        <div><dt>Job</dt><dd>$build_label_html</dd></div>
+        <div><dt>Build</dt><dd>$build_number_html</dd></div>
+        <div><dt>Branch</dt><dd>$branch_name_html</dd></div>
+        <div><dt>Generated</dt><dd>$generated_at_html</dd></div>
+      </dl>
+      <p class="callout">Gatling max-limit is part of this Jenkins pipeline, but it is intentionally opt-in. Requires <code>RUN_GATLING_MAX_LIMIT=true</code> for max-limit evidence.</p>
+    </header>
+
+    <main>
+      <h2>Pipeline Stages</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Stage</th><th>Primary Evidence</th><th>Evidence State</th><th>Notes</th></tr></thead>
+          <tbody>
 EOF
 
-write_stage_row "Checkout" "Jenkins console log" "Checks out the configured GitHub branch for manual or SCM-triggered builds."
-write_stage_row "Build WAR" "Archived target/meta.war" "Builds the Maven WAR for Tomcat deployment."
-write_stage_row "Deploy Tomcat" "Jenkins console log" "Deploys meta.war into the Tomcat webapps volume."
-write_stage_row "Verify Tomcat" "Jenkins console log" "Checks http://tomcat:8080/meta/ after deployment from the Docker network."
-write_stage_row "Playwright Functional Test" "HTML, JUnit XML, screenshots, log" "Runs when the Playwright runner script exists."
-write_stage_row "Gatling Max Limit" "HTML, PDF, raw report, log" "Runs only when RUN_GATLING_MAX_LIMIT=true."
-write_stage_row "Gatling Load Test" "HTML, PDF, raw report, log" "Required five-minute load test."
-write_stage_row "Gatling Stress Test" "HTML, PDF, raw report, log" "Required five-minute stress test."
+build_war_status=$(artifact_status "target/meta.war")
+playwright_status=$(bundle_status "required" \
+  "output/playwright/06-playwright-run.log" \
+  "output/playwright/junit.xml" \
+  "output/playwright/jenkins-report/index.html" \
+  "output/playwright/screenshots/06-valid-submit.png" \
+  "output/playwright/screenshots/06-empty-submit.png")
+gatling_max_status=$(bundle_status "opt-in" \
+  "output/gatling/max-limit/max-limit-run.log" \
+  "output/gatling/max-limit/index.html" \
+  "output/gatling/max-limit/max-limit-report.pdf")
+gatling_load_status=$(bundle_status "required" \
+  "output/gatling/load-5m/load-5m-run.log" \
+  "output/gatling/load-5m/index.html" \
+  "output/gatling/load-5m/load-5m-report.pdf")
+gatling_stress_status=$(bundle_status "required" \
+  "output/gatling/stress-5m/stress-5m-run.log" \
+  "output/gatling/stress-5m/index.html" \
+  "output/gatling/stress-5m/stress-5m-report.pdf")
+
+write_stage_row "Checkout" "Jenkins console log" "Console log" "Checks out the configured GitHub branch for manual or SCM-triggered builds."
+write_stage_row "Build WAR" "Archived target/meta.war" "$build_war_status" "Builds the Maven WAR for Tomcat deployment."
+write_stage_row "Deploy Tomcat" "Jenkins console log" "Console log" "Deploys meta.war into the Tomcat webapps volume."
+write_stage_row "Verify Tomcat" "Jenkins console log" "Console log" "Checks http://tomcat:8080/meta/ after deployment from the Docker network."
+write_stage_row "Playwright Functional Test" "HTML, JUnit XML, screenshots, log" "$playwright_status" "Runs when the Playwright runner script exists."
+write_stage_row "Gatling Max Limit" "HTML, PDF, raw report, log" "$gatling_max_status" "Requires RUN_GATLING_MAX_LIMIT=true. Skipped on normal automatic builds unless manually enabled."
+write_stage_row "Gatling Load Test" "HTML, PDF, raw report, log" "$gatling_load_status" "Required five-minute load test."
+write_stage_row "Gatling Stress Test" "HTML, PDF, raw report, log" "$gatling_stress_status" "Required five-minute stress test."
 
 cat >> "$REPORT_FILE" <<EOF
-      </tbody>
-    </table>
+          </tbody>
+        </table>
+      </div>
 
-    <h2>Published Artifacts</h2>
-    <table>
-      <thead><tr><th>Name</th><th>Format</th><th>Status</th><th>Path</th></tr></thead>
-      <tbody>
+      <h2>Published Artifacts</h2>
+      <div class="table-wrap">
+        <table class="artifact-table">
+          <thead><tr><th>Group</th><th>Name</th><th>Status</th><th>References</th></tr></thead>
+          <tbody>
 EOF
 
-write_artifact_row "WAR package" "target/meta.war" "WAR"
-write_artifact_row "Playwright run log" "output/playwright/06-playwright-run.log" "LOG"
-write_artifact_row "Playwright JUnit" "output/playwright/junit.xml" "XML"
-write_artifact_row "Playwright HTML report" "output/playwright/playwright-report/index.html" "HTML"
-write_artifact_row "Playwright valid-submit screenshot" "output/playwright/screenshots/06-valid-submit.png" "PNG"
-write_artifact_row "Playwright empty-submit screenshot" "output/playwright/screenshots/06-empty-submit.png" "PNG"
-write_artifact_row "Gatling max-limit log" "output/gatling/max-limit/max-limit-run.log" "LOG"
-write_artifact_row "Gatling max-limit HTML" "output/gatling/max-limit/index.html" "HTML"
-write_artifact_row "Gatling max-limit PDF" "output/gatling/max-limit/max-limit-report.pdf" "PDF"
-write_artifact_row "Gatling load log" "output/gatling/load-5m/load-5m-run.log" "LOG"
-write_artifact_row "Gatling load HTML" "output/gatling/load-5m/index.html" "HTML"
-write_artifact_row "Gatling load PDF" "output/gatling/load-5m/load-5m-report.pdf" "PDF"
-write_artifact_row "Gatling stress log" "output/gatling/stress-5m/stress-5m-run.log" "LOG"
-write_artifact_row "Gatling stress HTML" "output/gatling/stress-5m/index.html" "HTML"
-write_artifact_row "Gatling stress PDF" "output/gatling/stress-5m/stress-5m-report.pdf" "PDF"
-write_artifact_row "HAR scenario" "output/har/meta-functional-flow.har" "HAR"
+write_single_ref_row "Build" "WAR package" "target/meta.war" "WAR"
+write_single_ref_row "Playwright" "Run log" "output/playwright/06-playwright-run.log" "Log"
+write_single_ref_row "Playwright" "JUnit results" "output/playwright/junit.xml" "JUnit"
+write_single_ref_row "Playwright" "Jenkins-safe HTML report" "output/playwright/jenkins-report/index.html" "HTML"
+write_single_ref_row "Playwright" "Native HTML artifact" "output/playwright/playwright-report/index.html" "Native"
+write_single_ref_row "Playwright" "Valid-submit screenshot" "output/playwright/screenshots/06-valid-submit.png" "Screenshot"
+write_single_ref_row "Playwright" "Empty-submit screenshot" "output/playwright/screenshots/06-empty-submit.png" "Screenshot"
+write_bundle_row "Gatling" "Max-limit evidence" "opt-in" "Requires RUN_GATLING_MAX_LIMIT=true." "output/gatling/max-limit/max-limit-run.log" "output/gatling/max-limit/index.html" "output/gatling/max-limit/max-limit-report.pdf"
+write_bundle_row "Gatling" "Load test evidence" "required" "" "output/gatling/load-5m/load-5m-run.log" "output/gatling/load-5m/index.html" "output/gatling/load-5m/load-5m-report.pdf"
+write_bundle_row "Gatling" "Stress test evidence" "required" "" "output/gatling/stress-5m/stress-5m-run.log" "output/gatling/stress-5m/index.html" "output/gatling/stress-5m/stress-5m-report.pdf"
+write_single_ref_row "HAR" "Scenario capture" "output/har/meta-functional-flow.har" "HAR"
 
 cat >> "$REPORT_FILE" <<EOF
-      </tbody>
-    </table>
-  </main>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
 </body>
 </html>
 EOF

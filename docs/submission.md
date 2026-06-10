@@ -30,7 +30,7 @@ Replace `<yournames>` with the final group member names before sending.
    - HAR validation: `./scripts/validate-har output/har/meta-functional-flow.har`
    - Gatling max-limit, load, and stress commands from `docs/gatling.md`.
    - Jenkins CI/CD build after `meta-container-ci-cd` points at the public GitHub repo.
-   - Jenkins scheduled availability build after `meta-availability-monitor` points at the public GitHub repo.
+   - Jenkins scheduled monitoring build after `meta-monitoring` points at the public GitHub repo.
 2. Capture manual screenshots where browser chrome or third-party UI must be visible:
    - GitHub repository page showing the JSP/app.
    - Tomcat app with `http://localhost:8080/meta/` visible in the address bar.
@@ -57,7 +57,7 @@ These are the required services, features, and pipeline capabilities that must w
 | Git/GitHub source control | Application and automation code are stored in Git and the public GitHub repository. | Public repository link and GitHub screenshot showing the JSP/app. | Needs final public accessibility check and screenshot |
 | Tomcat production deployment | Jenkins deploys the WAR into the Tomcat container and the app is reachable at `http://localhost:8080/meta/`. | Jenkins build log, `./scripts/deploy-war` output, Tomcat screenshot with address bar visible. | Partial; final address-bar screenshot still needed |
 | Jenkins CI/CD pipeline | Jenkins builds, deploys, verifies, and triggers the required automation flows from source control. | `meta-container-ci-cd` SCM/manual build log, Jenkins job configuration, archived/published reports. | Partial; needs final SCM-backed evidence after all stages exist |
-| Availability monitoring | A separate Jenkins job checks the application every 5 minutes and official monitor evidence shows the target is up. | Monitor passed screenshot plus `meta-availability-monitor` scheduled availability log. | Missing official monitor screenshot and final scheduled Jenkins evidence |
+| Monitoring | A separate Jenkins Freestyle job checks the application every 5 minutes and official monitor evidence shows the target is up. | Monitor passed screenshot plus `meta-monitoring` scheduled build log. | Missing official monitor screenshot and final scheduled Jenkins evidence |
 | Browser functional automation | Browser automation validates 5 application behaviors and is triggerable from Jenkins. | Playwright test file, passed run log/report, screenshots, validation explanation. | Ready with Playwright override risk |
 | HAR scenario capture | A browser scenario is described and the actual HAR file is captured. | `docs/har-scenario.md`, `output/har/meta-functional-flow.har`, HAR validation log. | Ready |
 | Gatling max-limit test | Gatling discovers the app's tested max limit or a documented lower bound. | Max-limit run log, terminal screenshot, HTML/PDF report, written max-limit conclusion. | Reports/logs ready; terminal screenshot deferred |
@@ -75,7 +75,7 @@ These are the 12 items that `docs/final-project.txt` says to send by email.
 | b | Screenshot of GitHub with the application/JSP in it | Manual screenshot of GitHub showing the repo and JSP/app file | Public repo URL is documented as `https://github.com/y0ncha/meta-final-project`; screenshot still must be captured | Missing screenshot |
 | c | Screenshot of the app in Tomcat with `localhost:8080/...` visible | Manual browser screenshot with address bar visible at `http://localhost:8080/meta/` | `output/screenshots/04-tomcat-meta-local.png` is supplemental only because it does not show browser chrome | Needs final screenshot |
 | d | Link to public GitHub repo | `https://github.com/y0ncha/meta-final-project` | Git remote is expected to be that repository | Needs final accessibility check |
-| e | Monitor tool name, monitored target, and passed monitor screenshot | UptimeRobot or approved monitor name, target URL, interval, and passed/up screenshot | `Jenkinsfile.availability` defines separate Jenkins job `meta-availability-monitor` with schedule `H/5 * * * *`; official monitor screenshot is not present | Missing |
+| e | Monitor tool name, monitored target, and passed monitor screenshot | UptimeRobot or approved monitor name, target URL, interval, and passed/up screenshot | Jenkins Freestyle job `meta-monitoring` runs `./scripts/run-monitoring-check` on schedule `H/5 * * * *`; official monitor screenshot is not present | Missing |
 | f | Selenium IDE file `.side` | Playwright substitute: `tests/playwright/meta-functional.spec.js` | Playwright override documented in `rules/compliance.md` and `docs/playwright.md` | Ready with override risk |
 | g | Selenium/automation passed-run screenshot plus validation explanation | Playwright test file, run log, screenshots, report, and written validation explanation | `output/playwright/06-playwright-run.log`, `output/playwright/junit.xml`, `output/playwright/playwright-report/index.html`, `output/playwright/screenshots/06-valid-submit.png`, `output/playwright/screenshots/06-empty-submit.png`, `docs/playwright.md` | Ready |
 | h | Written HAR scenario | Scenario text in email or attached document | `docs/har-scenario.md` | Ready |
@@ -116,7 +116,7 @@ Attach these when present and freshly validated:
 - Confirm `main` is pushed to GitHub and the public repository opens without authentication.
 - Confirm both Jenkins jobs are configured from SCM, not local mounted-script jobs.
 - Confirm `meta-container-ci-cd` uses script path `Jenkinsfile`.
-- Confirm `meta-availability-monitor` uses script path `Jenkinsfile.availability`, runs every 5 minutes, and does not run Maven, deploy, Playwright, or Gatling commands.
+- Confirm `meta-monitoring` is a Freestyle project, runs `./scripts/run-monitoring-check` every 5 minutes, archives `output/monitoring/**/*`, and does not run Maven, deploy, Playwright, or Gatling commands.
 - Confirm the Playwright override is explained clearly because the assignment text names Selenium IDE specifically.
 - Confirm all Gatling numbers and graph explanations come from real generated reports.
 - Capture the three Gatling terminal/CMD summary screenshots before sending; Plan 08 intentionally leaves those screenshot files deferred.

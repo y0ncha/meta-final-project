@@ -25,6 +25,8 @@ Follow-up update on 2026-06-10: Jenkins now publishes Playwright JUnit and HTML 
 
 Follow-up update on 2026-06-10: `scripts/run-playwright-container` now uses direct `docker run` for local execution and `PLAYWRIGHT_DOCKER_PIPELINE=1` as the command body inside Jenkins Docker Pipeline. The Playwright functional test remains isolated from HAR capture; those validations use separate disposable containers.
 
+Follow-up update on 2026-06-11: Jenkins now publishes a static Playwright evidence report from `output/playwright/jenkins-report/index.html` instead of publishing the native Playwright HTML app directly. The native report remains archived under `output/playwright/playwright-report/index.html`, but Jenkins HTML Publisher can render it as a blank page because the native report depends on JavaScript that Jenkins may block.
+
 ## 1. Requirements & Constraints
 
 - **REQ-001**: Implement browser automation for the JSP app served at `http://localhost:8080/meta/` from the host and `http://tomcat:8080/meta/` from Docker network `meta`.
@@ -37,7 +39,7 @@ Follow-up update on 2026-06-10: `scripts/run-playwright-container` now uses dire
 - **REQ-008**: Preserve the existing `Jenkinsfile` stage named `Playwright Functional Test`; make that stage pass by adding `scripts/run-playwright-container`.
 - **REQ-009**: Ensure Jenkins-triggered browser automation runs inside Docker by having Jenkins start the official Playwright container through Docker Pipeline.
 - **REQ-010**: Keep local developer execution in the official Playwright container image `mcr.microsoft.com/playwright:v1.60.0-noble` unless `PLAYWRIGHT_IMAGE` overrides it.
-- **REQ-011**: Publish `output/playwright/junit.xml` through Jenkins JUnit reporting and `output/playwright/playwright-report/index.html` through HTML Publisher when those files exist.
+- **REQ-011**: Publish `output/playwright/junit.xml` through Jenkins JUnit reporting and publish Jenkins-safe static HTML at `output/playwright/jenkins-report/index.html` through HTML Publisher when those files exist. Keep the native Playwright report archived at `output/playwright/playwright-report/index.html`.
 - **SEC-001**: Do not commit Jenkins credentials, API tokens, browser cookies, HAR content, private keys, `.env`, or generated traces containing sensitive values.
 - **SEC-002**: Mount `/var/run/docker.sock` into Jenkins for this coursework stack only so Jenkins can run disposable test containers. Do not use Docker socket access to deploy Tomcat artifacts.
 - **CON-001**: Read and obey `contribution.md` before implementation; keep this work on branch `feature/06-playwright-container-functional-test`.
@@ -126,7 +128,18 @@ Follow-up update on 2026-06-10: `scripts/run-playwright-container` now uses dire
 | TASK-038 | Remove the Playwright Compose runner service model from `docker-compose.yml`. | ✅ | 2026-06-10 |
 | TASK-039 | Update Jenkins stage `Playwright Functional Test` to start `mcr.microsoft.com/playwright:v1.60.0-noble` with `docker.image(env.PLAYWRIGHT_IMAGE).inside(...)`. | ✅ | 2026-06-10 |
 | TASK-040 | Update `scripts/run-playwright-container` to use direct local `docker run` and `PLAYWRIGHT_DOCKER_PIPELINE=1` for Jenkins Docker Pipeline execution while preserving evidence paths. | ✅ | 2026-06-10 |
+
+### Implementation Phase 6
+
+- GOAL-006: Replace the Jenkins-published Playwright SPA with a static Jenkins-safe evidence report.
+
+| Task | Description | Completed | Date |
+|------|-------------|-----------|------|
 | TASK-041 | Document that Playwright functional validation and HAR capture use separate fresh one-shot containers. | ✅ | 2026-06-10 |
+| TASK-042 | Add a regression test for the static Jenkins-safe Playwright report. | ✅ | 2026-06-11 |
+| TASK-043 | Add `scripts/generate-playwright-jenkins-report` to summarize JUnit results and link evidence without inline JavaScript. | ✅ | 2026-06-11 |
+| TASK-044 | Update `scripts/run-playwright-container` to generate the static report after a successful Playwright run. | ✅ | 2026-06-11 |
+| TASK-045 | Update Jenkins post-build publishing to publish `output/playwright/jenkins-report/index.html` as `Playwright Report`. | ✅ | 2026-06-11 |
 
 ## 3. Alternatives
 
@@ -161,8 +174,11 @@ Follow-up update on 2026-06-10: `scripts/run-playwright-container` now uses dire
 - **FILE-011**: `output/playwright/06-playwright-run.log` - generated ignored passed-run evidence.
 - **FILE-012**: `output/playwright/junit.xml` - generated ignored JUnit result evidence.
 - **FILE-013**: `output/playwright/playwright-report/index.html` - generated ignored HTML report.
-- **FILE-014**: `output/playwright/screenshots/06-valid-submit.png` - generated ignored valid-submit screenshot.
-- **FILE-015**: `output/playwright/screenshots/06-empty-submit.png` - generated ignored empty-submit screenshot.
+- **FILE-014**: `output/playwright/jenkins-report/index.html` - generated ignored Jenkins-safe static Playwright report.
+- **FILE-015**: `scripts/generate-playwright-jenkins-report` - static Playwright report generator.
+- **FILE-016**: `tests/scripts/test-generate-playwright-jenkins-report.sh` - regression test for the static report.
+- **FILE-017**: `output/playwright/screenshots/06-valid-submit.png` - generated ignored valid-submit screenshot.
+- **FILE-018**: `output/playwright/screenshots/06-empty-submit.png` - generated ignored empty-submit screenshot.
 
 ## 6. Testing
 
@@ -174,6 +190,8 @@ Follow-up update on 2026-06-10: `scripts/run-playwright-container` now uses dire
 - **TEST-006**: `docker compose exec -T jenkins sh -lc 'cd /workspace/final-project && APP_BASE_URL=http://tomcat:8080/meta/ ./scripts/run-playwright-container'` must pass from inside Jenkins.
 - **TEST-007**: `test -s output/playwright/junit.xml` must pass.
 - **TEST-008**: `test -s output/playwright/playwright-report/index.html` must pass.
+- **TEST-008A**: `sh tests/scripts/test-generate-playwright-jenkins-report.sh` must pass.
+- **TEST-008B**: `test -s output/playwright/jenkins-report/index.html` must pass after report generation.
 - **TEST-009**: `test -s output/playwright/screenshots/06-valid-submit.png` must pass.
 - **TEST-010**: `test -s output/playwright/screenshots/06-empty-submit.png` must pass.
 - **TEST-011**: `python3 .agents/skills/compliance-validator/scripts/validate_compliance.py --target . --rules rules/compliance.md` must report no unreviewed failures before completion.

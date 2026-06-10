@@ -9,8 +9,8 @@ The authoritative assignment source is `final-project.pdf`. This file is the act
 - Run Jenkins in Docker as the CI/CD orchestrator. Jenkins must use a persistent volume and must not claim port `8080`; expose Jenkins at `http://localhost:8081/`.
 - Run Gatling in Docker for max-limit, 5-minute load, and 5-minute stress testing.
 - Run the Playwright test runner in Docker for repeatable browser automation from Jenkins or local scripts.
-- Use UptimeRobot SaaS for official availability-monitor evidence unless explicitly replaced by the instructor.
-- The instructor confirmed that availability monitoring should be implemented as a separate Jenkins job from the CI/CD build/deploy/test job.
+- Use UptimeRobot SaaS for official monitoring evidence unless explicitly replaced by the instructor. SiteMonitorLite is acceptable when explicitly documented.
+- The instructor confirmed that monitoring should be implemented as a separate Jenkins job from the CI/CD build/deploy/test job.
 - Keep Git and GitHub as real host/public source control. Do not containerize GitHub.
 - Host Tomcat and host Jenkins are not project runtime dependencies. Do not document commands, evidence, or setup steps that rely on `/usr/local/tomcat8` or `/Users/yonatan/.jenkins`.
 - If the containerized runtime is blocked, fix the containerized path or document the blocker instead of falling back to local host installs.
@@ -40,7 +40,7 @@ The authoritative assignment source is `final-project.pdf`. This file is the act
 - Store all application code in Git and GitHub.
 - Deploy the simple web application into Tomcat production.
 - Use Jenkins to move code from Git/GitHub into Tomcat.
-- Treat deployment, browser automation, and Gatling as the CI/CD pipeline flow. Availability monitoring is the documented exception and must run as a separate Jenkins job.
+- Treat deployment, browser automation, and Gatling as the CI/CD pipeline flow. Monitoring is the documented exception and must run as a separate Jenkins job.
 - Bonus work is worth up to 10 additional points only if the application is exposed through a real public IP and steps 6-10 are performed against that public target without compromising the result quality.
 
 ## Jenkins Compliance
@@ -58,7 +58,7 @@ The authoritative assignment source is `final-project.pdf`. This file is the act
 - Create an availability monitor for the application.
 - Prefer UptimeRobot for official availability-monitor evidence. SiteMonitorLite or another explicit monitor is acceptable only if the project documents why UptimeRobot was not used.
 - Document the monitor tool name, monitored URL, interval, and pass/fail evidence.
-- The monitor must run every 5 minutes through a separate Jenkins Pipeline job named `meta-availability-monitor`.
+- The monitor must run every 5 minutes through a separate Jenkins Freestyle job named `meta-monitoring`.
 - If pursuing the public-IP bonus, run monitoring against the public Tomcat URL and do not claim the bonus unless the public target and evidence are real.
 
 ## Browser Automation Compliance

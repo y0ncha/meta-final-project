@@ -64,6 +64,10 @@ fi
 printf '%s\n' 'Playwright evidence:'
 printf '%s\n' "  $LOG_FILE"
 printf '%s\n' "  $OUTPUT_DIR/junit.xml"
+if [ -x "$PROJECT_ROOT/scripts/generate-playwright-jenkins-report" ]; then
+  "$PROJECT_ROOT/scripts/generate-playwright-jenkins-report"
+fi
+printf '%s\n' "  $OUTPUT_DIR/jenkins-report/index.html"
 printf '%s\n' "  $OUTPUT_DIR/playwright-report/index.html"
 printf '%s\n' "  $OUTPUT_DIR/screenshots/06-valid-submit.png"
 printf '%s\n' "  $OUTPUT_DIR/screenshots/06-empty-submit.png"

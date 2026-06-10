@@ -63,7 +63,7 @@ Jenkins mounts the host Docker socket and uses Docker Pipeline to start the same
 
 This 2026-06-10 Plan 06 follow-up replaces the original Jenkins execution path where Node, npm, and Debian Chromium were installed directly inside the Jenkins image. Jenkins now orchestrates the official Playwright container instead.
 
-The Jenkins post-build behavior publishes `output/playwright/junit.xml` through the Jenkins JUnit publisher and `output/playwright/playwright-report/index.html` through HTML Publisher when those files exist. The raw files are still archived under `output/**/*`.
+The Jenkins post-build behavior publishes `output/playwright/junit.xml` through the Jenkins JUnit publisher and publishes the Jenkins-safe static report at `output/playwright/jenkins-report/index.html` through HTML Publisher when those files exist. The native Playwright report at `output/playwright/playwright-report/index.html` is still archived under `output/**/*`, but it is not the primary Jenkins-published report because Jenkins can block the JavaScript needed by Playwright's native HTML app.
 
 ## Evidence Files
 
@@ -71,6 +71,8 @@ Generated evidence is ignored by Git and should be archived by Jenkins or attach
 
 - `output/playwright/06-playwright-run.log`
 - `output/playwright/junit.xml`
+- `output/playwright/jenkins-report/index.html`
+- `output/playwright/jenkins-report/playwright-jenkins-report.css`
 - `output/playwright/playwright-report/index.html`
 - `output/playwright/screenshots/06-valid-submit.png`
 - `output/playwright/screenshots/06-empty-submit.png`

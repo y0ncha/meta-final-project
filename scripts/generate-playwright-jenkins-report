@@ -1,0 +1,313 @@
+#!/usr/bin/env sh
+set -eu
+
+OUTPUT_DIR="output/playwright"
+REPORT_DIR="$OUTPUT_DIR/jenkins-report"
+REPORT_FILE="$REPORT_DIR/index.html"
+CSS_FILE="$REPORT_DIR/playwright-jenkins-report.css"
+JUNIT_FILE="$OUTPUT_DIR/junit.xml"
+
+mkdir -p "$REPORT_DIR"
+
+generated_at=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+build_label="${JOB_NAME:-meta-ci-cd}"
+build_number="${BUILD_NUMBER:-local}"
+build_url="${BUILD_URL:-}"
+branch_name="${BRANCH_NAME:-${GIT_BRANCH:-unknown}}"
+
+html_escape() {
+  printf '%s' "$1" | sed \
+    -e 's/&/\&amp;/g' \
+    -e 's/</\&lt;/g' \
+    -e 's/>/\&gt;/g' \
+    -e 's/"/\&quot;/g'
+}
+
+xml_attr() {
+  attr="$1"
+  file="$2"
+  if [ -s "$file" ]; then
+    sed -n "s/.* $attr=\"\\([^\"]*\\)\".*/\\1/p" "$file" | sed -n '1p'
+  fi
+}
+
+artifact_href() {
+  path="$1"
+  if [ -n "$build_url" ]; then
+    printf '%sartifact/%s' "$build_url" "$path"
+    return
+  fi
+
+  case "$path" in
+    output/playwright/*) printf '../%s' "${path#output/playwright/}" ;;
+    output/*) printf '../../%s' "${path#output/}" ;;
+    *) printf '../%s' "$path" ;;
+  esac
+}
+
+artifact_ref() {
+  path="$1"
+  label="$2"
+  label_escaped=$(html_escape "$label")
+
+  if [ -s "$path" ]; then
+    href=$(artifact_href "$path")
+    href_escaped=$(html_escape "$href")
+    printf '<a class="ref" href="%s">%s</a>' "$href_escaped" "$label_escaped"
+  else
+    printf '<span class="ref ref-missing">%s</span>' "$label_escaped"
+  fi
+}
+
+status_badge() {
+  status="$1"
+  status_escaped=$(html_escape "$status")
+  case "$status" in
+    Passed) class="status-ok" ;;
+    Failed) class="status-fail" ;;
+    *) class="status-warn" ;;
+  esac
+  printf '<span class="status %s">%s</span>' "$class" "$status_escaped"
+}
+
+tests=$(xml_attr tests "$JUNIT_FILE")
+failures=$(xml_attr failures "$JUNIT_FILE")
+errors=$(xml_attr errors "$JUNIT_FILE")
+skipped=$(xml_attr skipped "$JUNIT_FILE")
+duration=$(xml_attr time "$JUNIT_FILE")
+
+tests="${tests:-0}"
+failures="${failures:-0}"
+errors="${errors:-0}"
+skipped="${skipped:-0}"
+duration="${duration:-unknown}"
+
+if [ "$failures" = "0" ] && [ "$errors" = "0" ] && [ -s "$JUNIT_FILE" ]; then
+  result="Passed"
+else
+  result="Failed"
+fi
+
+build_label_html=$(html_escape "$build_label")
+build_number_html=$(html_escape "$build_number")
+branch_name_html=$(html_escape "$branch_name")
+generated_at_html=$(html_escape "$generated_at")
+duration_html=$(html_escape "$duration")
+result_badge=$(status_badge "$result")
+
+log_ref=$(artifact_ref "$OUTPUT_DIR/06-playwright-run.log" "Run log")
+junit_ref=$(artifact_ref "$OUTPUT_DIR/junit.xml" "JUnit")
+native_ref=$(artifact_ref "$OUTPUT_DIR/playwright-report/index.html" "Native HTML")
+valid_ref=$(artifact_ref "$OUTPUT_DIR/screenshots/06-valid-submit.png" "Valid submit")
+empty_ref=$(artifact_ref "$OUTPUT_DIR/screenshots/06-empty-submit.png" "Empty submit")
+
+cat > "$CSS_FILE" <<'EOF'
+:root {
+  color-scheme: light;
+  --bg: #f6f8fb;
+  --panel: #ffffff;
+  --text: #172033;
+  --muted: #667085;
+  --line: #d8dee8;
+  --head: #edf2f7;
+  --ok-bg: #dcfce7;
+  --ok-text: #166534;
+  --fail-bg: #fee2e2;
+  --fail-text: #991b1b;
+  --warn-bg: #fef3c7;
+  --warn-text: #92400e;
+  --accent: #1d4ed8;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.page {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.report-header,
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.report-header {
+  padding: 20px;
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  line-height: 1.15;
+}
+
+h2 {
+  margin: 24px 0 12px;
+  font-size: 18px;
+}
+
+p { margin: 0; }
+
+code {
+  font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.meta-grid div {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: #fbfcfe;
+}
+
+.meta-grid dt {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.meta-grid dd {
+  margin: 4px 0 0;
+  font-weight: 700;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border-bottom: 1px solid var(--line);
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: var(--head);
+  font-weight: 700;
+}
+
+tr:last-child td { border-bottom: 0; }
+
+.status {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status-ok {
+  background: var(--ok-bg);
+  color: var(--ok-text);
+}
+
+.status-fail {
+  background: var(--fail-bg);
+  color: var(--fail-text);
+}
+
+.status-warn {
+  background: var(--warn-bg);
+  color: var(--warn-text);
+}
+
+.refs {
+  margin-top: 14px;
+}
+
+.ref {
+  display: inline-block;
+  margin: 0 6px 6px 0;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  padding: 3px 9px;
+  background: #eff6ff;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ref-missing {
+  border-color: var(--line);
+  background: #f8fafc;
+  color: var(--muted);
+}
+EOF
+
+cat > "$REPORT_FILE" <<EOF
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MeTA Playwright Evidence Report</title>
+  <link rel="stylesheet" href="playwright-jenkins-report.css">
+</head>
+<body>
+  <div class="page">
+    <header class="report-header">
+      <h1>MeTA Playwright Evidence Report</h1>
+      <p class="muted">Static Jenkins-safe browser automation evidence. The native Playwright HTML report is kept as an archived artifact reference because Jenkins may block its JavaScript rendering.</p>
+      <dl class="meta-grid">
+        <div><dt>Job</dt><dd>$build_label_html</dd></div>
+        <div><dt>Build</dt><dd>$build_number_html</dd></div>
+        <div><dt>Branch</dt><dd>$branch_name_html</dd></div>
+        <div><dt>Generated</dt><dd>$generated_at_html</dd></div>
+        <div><dt>Result</dt><dd>$result_badge</dd></div>
+      </dl>
+      <div class="refs">
+        $log_ref
+        $junit_ref
+        $native_ref
+        $valid_ref
+        $empty_ref
+      </div>
+    </header>
+
+    <main>
+      <h2>JUnit Summary</h2>
+      <div class="panel">
+        <table>
+          <tbody>
+            <tr><td>Tests</td><td>$tests</td></tr>
+            <tr><td>Failures</td><td>$failures</td></tr>
+            <tr><td>Errors</td><td>$errors</td></tr>
+            <tr><td>Skipped</td><td>$skipped</td></tr>
+            <tr><td>Duration seconds</td><td>$duration_html</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
+EOF
+
+printf '%s\n' "Generated Playwright Jenkins report: $REPORT_FILE"

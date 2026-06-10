@@ -19,6 +19,10 @@
 - Cleared stale generated evidence at the start of non-timer Jenkins builds and changed the Gatling runner to normalize reports before returning assertion-failure status.
 - Changed Plan 08 from completed to evidence pending because Gatling terminal/Jenkins-console screenshots and live Jenkins build evidence are still deferred.
 - Escaped dynamic Jenkins job, build, branch, and timestamp values in the generated Pipeline HTML report.
+- Improved the generated Pipeline HTML report rendering by moving styles into `output/reports/pipeline-report.css`, replacing run-together summary text with a metadata grid, grouping artifacts by evidence area, and rendering status badges.
+- Updated Pipeline report artifact links to use the current Jenkins `BUILD_URL`, so renamed jobs such as `meta-ci-cd` do not keep old `meta-container-ci-cd` artifact URLs after a fresh build.
+- Marked missing max-limit artifacts as opt-in/not-run evidence requiring `RUN_GATLING_MAX_LIMIT=true` instead of treating the manual-only stage as an unexpected missing artifact.
+- Added `tests/scripts/test-generate-pipeline-report.sh` to guard the report rendering behavior.
 - Added `docs/gatling.md` with runtime details, commands, evidence paths, max-limit method, and report-backed graph explanations.
 - Updated `docs/submission.md` to show Gatling logs/reports/PDFs as ready while keeping the three Gatling terminal screenshots explicitly deferred.
 - Fixed the Gatling runner normalization flow so logs and PDFs are not deleted when the latest raw report is copied into the stable report directory.
@@ -43,6 +47,7 @@
   - Result: 16,500 requests, 16,500 OK, 0 failures, p95 14 ms.
 - Pipeline report:
   - `output/reports/pipeline-report.html`
+  - `output/reports/pipeline-report.css`
 
 Generated evidence remains ignored under `output/`. The older `08-*` generated evidence files may still exist locally from earlier runs, but the documented closeout paths use the no-prefix convention.
 
@@ -60,6 +65,7 @@ Generated evidence remains ignored under `output/`. The older `08-*` generated e
 - `./scripts/export-gatling-pdfs`
 - `GATLING_PDF_REQUIRE_ALL=false ./scripts/export-gatling-pdfs`
 - `./scripts/generate-pipeline-report`
+- `sh tests/scripts/test-generate-pipeline-report.sh`
 - `docker compose ps`
 - `./scripts/deploy-war`
 - `./scripts/run-gatling-stress-5m`
@@ -73,6 +79,17 @@ Generated evidence remains ignored under `output/`. The older `08-*` generated e
   - Result: `pass=70`, `warn=0`, `manual=9`, `fail=0`.
   - Manual items were reviewed as negative-rule or defense-readiness checks. No hard compliance failure was found for this closeout.
 - `git diff --check`
+
+## 2026-06-11 Pipeline Report Rendering Follow-Up
+
+- Reworked `scripts/generate-pipeline-report` to generate CSP-friendly external CSS for Jenkins HTML Publisher.
+- Updated the `Published Artifacts` table to show short reference links such as `HTML`, `PDF`, `Log`, and `Screenshot` instead of visible full artifact paths or URLs.
+- Collapsed Gatling HTML/PDF/log duplicates into one row per Gatling run, with multiple reference links in that row.
+- Changed the `Pipeline Stages` table from a generic `Status` column to `Evidence State`, deriving artifact-backed stage states from generated files and labeling console-only stages as `Console log`.
+- Verified the CSS rendering pass through Browser over a temporary localhost server; computed styles showed the stylesheet applied, status badges rendered with badge backgrounds, the metadata grid existed, and artifact links pointed at `http://localhost:8081/job/meta-ci-cd/164/artifact/...`.
+- Verified the later short-reference table change with `sh tests/scripts/test-generate-pipeline-report.sh` and direct generated HTML inspection. A second Browser refresh could not be completed because the temporary localhost server did not accept connections from the browser session.
+- Verified the evidence-state regression with `sh tests/scripts/test-generate-pipeline-report.sh`; the test now asserts missing build/stress/Playwright artifacts are not shown as available while present load-test artifacts are shown as available.
+- The current Jenkins build `#164` still shows the older archived report until a fresh Jenkins build publishes the regenerated `output/reports` files.
 
 ## 2026-06-10 Documentation Drift Cleanup
 

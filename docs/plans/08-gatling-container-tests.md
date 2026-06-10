@@ -25,6 +25,8 @@ Follow-up update on 2026-06-10: Playwright, HAR, and Gatling validation runners 
 
 Follow-up update on 2026-06-10 after review: local `./scripts/export-gatling-pdfs` remains strict and requires all three Gatling reports, while Jenkins finalization runs it with `GATLING_PDF_REQUIRE_ALL=false` so the normal load/stress pipeline does not fail when optional max-limit discovery is skipped. The plan status is evidence pending, not completed, until the three Gatling terminal or Jenkins-console screenshots and live Jenkins build evidence are captured.
 
+Follow-up update on 2026-06-11: the consolidated Pipeline HTML report now writes a companion `pipeline-report.css` file because Jenkins HTML Publisher can block inline styles. The report groups artifacts by evidence area, uses visible status badges, points artifact links at the current Jenkins job URL from `BUILD_URL`, labels missing max-limit artifacts as opt-in evidence requiring `RUN_GATLING_MAX_LIMIT=true`, and derives stage evidence state from generated artifacts where possible instead of claiming unavailable artifacts are available.
+
 ## 1. Requirements & Constraints
 
 - **REQ-001**: Run Gatling through Docker only; do not require host `gatling`, host Scala, host sbt, or host Java for Gatling execution.
@@ -56,6 +58,7 @@ Follow-up update on 2026-06-10 after review: local `./scripts/export-gatling-pdf
 - **REQ-026**: Keep `Jenkinsfile` post-build HTML Publisher behavior compatible with stable report directories `output/gatling/max-limit/`, `output/gatling/load-5m/`, and `output/gatling/stress-5m/`.
 - **REQ-027**: Keep generated Gatling reports, screenshots, PDFs, logs, and raw result directories ignored by Git under `output/`.
 - **REQ-028**: Generate one final Jenkins Pipeline HTML report at `output/reports/pipeline-report.html` that summarizes stage evidence and links to archived Playwright, Gatling, HAR, and WAR artifacts when present.
+- **REQ-028A**: The Pipeline stage table must not hard-code artifact-producing stages as available. It must derive artifact-backed stage evidence state from generated files and label console-only stages as console-log evidence.
 - **REQ-029**: Keep `docker-compose.yml` limited to long-running services `tomcat` and `jenkins`; disposable validation containers must not be Compose services.
 - **REQ-030**: Keep Playwright functional validation and HAR capture isolated by running them in separate fresh one-shot containers.
 - **REQ-031**: Keep Gatling PDF export as Jenkins finalization work in `post { always { ... } }`, not as a separate validation stage.
@@ -154,7 +157,7 @@ Follow-up update on 2026-06-10 after review: local `./scripts/export-gatling-pdf
 
 ### Implementation Phase 5
 
-- GOAL-005: Integrate Gatling execution with Jenkins while preserving the separate scheduled availability monitoring job.
+- GOAL-005: Integrate Gatling execution with Jenkins while preserving the separate scheduled monitoring job.
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
@@ -217,6 +220,19 @@ Follow-up update on 2026-06-10 after review: local `./scripts/export-gatling-pdf
 | TASK-092 | Fix Jenkins Gatling PDF finalization so builds that skip optional max-limit discovery still export produced load/stress reports. | Yes | 2026-06-10 |
 | TASK-093 | Clear stale generated evidence at the start of non-timer Jenkins builds and preserve Gatling reports when assertion failures produce useful evidence. | Yes | 2026-06-10 |
 
+### Implementation Phase 8
+
+- GOAL-008: Improve the consolidated Pipeline HTML report rendering without changing evidence semantics.
+
+| Task | Description | Completed | Date |
+|------|-------------|-----------|------|
+| TASK-094 | Add a regression test for generated report rendering, current Jenkins artifact URLs, and optional max-limit wording. | Yes | 2026-06-11 |
+| TASK-095 | Generate external `pipeline-report.css` so Jenkins HTML Publisher can apply report styling under CSP restrictions. | Yes | 2026-06-11 |
+| TASK-096 | Replace run-together summary labels with a semantic metadata grid. | Yes | 2026-06-11 |
+| TASK-097 | Group published artifacts by build, Playwright, Gatling, and HAR evidence areas with status badges. | Yes | 2026-06-11 |
+| TASK-098 | Keep max-limit evidence honest by marking missing max-limit artifacts as opt-in/not-run instead of an unexpected missing failure. | Yes | 2026-06-11 |
+| TASK-099 | Derive the Pipeline stage table evidence state from produced artifacts where possible and label console-only stages as `Console log`. | Yes | 2026-06-11 |
+
 ## 3. Alternatives
 
 - **ALT-001**: Install Gatling on the host and run `gatling.sh` directly. Rejected because `rules/compliance.md` requires Gatling in Docker and forbids host Gatling as a project runtime dependency.
@@ -261,16 +277,19 @@ Follow-up update on 2026-06-10 after review: local `./scripts/export-gatling-pdf
 - **FILE-012**: `scripts/generate-pipeline-report` - shell-only generator for the consolidated Jenkins Pipeline HTML report.
 - **FILE-013**: `docs/changelog/08-gatling-container-tests.changelog.md` - closeout changelog created after validation.
 - **FILE-014**: `output/reports/pipeline-report.html` - ignored generated final Pipeline HTML report.
-- **FILE-015**: `output/gatling/max-limit/` - ignored generated max-limit evidence directory.
-- **FILE-016**: `output/gatling/load-5m/` - ignored generated load-test evidence directory.
-- **FILE-017**: `output/gatling/stress-5m/` - ignored generated stress-test evidence directory.
-- **FILE-018**: `output/gatling/screenshots/` - ignored generated terminal or Jenkins-console screenshots.
+- **FILE-015**: `output/reports/pipeline-report.css` - ignored generated stylesheet for the final Pipeline HTML report.
+- **FILE-016**: `tests/scripts/test-generate-pipeline-report.sh` - shell regression test for consolidated report rendering.
+- **FILE-017**: `output/gatling/max-limit/` - ignored generated max-limit evidence directory.
+- **FILE-018**: `output/gatling/load-5m/` - ignored generated load-test evidence directory.
+- **FILE-019**: `output/gatling/stress-5m/` - ignored generated stress-test evidence directory.
+- **FILE-020**: `output/gatling/screenshots/` - ignored generated terminal or Jenkins-console screenshots.
 
 ## 6. Testing
 
 - **TEST-001**: `sh -n scripts/run-gatling-container scripts/run-gatling-max-limit scripts/run-gatling-load-5m scripts/run-gatling-stress-5m scripts/export-gatling-pdfs scripts/generate-pipeline-report` must pass.
 - **TEST-002**: `node --check tests/playwright/export-gatling-pdfs.js` must pass.
 - **TEST-003**: `./scripts/generate-pipeline-report` must create non-empty `output/reports/pipeline-report.html`.
+- **TEST-003A**: `sh tests/scripts/test-generate-pipeline-report.sh` must pass and prove the generated report uses external CSS, current Jenkins artifact URLs, status badges, opt-in max-limit wording, and evidence-backed stage states for missing/present artifacts.
 - **TEST-004**: `docker compose config --quiet` must pass.
 - **TEST-004A**: `docker compose up -d tomcat jenkins` must start both services.
 - **TEST-005**: `./scripts/deploy-war` must pass and print `Deployed URL: http://localhost:8080/meta/`.

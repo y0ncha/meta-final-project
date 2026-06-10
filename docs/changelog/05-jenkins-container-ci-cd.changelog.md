@@ -169,7 +169,7 @@ Remaining risks and follow-up:
 ## 2026-06-10 Availability Stage Visibility Follow-Up
 
 - Merged the old non-timer `Verify Tomcat` curl check into `Availability Check` so availability is visible in both SCM/manual and timer-triggered Jenkins runs.
-- Kept heavy stages gated away from `TimerTrigger`: checkout, evidence cleanup, Maven build, Tomcat deploy, Docker Pipeline preflight, Playwright, Gatling max-limit, Gatling load, and Gatling stress do not run on the five-minute availability schedule.
+- Kept heavy stages gated away from `TimerTrigger`: checkout, evidence cleanup, Maven build, Tomcat deploy, Docker Pipeline preflight, Playwright, Gatling max-limit, Gatling load, and Gatling stress do not run on the old five-minute monitor schedule.
 - Updated `docs/jenkins.md` and `docs/plans/05-jenkins-container-ci-cd.md` so the documented stage list and trigger behavior match the Jenkinsfile.
 
 Validation:
@@ -188,5 +188,18 @@ Remaining risks and follow-up:
 ## 2026-06-10 Superseded Availability Split
 
 - Instructor confirmation superseded the trigger-aware availability design above.
-- Plan 09 now owns availability monitoring through separate Jenkins job `meta-availability-monitor` with script path `Jenkinsfile.availability`.
+- Plan 09 now owns monitoring through separate Jenkins Freestyle job `meta-monitoring` with shell command `./scripts/run-monitoring-check`.
 - Plan 05 now owns only the CI/CD job `meta-container-ci-cd`: checkout, build, deploy, `Verify Tomcat`, Docker Pipeline preflight, Playwright, Gatling, and report publishing.
+
+## 2026-06-11 CI/CD Stage Graph Cleanup Follow-Up
+
+- Removed the separate visible `Checkout` and `Prepare Evidence Workspace` stages from `Jenkinsfile`.
+- Kept `skipDefaultCheckout(true)` and moved explicit `checkout scm`, `CHECKED_OUT_COMMIT` capture, and old generated evidence cleanup into the beginning of `Build WAR`.
+- Updated `docs/jenkins.md` to explain the CI/CD flow as pre-build, visible stages, and post-build instead of presenting checkout and evidence cleanup as assignment-facing stages.
+
+Validation:
+
+- Old visible setup stage scan: passed; `stage('Checkout')` and `stage('Prepare Evidence Workspace')` are no longer present.
+- `git diff --check`: passed.
+- Jenkins declarative linter for `/workspace/final-project/Jenkinsfile`: passed with `Jenkinsfile successfully validated.`
+- `python3 .agents/skills/compliance-validator/scripts/validate_compliance.py --target . --rules rules/compliance.md`: passed with `pass=71`, `warn=0`, `manual=9`, `fail=0`.
