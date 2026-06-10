@@ -53,14 +53,14 @@ Previous local validation setup used for Plan 05:
 
 The pipeline is the source-controlled CI/CD flow that Jenkins runs from `Jenkinsfile`.
 
-- `Checkout`: Runs `checkout scm`. This makes Jenkins fetch the repository and branch configured in the Pipeline job, so the build uses GitHub source code instead of files copied manually into the Jenkins container.
-- `Build WAR`: Runs `mvn -B clean package` and archives `target/meta.war`. Maven turns the JSP application into the WAR file Tomcat can deploy; archiving the WAR gives Jenkins build evidence and a traceable artifact.
-- `Deploy Tomcat`: Runs `./scripts/deploy-war` with `SKIP_BUILD=1`, `TOMCAT_SHARED_WEBAPPS_DIR=/tomcat-webapps`, and `DEPLOY_CHECK_URL="$DEPLOY_CHECK_URL"`. This reuses the repository deployment script, avoids rebuilding the WAR twice, writes the WAR into the shared Tomcat webapps volume, and waits until Tomcat serves the deployed app.
-- `Verify Tomcat`: Runs `curl -fsS "$APP_BASE_URL" >/dev/null`. This proves the deployment is not just copied to disk but reachable through Tomcat at `http://tomcat:8080/meta/` from inside the Docker network.
-- `Availability Check`: Runs the same `curl` check on the five-minute Jenkins schedule. This is the Jenkins-side availability monitor evidence required by the project; it is intentionally simple so failures are clear.
-- `Playwright Functional Test`: Runs `./scripts/run-playwright-container` only when that script exists. This keeps the CI/CD pipeline ready for the browser-test plan without failing Plan 05 before the Playwright script is added.
-- `Gatling Load Test`: Runs `./scripts/run-gatling-load-5m` only when that script exists. This is the hook for the required five-minute Gatling load test once the Gatling plan adds the script.
-- `Gatling Stress Test`: Runs `./scripts/run-gatling-stress-5m` only when that script exists. This is the hook for the required five-minute Gatling stress test once the Gatling plan adds the script.
+1. `Checkout`: Runs `checkout scm`. This makes Jenkins fetch the repository and branch configured in the Pipeline job, so the build uses GitHub source code instead of files copied manually into the Jenkins container.
+2. `Build WAR`: Runs `mvn -B clean package` and archives `target/meta.war`. Maven turns the JSP application into the WAR file Tomcat can deploy; archiving the WAR gives Jenkins build evidence and a traceable artifact.
+3. `Deploy Tomcat`: Runs `./scripts/deploy-war` with `SKIP_BUILD=1`, `TOMCAT_SHARED_WEBAPPS_DIR=/tomcat-webapps`, and `DEPLOY_CHECK_URL="$DEPLOY_CHECK_URL"`. This reuses the repository deployment script, avoids rebuilding the WAR twice, writes the WAR into the shared Tomcat webapps volume, and waits until Tomcat serves the deployed app.
+4. `Verify Tomcat`: Runs `curl -fsS "$APP_BASE_URL" >/dev/null`. This proves the deployment is not just copied to disk but reachable through Tomcat at `http://tomcat:8080/meta/` from inside the Docker network.
+5. `Availability Check`: Runs the same `curl` check on the five-minute Jenkins schedule. This is the Jenkins-side availability monitor evidence required by the project; it is intentionally simple so failures are clear.
+6. `Playwright Functional Test`: Runs `./scripts/run-playwright-container` only when that script exists. This keeps the CI/CD pipeline ready for the browser-test plan without failing Plan 05 before the Playwright script is added.
+7. `Gatling Load Test`: Runs `./scripts/run-gatling-load-5m` only when that script exists. This is the hook for the required five-minute Gatling load test once the Gatling plan adds the script.
+8. `Gatling Stress Test`: Runs `./scripts/run-gatling-stress-5m` only when that script exists. This is the hook for the required five-minute Gatling stress test once the Gatling plan adds the script.
 
 The `post` block always archives `output/**/*` if files exist. Later Playwright, Gatling, HAR, screenshots, and report files should be written under `output/` so Jenkins can attach them to the build without tracking generated evidence in Git.
 
