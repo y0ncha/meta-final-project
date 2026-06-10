@@ -58,3 +58,25 @@
 - Jenkins UI must be configured with Freestyle job `meta-monitoring`, trigger `H/5 * * * *`, Execute shell command `./scripts/run-monitoring-check`, and archive pattern `output/monitoring/**/*`.
 - The live scheduled monitoring build evidence must be captured from Jenkins after the Freestyle job is configured.
 - Local script runtime evidence still needs to be captured after Tomcat is running at `http://localhost:8080/meta/`.
+
+## 2026-06-11 Monitoring Timeout Follow-Up
+
+### What Changed
+
+- Added bounded curl behavior to `scripts/run-monitoring-check` with `--connect-timeout 5` and `--max-time 15`.
+- Added `tests/scripts/test-run-monitoring-check.sh` to intercept curl, assert the timeout flags, and verify `output/monitoring/latest-check.txt` is still written.
+- Updated `docs/monitoring.md` and `docs/plans/09-monitoring-and-jenkins-schedule.md` so the documented Freestyle command behavior matches the script.
+
+### Why It Changed
+
+- A Jenkins Freestyle Execute shell step does not inherit the old Pipeline-level timeout from the deleted monitoring Jenkinsfile.
+- Without an explicit curl bound, a stalled HTTP connection could occupy the scheduled monitoring executor and delay fresh 5-minute evidence.
+
+### Validation
+
+- `sh tests/scripts/test-run-monitoring-check.sh`: passed.
+- `sh -n scripts/run-monitoring-check`: passed.
+
+### Remaining Risks
+
+- Jenkins UI must still run the updated source-controlled `./scripts/run-monitoring-check` from a fresh SCM checkout for live scheduled evidence.

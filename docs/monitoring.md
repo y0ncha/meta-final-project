@@ -22,10 +22,10 @@ The Freestyle job runs:
 ./scripts/run-monitoring-check
 ```
 
-The script performs one HTTP check:
+The script performs one bounded HTTP check:
 
 ```sh
-curl -fsS "$APP_BASE_URL" >/dev/null
+curl --connect-timeout 5 --max-time 15 -fsS "$APP_BASE_URL" >/dev/null
 ```
 
 On success it writes:

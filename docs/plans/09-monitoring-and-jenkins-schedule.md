@@ -29,7 +29,7 @@ This plan implements the instructor-confirmed monitoring split. The Jenkins CI/C
 - **REQ-007**: Configure `meta-monitoring` post-build action to archive artifact pattern `output/monitoring/**/*`.
 - **REQ-008**: Remove the old monitoring Pipeline file; Freestyle jobs do not execute Jenkinsfiles.
 - **REQ-009**: Add `scripts/run-monitoring-check` with default `APP_BASE_URL=http://tomcat:8080/meta/`, default `JOB_NAME=meta-monitoring`, and default `BUILD_NUMBER=local`.
-- **REQ-010**: Ensure `scripts/run-monitoring-check` runs only an HTTP monitoring check with `curl -fsS "$APP_BASE_URL" >/dev/null`.
+- **REQ-010**: Ensure `scripts/run-monitoring-check` runs only a bounded HTTP monitoring check with `curl --connect-timeout 5 --max-time 15 -fsS "$APP_BASE_URL" >/dev/null`.
 - **REQ-011**: Ensure `scripts/run-monitoring-check` writes monitoring evidence to `output/monitoring/latest-check.txt`.
 - **REQ-012**: Keep UptimeRobot as the preferred official external monitor evidence.
 - **REQ-013**: Allow SiteMonitorLite only as a documented fallback monitor tool.
@@ -61,7 +61,7 @@ This plan implements the instructor-confirmed monitoring split. The Jenkins CI/C
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
 | TASK-005 | Implement `scripts/run-monitoring-check` with `set -eu`, default `APP_BASE_URL=http://tomcat:8080/meta/`, default `JOB_NAME=meta-monitoring`, and default `BUILD_NUMBER=local`. | ✅ | 2026-06-11 |
-| TASK-006 | In `scripts/run-monitoring-check`, create `output/monitoring`, run `curl -fsS "$APP_BASE_URL" >/dev/null`, and write `output/monitoring/latest-check.txt`. | ✅ | 2026-06-11 |
+| TASK-006 | In `scripts/run-monitoring-check`, create `output/monitoring`, run bounded `curl --connect-timeout 5 --max-time 15 -fsS "$APP_BASE_URL" >/dev/null`, and write `output/monitoring/latest-check.txt`. | ✅ | 2026-06-11 |
 | TASK-007 | Ensure `scripts/run-monitoring-check` does not invoke Maven, deployment, Playwright, Gatling, Docker, or Jenkins Pipeline syntax. | ✅ | 2026-06-11 |
 
 ### Implementation Phase 3
@@ -91,6 +91,7 @@ This plan implements the instructor-confirmed monitoring split. The Jenkins CI/C
 | TASK-019 | Run `docker compose config --quiet`. | ✅ | 2026-06-11 |
 | TASK-020 | Run local compliance validator against `rules/compliance.md`. | ✅ | 2026-06-11 |
 | TASK-021 | If Tomcat is reachable at `http://localhost:8080/meta/`, run `APP_BASE_URL=http://localhost:8080/meta/ ./scripts/run-monitoring-check`; otherwise document the blocker. | ✅ | 2026-06-11 |
+| TASK-022 | Add and run `tests/scripts/test-run-monitoring-check.sh` to prove the Freestyle command uses bounded curl timeouts and still writes monitoring evidence. | ✅ | 2026-06-11 |
 
 ## 3. Alternatives
 
@@ -116,6 +117,7 @@ This plan implements the instructor-confirmed monitoring split. The Jenkins CI/C
 - **FILE-005**: `docs/plans/05-jenkins-container-ci-cd.md` and `docs/changelog/05-jenkins-container-ci-cd.changelog.md` - cross-plan references to Plan 09.
 - **FILE-006**: `docs/plans/09-monitoring-and-jenkins-schedule.md` - this source implementation plan.
 - **FILE-007**: `docs/changelog/09-monitoring-and-jenkins-schedule.changelog.md` - closeout changelog.
+- **FILE-008**: `tests/scripts/test-run-monitoring-check.sh` - shell regression test for bounded monitoring curl behavior and evidence output.
 
 ## 6. Testing
 
@@ -129,6 +131,7 @@ This plan implements the instructor-confirmed monitoring split. The Jenkins CI/C
 - **TEST-008**: `python3 .agents/skills/compliance-validator/scripts/validate_compliance.py --target . --rules rules/compliance.md` must pass with zero failures.
 - **TEST-009**: If Tomcat is reachable locally, `APP_BASE_URL=http://localhost:8080/meta/ ./scripts/run-monitoring-check` must pass.
 - **TEST-010**: No Gatling command may be run directly for this plan.
+- **TEST-011**: `sh tests/scripts/test-run-monitoring-check.sh` must pass and prove `scripts/run-monitoring-check` calls curl with `--connect-timeout 5` and `--max-time 15`.
 
 ## 7. Risks & Assumptions
 
