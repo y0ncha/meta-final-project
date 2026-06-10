@@ -148,3 +148,39 @@ Validation:
 Remaining risks and follow-up:
 
 - Gatling validation was not run for this correction because `AGENTS.md` requires asking the user to run Gatling commands directly.
+
+## 2026-06-10 Docker Pipeline Preflight Quote Fix
+
+- Updated `Jenkinsfile` so the Docker Pipeline preflight HTTP probe runs Node from a single-quoted heredoc instead of `sh 'node -e "..."'`.
+- Root cause: Groovy and shell quote handling removed the JavaScript quotes around `http` and `error`, so Jenkins executed `require(http)` and `.on(error)` and Node failed with `TypeError [ERR_INVALID_ARG_TYPE]`.
+
+Validation:
+
+- `if rg -n "sh 'node -e \\\"" Jenkinsfile; then exit 1; fi`: failed before the fix and passed after the fix.
+- `awk '/node <<'\\''NODE'\\''/{flag=1;next}/^NODE/{flag=0}flag' Jenkinsfile | node --check`: passed.
+- `git diff --check`: passed.
+- `docker compose exec -T jenkins sh -lc '. /var/jenkins_home/codex-automation.env && curl -fsS -u "$JENKINS_USER:$JENKINS_TOKEN" -X POST -F "jenkinsfile=</workspace/final-project/Jenkinsfile" "http://localhost:8080/pipeline-model-converter/validate"'`: passed with `Jenkinsfile successfully validated.`
+- `python3 .agents/skills/compliance-validator/scripts/validate_compliance.py --target . --rules rules/compliance.md`: passed with no failures.
+
+Remaining risks and follow-up:
+
+- No Gatling validation was run because `AGENTS.md` requires asking the user before direct Gatling execution.
+
+## 2026-06-10 Availability Stage Visibility Follow-Up
+
+- Merged the old non-timer `Verify Tomcat` curl check into `Availability Check` so availability is visible in both SCM/manual and timer-triggered Jenkins runs.
+- Kept heavy stages gated away from `TimerTrigger`: checkout, evidence cleanup, Maven build, Tomcat deploy, Docker Pipeline preflight, Playwright, Gatling max-limit, Gatling load, and Gatling stress do not run on the five-minute availability schedule.
+- Updated `docs/jenkins.md` and `docs/plans/05-jenkins-container-ci-cd.md` so the documented stage list and trigger behavior match the Jenkinsfile.
+
+Validation:
+
+- `if rg -q "stage\\('Verify Tomcat'\\)" Jenkinsfile; then printf 'FAIL: Verify Tomcat stage still exists\\n'; exit 1; fi`: failed before the fix and passed after the fix.
+- `if ! rg -q "stage\\('Availability Check'\\)" Jenkinsfile; then printf 'FAIL: Availability Check stage missing\\n'; exit 1; fi`: passed.
+- Timer-gate scan confirmed every heavy stage still contains `triggeredBy 'TimerTrigger'` under a `not` condition.
+- `git diff --check`: passed.
+- `docker compose exec -T jenkins sh -lc '. /var/jenkins_home/codex-automation.env && curl -fsS -u "$JENKINS_USER:$JENKINS_TOKEN" -X POST -F "jenkinsfile=</workspace/final-project/Jenkinsfile" "http://localhost:8080/pipeline-model-converter/validate"'`: passed with `Jenkinsfile successfully validated.`
+- `python3 .agents/skills/compliance-validator/scripts/validate_compliance.py --target . --rules rules/compliance.md`: passed with `pass=70`, `warn=0`, `manual=9`, `fail=0`.
+
+Remaining risks and follow-up:
+
+- This validates the source-controlled Jenkinsfile shape locally. The live SCM-backed Jenkins job will only execute this change after it is committed and the job checks out the updated branch.

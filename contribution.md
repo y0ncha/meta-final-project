@@ -6,12 +6,11 @@ This file defines how code and documentation changes are contributed to this rep
 
 - Read the relevant source plan from `docs/plans/<plan-name>.md`.
 - Briefly review `docs/changelog/` before writing a new implementation plan so the plan stays aligned with prior decisions and reuses existing logic where appropriate.
-- Rewrite the source plan into an implementation plan using the `create-implementation-plan` skill before making implementation changes.
-- Read `rules/compliance.md` and confirm the implementation plan does not conflict with the project constraints.
-- If the implementation plan conflicts with `rules/compliance.md`, stop and report the conflict before editing files or running mutating commands.
-- Create or switch to the corresponding implementation branch before editing files.
-- Use `feature/<plan-file-stem>` as the branch name unless the user explicitly requests another branch name.
-- If branch creation or switching is blocked by uncommitted work, report the current Git state and ask how to handle it.
+- Stay on the current branch unless the user explicitly asks for a branch change or invokes the `create-implementation-plan` skill for new planned work.
+- When `create-implementation-plan` is invoked, rewrite the matching source plan in `docs/plans/` and create or switch to a branch with the same plan stem, using `feature/<plan-file-stem>` unless the user explicitly requests another branch name.
+- Before creating or switching branches, verify the current branch, upstream status, and working tree state; if the target branch is behind its base or branch switching is blocked by uncommitted work, report the state before editing.
+- Read `rules/compliance.md` and confirm the planned change does not conflict with the project constraints.
+- If the planned change conflicts with `rules/compliance.md`, stop and report the conflict before editing files or running mutating commands.
 
 ## During Implementation
 
@@ -24,6 +23,7 @@ This file defines how code and documentation changes are contributed to this rep
 ## Follow-Up Changes To Existing Plans
 
 - If a change is an enhancement, correction, or implementation-detail change for an existing plan, update that existing `docs/plans/<plan-name>.md` and `docs/changelog/<plan-name>.changelog.md` instead of creating a standalone plan.
+- Keep follow-up changes on the current branch unless the user explicitly asks for branch movement.
 - Add dated follow-up notes when a later decision supersedes an earlier task, alternative, or risk. Preserve the old rationale only when it is useful history; make the current required behavior unambiguous.
 - Create a new numbered plan only for a genuinely separate deliverable, workflow, or assignment requirement that cannot be evaluated as part of an existing plan.
 

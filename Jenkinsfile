@@ -84,21 +84,7 @@ pipeline {
       }
     }
 
-    stage('Verify Tomcat') {
-      when {
-        not {
-          triggeredBy 'TimerTrigger'
-        }
-      }
-      steps {
-        sh 'curl -fsS "$APP_BASE_URL" >/dev/null'
-      }
-    }
-
     stage('Availability Check') {
-      when {
-        triggeredBy 'TimerTrigger'
-      }
       steps {
         sh 'curl -fsS "$APP_BASE_URL" >/dev/null'
       }
@@ -121,7 +107,16 @@ pipeline {
             sh 'test "$PWD" = "$WORKSPACE"'
             sh 'git rev-parse --is-inside-work-tree'
             sh 'test "$(git rev-parse HEAD)" = "$CHECKED_OUT_COMMIT"'
-            sh 'node -e "const url = process.env.APP_BASE_URL; require(\"http\").get(url, (res) => process.exit(res.statusCode >= 200 && res.statusCode < 400 ? 0 : 1)).on(\"error\", () => process.exit(1))"'
+            sh '''node <<'NODE'
+const url = process.env.APP_BASE_URL;
+const http = require('http');
+
+http
+  .get(url, (res) => {
+    process.exit(res.statusCode >= 200 && res.statusCode < 400 ? 0 : 1);
+  })
+  .on('error', () => process.exit(1));
+NODE'''
           }
         }
       }

@@ -22,7 +22,7 @@ This follow-up refactors the completed Jenkins container CI/CD plan so Jenkins r
 
 ## 1. Requirements & Constraints
 
-- **REQ-001**: Keep branch `feature/08-gatling-container-tests` for this follow-up because the user explicitly requested it.
+- **REQ-001**: Keep follow-up changes on the current working branch unless the user explicitly asks for branch movement; this closeout runs from `feature/05-jenkins-container-ci-cd` before merging back to `main`.
 - **REQ-002**: Keep Compose project name `meta`, service `tomcat`, service `jenkins`, network `meta`, volume `tomcat_webapps`, and volume `jenkins_home`.
 - **REQ-003**: Keep Tomcat exposed at `http://localhost:8080/meta/` and Jenkins exposed at `http://localhost:8081/`.
 - **REQ-004**: Keep Jenkins deployment through `target/meta.war` copied to the shared Tomcat webapps volume mounted at `/tomcat-webapps`.
@@ -39,6 +39,8 @@ This follow-up refactors the completed Jenkins container CI/CD plan so Jenkins r
 - **REQ-015**: Keep `docker-compose.yml` limited to regular services `tomcat` and `jenkins`; no `tools` profile services may remain.
 - **REQ-016**: Keep generated evidence under ignored `output/` paths and do not delete required evidence unless regenerated.
 - **REQ-017**: Keep the Jenkins job name `meta-container-ci-cd` and root `Jenkinsfile` as the source-controlled Pipeline entrypoint.
+- **REQ-018**: Keep the Docker Pipeline preflight HTTP probe immune to Groovy and shell quote stripping; do not embed JavaScript string literals inside a nested `sh 'node -e "..."'` command.
+- **REQ-019**: Keep `Availability Check` visible in both SCM/manual and timer-triggered build paths while keeping build, deploy, Docker preflight, Playwright, and Gatling excluded from timer-triggered runs.
 - **CON-001**: Read `contribution.md` and `rules/compliance.md` before mutating files.
 - **CON-002**: Stop before editing if this plan conflicts with `rules/compliance.md`; no conflict was found because the rules prefer containerized Jenkins, Playwright, and Gatling.
 - **CON-003**: Do not add Jenkins Docker Cloud agents or dynamic agent configuration.
@@ -56,7 +58,7 @@ This follow-up refactors the completed Jenkins container CI/CD plan so Jenkins r
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
 | TASK-001 | Read `contribution.md` and `rules/compliance.md`; confirm this follow-up does not conflict with project constraints. | ✅ | 2026-06-10 |
-| TASK-002 | Run `git status --short --branch`; confirm current branch is `feature/08-gatling-container-tests` and report unrelated work if present. | ✅ | 2026-06-10 |
+| TASK-002 | Run `git status --short --branch`; confirm the current branch and working tree state, and report unrelated work if present. | ✅ | 2026-06-10 |
 | TASK-003 | Read current `docs/plans/05-jenkins-container-ci-cd.md`, `docs/changelog/05-jenkins-container-ci-cd.changelog.md`, `Jenkinsfile`, `docker-compose.yml`, and runner scripts before editing. | ✅ | 2026-06-10 |
 | TASK-004 | Rewrite `docs/plans/05-jenkins-container-ci-cd.md` in place for this Docker Pipeline follow-up and set status to `In progress`. | ✅ | 2026-06-10 |
 
@@ -166,7 +168,7 @@ This follow-up refactors the completed Jenkins container CI/CD plan so Jenkins r
 - **RISK-003**: The Jenkins SCM-backed job fetches committed GitHub content, so validating uncommitted Jenkinsfile edits may require declarative linter or a temporary local job before commit.
 - **RISK-004**: `--volumes-from meta-jenkins` depends on the Jenkins container name staying stable.
 - **RISK-005**: Removing Compose runner services requires documentation cleanup across earlier plan follow-ups so future commands do not point at removed services.
-- **ASSUMPTION-001**: Current branch remains `feature/08-gatling-container-tests`.
+- **ASSUMPTION-001**: Current closeout branch is `feature/05-jenkins-container-ci-cd` before merge; after merge, `main` contains the committed change.
 - **ASSUMPTION-002**: `meta-jenkins` and `meta-tomcat` are the active container names from `docker-compose.yml`.
 - **ASSUMPTION-003**: Jenkins Docker Pipeline can start containers on network `meta` and those containers can resolve `tomcat`.
 
@@ -181,3 +183,8 @@ This follow-up refactors the completed Jenkins container CI/CD plan so Jenkins r
 - [Monitoring and Jenkins schedule plan](./09-monitoring-and-jenkins-schedule.md)
 - [Jenkins documentation: Using a Jenkinsfile](https://www.jenkins.io/doc/book/pipeline/jenkinsfile/)
 - [Jenkins documentation: Docker Pipeline](https://www.jenkins.io/doc/book/pipeline/docker/)
+
+## 9. Follow-Up Notes
+
+- 2026-06-10: Replaced the Docker Pipeline preflight `node -e` HTTP probe with a single-quoted heredoc. Jenkins had executed `require(http)` and `.on(error)` after Groovy and shell quote handling removed the JavaScript string quotes, causing `TypeError [ERR_INVALID_ARG_TYPE]` before the Tomcat reachability check could run.
+- 2026-06-10: Merged the old non-timer `Verify Tomcat` curl stage into `Availability Check` so both SCM/manual and timer builds show the same availability evidence stage. Timer builds still skip checkout, evidence cleanup, Maven build, deploy, Docker preflight, Playwright, and Gatling.
