@@ -14,6 +14,12 @@ Run Gatling in Docker for max-limit discovery, 5-minute load test, and 5-minute 
 
 ## Implementation
 - Keep target URL configurable with `APP_BASE_URL`.
+- Use the same ephemeral container-runner pattern as Playwright:
+  - Local or Jenkins runner script starts Gatling with `docker run --rm`.
+  - Gatling container joins the `meta` Docker network.
+  - Gatling executes the selected simulation and exits when the run finishes.
+  - Docker removes the Gatling container automatically after exit.
+- Scope Docker socket access to Jenkins or the local runner that launches the Gatling container; do not mount `/var/run/docker.sock` into the Gatling container itself.
 - Create separate Gatling simulations or separate parameters for:
   - Max-limit discovery.
   - 5-minute load test.
