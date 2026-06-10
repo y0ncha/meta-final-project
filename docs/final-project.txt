@@ -1,0 +1,72 @@
+         MTA 2026 - Semester B
+                                                                           • You will work in groups of 4-5s
+         Lecturer:                                                         • Reminder – the project is 50%
+                                                                             from the final grade
+         Moshe Mamia
+                                                                           • The project needs to be sent to
+                                               Final Project                 me till 15/06/26 midnight (after
+                                                                             that date, your grade will get
+                                                                             down)
+Project
+    Background: You’re a DevOps Engineer working for “MeTA” corporate.
+    Your mission is to deliver your application from development into production, leveraging the knowledge
+    you gained in DevOps course:
+    Orchestrate, control, deploy, automate, monitor and performance test / analysis. The below should be
+    as a single CI/CD pipeline.
+    Here’s the scenario:
+    1.  Create/find a simple web application (jsp) with at least one link, one button and one input text box
+    2.  Store the code in GIT and GitHub
+    3.  Create a folder in Tomcat under webapps that its folder name includes your names
+    4.  Deploy the simple web application into production environment - the Tomcat (Hint: use Jenkins job to
+        take your code from Git/GITHub into the Tomcat)
+    5. Bonus – expose your application to the internet by providing a public IP, perform bullets 6 – 10
+        accordingly, without compromise on good results / graphs! +10 points bonus
+    6. Create availability monitor to the application, you can use “SiteMonitorLite” or “UptimeRobot”
+        You should trigger it via Jenkins job to work every 5 minutes
+    7. Automate a simple test with 5 validations of your application functionality, using Selenium IDE or
+        similar. You should trigger it via Jenkins job
+    8. Use Gatling to find your application max limit
+    9. Perform 5 minutes Load test on your app with Gatling, trigger it via Jenkins job
+    10. Perform 5 minutes of Stress test on your app with Gatling, trigger it via Jenkins job
+I.E. – you can get up to project grade of 110!!!
+
+Finished? Great!!            Please send me the following:
+
+a) The jsp file you used
+b) Screenshot of your Github with the application/jsp in it
+c) Screenshot of the application in your tomcat (I’d like to see the url – localhost:8080/…)
+d) A link to your github public repo
+e) Name of monitor tool you used, what did you monitor and a screenshot of your monitor passed
+f) Selenium IDE file (.side)
+g) Selenium IDE screenshot of passed run, explain what kind of validation you used and why (positive test,
+   negative test, use verify and assert in a smart way). Specify in words what validations you used and why
+h) Describe your HAR scenario in words (for example: click on… -> type… -> click …)
+i) Attach the HAR file
+j) Write in the email what is your app max limit, explain why this is the limit and how you found it
+k) Attach 3 screenshots of: max limit, load and stress gatling run summary (screenshot of the CMD)
+l) Attach 3 PDFs (max limit, load and stress) with Gatling results/graphs (export/print the index.html to pdf),
+   explain why the results look this way. Guess, what happened in the system
+Send those 12 items to mosh.mta2@gmail.com the email subject: “Final Exercise from: <yournames>”
+
+Project defense instructions
+      A. You will need to demo your work from your Laptop connected to the projector/ google meet
+      B. Every project defense – 15-20 minutes
+      C. You will be asked in live to do a small code change in Git and push to GitHub, be prepared.
+      D. Predefined Jenkins job will identify the new code and copy it to Tomcat (production), same as step 4
+         above
+      E. You will perform also steps 6-10
+      F. During the defense – you will be asked to answer questions related to the topics learned in the class
+      G. The defense is part of your grade
+
+
+Appendix
+*        You can find examples for index.jsp files on the internet, or chatGPT
+
+**       You can use whatever monitor tool or application you want
+
+***      Many ways to run selenium from Jenkins at least 10 different ways!
+
+**** Gatling documentation: https://gatling.io/docs/gatling/reference/current/cheat-sheet/
+
+Reminder: Install plugin in Jenkins: Manage Jenkins->Manage Plugins->Advanced->upload plugin
+
