@@ -1,10 +1,10 @@
 # Final Project Compliance Rules
 
-This file is the active assignment and project-constraint source for the MTA 2026 Semester B DevOps final project. The source assignment is `final-project.pdf`. The assignment is 50% of the final grade and must be submitted by 2026-06-15 at midnight.
+The authoritative assignment source is `final-project.pdf`. This file is the active operational compliance checklist for the MTA 2026 Semester B DevOps final project, derived from `final-project.pdf` plus documented project-specific overrides. The assignment is 50% of the final grade and must be submitted by 2026-06-15 at midnight.
 
 ## Approved Project Overrides
 
-- The instructor approved using containers for the project tools. Use the containerized track as the default implementation path.
+- The instructor explicitly approved using containers instead of host-installed project tools. Use the containerized track as the default implementation path.
 - Run Apache Tomcat 8.5.x in Docker as the JSP production runtime. It must still deploy the app under Tomcat `webapps` and serve the app at `http://localhost:8080/meta/` for local evidence.
 - Run Jenkins in Docker as the CI/CD orchestrator. Jenkins must use a persistent volume and must not claim port `8080`; expose Jenkins at `http://localhost:8081/`.
 - Run Gatling in Docker for max-limit, 5-minute load, and 5-minute stress testing.
