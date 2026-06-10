@@ -57,6 +57,7 @@ status_class() {
   status="$1"
   case "$status" in
     Available) printf 'status-ok' ;;
+    "Console log") printf 'status-log' ;;
     "Opt-in / not run") printf 'status-opt-in' ;;
     Partial) printf 'status-partial' ;;
     *) printf 'status-missing' ;;
@@ -221,6 +222,8 @@ cat > "$CSS_FILE" <<'EOF'
   --head: #edf2f7;
   --ok-bg: #dcfce7;
   --ok-text: #166534;
+  --log-bg: #e0f2fe;
+  --log-text: #075985;
   --opt-bg: #fef3c7;
   --opt-text: #92400e;
   --missing-bg: #fee2e2;
@@ -372,6 +375,11 @@ tr:last-child td { border-bottom: 0; }
   color: var(--ok-text);
 }
 
+.status-log {
+  background: var(--log-bg);
+  color: var(--log-text);
+}
+
 .status-opt-in {
   background: var(--opt-bg);
   color: var(--opt-text);
@@ -450,18 +458,38 @@ cat > "$REPORT_FILE" <<EOF
       <h2>Pipeline Stages</h2>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Stage</th><th>Primary Evidence</th><th>Status</th><th>Notes</th></tr></thead>
+          <thead><tr><th>Stage</th><th>Primary Evidence</th><th>Evidence State</th><th>Notes</th></tr></thead>
           <tbody>
 EOF
 
-write_stage_row "Checkout" "Jenkins console log" "Available" "Checks out the configured GitHub branch for manual or SCM-triggered builds."
-write_stage_row "Build WAR" "Archived target/meta.war" "Available" "Builds the Maven WAR for Tomcat deployment."
-write_stage_row "Deploy Tomcat" "Jenkins console log" "Available" "Deploys meta.war into the Tomcat webapps volume."
-write_stage_row "Verify Tomcat" "Jenkins console log" "Available" "Checks http://tomcat:8080/meta/ after deployment from the Docker network."
-write_stage_row "Playwright Functional Test" "HTML, JUnit XML, screenshots, log" "Available" "Runs when the Playwright runner script exists."
-write_stage_row "Gatling Max Limit" "HTML, PDF, raw report, log" "Opt-in / not run" "Requires RUN_GATLING_MAX_LIMIT=true. Skipped on normal automatic builds unless manually enabled."
-write_stage_row "Gatling Load Test" "HTML, PDF, raw report, log" "Available" "Required five-minute load test."
-write_stage_row "Gatling Stress Test" "HTML, PDF, raw report, log" "Available" "Required five-minute stress test."
+build_war_status=$(artifact_status "target/meta.war")
+playwright_status=$(bundle_status "required" \
+  "output/playwright/06-playwright-run.log" \
+  "output/playwright/junit.xml" \
+  "output/playwright/jenkins-report/index.html" \
+  "output/playwright/screenshots/06-valid-submit.png" \
+  "output/playwright/screenshots/06-empty-submit.png")
+gatling_max_status=$(bundle_status "opt-in" \
+  "output/gatling/max-limit/max-limit-run.log" \
+  "output/gatling/max-limit/index.html" \
+  "output/gatling/max-limit/max-limit-report.pdf")
+gatling_load_status=$(bundle_status "required" \
+  "output/gatling/load-5m/load-5m-run.log" \
+  "output/gatling/load-5m/index.html" \
+  "output/gatling/load-5m/load-5m-report.pdf")
+gatling_stress_status=$(bundle_status "required" \
+  "output/gatling/stress-5m/stress-5m-run.log" \
+  "output/gatling/stress-5m/index.html" \
+  "output/gatling/stress-5m/stress-5m-report.pdf")
+
+write_stage_row "Checkout" "Jenkins console log" "Console log" "Checks out the configured GitHub branch for manual or SCM-triggered builds."
+write_stage_row "Build WAR" "Archived target/meta.war" "$build_war_status" "Builds the Maven WAR for Tomcat deployment."
+write_stage_row "Deploy Tomcat" "Jenkins console log" "Console log" "Deploys meta.war into the Tomcat webapps volume."
+write_stage_row "Verify Tomcat" "Jenkins console log" "Console log" "Checks http://tomcat:8080/meta/ after deployment from the Docker network."
+write_stage_row "Playwright Functional Test" "HTML, JUnit XML, screenshots, log" "$playwright_status" "Runs when the Playwright runner script exists."
+write_stage_row "Gatling Max Limit" "HTML, PDF, raw report, log" "$gatling_max_status" "Requires RUN_GATLING_MAX_LIMIT=true. Skipped on normal automatic builds unless manually enabled."
+write_stage_row "Gatling Load Test" "HTML, PDF, raw report, log" "$gatling_load_status" "Required five-minute load test."
+write_stage_row "Gatling Stress Test" "HTML, PDF, raw report, log" "$gatling_stress_status" "Required five-minute stress test."
 
 cat >> "$REPORT_FILE" <<EOF
           </tbody>
