@@ -10,9 +10,10 @@
 - Added `src/gatling/user-files/simulations/MetaSimulation.scala` with run-type selection, JSP GET/POST checks, and failure/response-time assertions.
 - Added automated Gatling PDF export through the Playwright container.
 - Updated Jenkins pipeline behavior to include optional max-limit execution and required load/stress stages for non-timer builds.
-- Added profiled Compose one-shot runner services for Playwright, HAR, and Gatling so project-owned validation containers appear under the `meta` Compose project.
-- Updated the runner scripts to call `docker compose --profile tools run --rm --no-deps` instead of raw `docker run`.
-- Kept Playwright functional validation and HAR capture isolated by using separate one-shot services.
+- Removed the earlier profiled Compose runner-service approach; `docker-compose.yml` now remains limited to long-running `tomcat` and `jenkins` services.
+- Updated local Playwright, HAR, Gatling, and PDF-export runners to start disposable containers directly with `docker run`.
+- Updated Jenkins Playwright, Gatling, and PDF-export execution to use Jenkins Docker Pipeline containers from the checked-out SCM workspace.
+- Kept Playwright functional validation and HAR capture isolated by using separate disposable containers.
 - Moved Gatling PDF export into Jenkins `post` finalization before final pipeline report generation and publishing.
 - Kept local Gatling PDF export strict while allowing Jenkins finalization to export only the reports produced in builds where optional max-limit discovery is skipped.
 - Cleared stale generated evidence at the start of non-timer Jenkins builds and changed the Gatling runner to normalize reports before returning assertion-failure status.
@@ -52,12 +53,8 @@ Generated evidence remains ignored under `output/`. The older `08-*` generated e
 - `node --check tests/playwright/export-gatling-pdfs.js`
 - `node --check tests/playwright/capture-har.js`
 - `docker compose config --quiet`
-- `docker compose --profile tools config --quiet`
-- `docker compose --profile tools config`
-- `docker compose --profile tools run --rm --no-deps --name meta-compose-smoke-playwright playwright-runner /bin/bash -lc 'pwd && test "$APP_BASE_URL" = "http://tomcat:8080/meta/"'`
-- `docker compose --profile tools run --rm --no-deps --name meta-compose-smoke-playwright-jenkins playwright-runner-jenkins /bin/bash -lc 'pwd && test -f Jenkinsfile'`
-- `docker compose --profile tools run --rm --no-deps --name meta-compose-smoke-har har-runner /bin/bash -lc 'pwd && test "$HAR_PATH" = "output/har/meta-functional-flow.har"'`
-- `docker compose --profile tools run --rm --no-deps --name meta-compose-smoke-gatling gatling-runner -h`
+- Docker Pipeline-equivalent Playwright smoke with `--network meta`, `--volumes-from meta-jenkins`, and working directory `/var/jenkins_home/workspace/meta-container-ci-cd` proved the disposable container ran from the SCM workspace, matched the checked-out commit, and reached Tomcat.
+- Jenkins declarative linter for `Jenkinsfile`: passed.
 - `./scripts/run-playwright-container`
 - `./scripts/capture-har`
 - `./scripts/export-gatling-pdfs`
@@ -76,6 +73,12 @@ Generated evidence remains ignored under `output/`. The older `08-*` generated e
   - Result: `pass=70`, `warn=0`, `manual=9`, `fail=0`.
   - Manual items were reviewed as negative-rule or defense-readiness checks. No hard compliance failure was found for this closeout.
 - `git diff --check`
+
+## 2026-06-10 Documentation Drift Cleanup
+
+- Removed stale closeout wording that still described profiled Compose runner services as the current Plan 08 execution model.
+- Removed obsolete profiled Compose validation entries from the active validation list.
+- Kept the remaining evidence-pending status unchanged because Gatling terminal/Jenkins-console screenshots and live Jenkins build-page evidence are still required.
 
 ## Remaining Risks And Follow-Up
 

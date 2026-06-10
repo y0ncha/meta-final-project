@@ -43,7 +43,10 @@ pipeline {
         }
       }
       steps {
-        checkout scm
+        script {
+          def scmVars = checkout scm
+          env.CHECKED_OUT_COMMIT = scmVars.GIT_COMMIT ?: sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+        }
       }
     }
 
@@ -112,10 +115,12 @@ pipeline {
         sh 'docker compose version'
         sh 'docker info'
         script {
-          def playwrightArgs = "--network meta --volumes-from meta-jenkins -w /workspace/final-project -e APP_BASE_URL=${env.APP_BASE_URL} -e CI=true"
+          def playwrightArgs = "--network meta --volumes-from meta-jenkins -w ${env.WORKSPACE} -e APP_BASE_URL=${env.APP_BASE_URL} -e WORKSPACE=${env.WORKSPACE} -e CHECKED_OUT_COMMIT=${env.CHECKED_OUT_COMMIT} -e CI=true"
           docker.image(env.PLAYWRIGHT_IMAGE).inside(playwrightArgs) {
             sh 'pwd'
-            sh 'test "$PWD" = "/workspace/final-project"'
+            sh 'test "$PWD" = "$WORKSPACE"'
+            sh 'git rev-parse --is-inside-work-tree'
+            sh 'test "$(git rev-parse HEAD)" = "$CHECKED_OUT_COMMIT"'
             sh 'node -e "const url = process.env.APP_BASE_URL; require(\"http\").get(url, (res) => process.exit(res.statusCode >= 200 && res.statusCode < 400 ? 0 : 1)).on(\"error\", () => process.exit(1))"'
           }
         }
@@ -133,7 +138,7 @@ pipeline {
       }
       steps {
         script {
-          def playwrightArgs = "--network meta --volumes-from meta-jenkins -w /workspace/final-project -e APP_BASE_URL=${env.APP_BASE_URL} -e CI=true"
+          def playwrightArgs = "--network meta --volumes-from meta-jenkins -w ${env.WORKSPACE} -e APP_BASE_URL=${env.APP_BASE_URL} -e CI=true"
           docker.image(env.PLAYWRIGHT_IMAGE).inside(playwrightArgs) {
             sh 'PLAYWRIGHT_DOCKER_PIPELINE=1 ./scripts/run-playwright-container'
           }
@@ -153,7 +158,7 @@ pipeline {
       }
       steps {
         script {
-          def gatlingArgs = "--platform ${env.GATLING_PLATFORM} --entrypoint= --network meta --volumes-from meta-jenkins -w /workspace/final-project -e APP_BASE_URL=${env.APP_BASE_URL} -e GATLING_RUN_TYPE=max-limit -e GATLING_LOAD_USERS_PER_SEC=${env.GATLING_LOAD_USERS_PER_SEC} -e GATLING_STRESS_START_USERS_PER_SEC=${env.GATLING_STRESS_START_USERS_PER_SEC} -e GATLING_STRESS_TARGET_USERS_PER_SEC=${env.GATLING_STRESS_TARGET_USERS_PER_SEC} -e GATLING_MAX_START_USERS_PER_SEC=${env.GATLING_MAX_START_USERS_PER_SEC} -e GATLING_MAX_STEP_USERS_PER_SEC=${env.GATLING_MAX_STEP_USERS_PER_SEC} -e GATLING_MAX_LEVEL_COUNT=${env.GATLING_MAX_LEVEL_COUNT} -e GATLING_MAX_LEVEL_SECONDS=${env.GATLING_MAX_LEVEL_SECONDS} -e GATLING_MAX_RAMP_SECONDS=${env.GATLING_MAX_RAMP_SECONDS}"
+          def gatlingArgs = "--platform ${env.GATLING_PLATFORM} --entrypoint= --network meta --volumes-from meta-jenkins -w ${env.WORKSPACE} -e APP_BASE_URL=${env.APP_BASE_URL} -e GATLING_RUN_TYPE=max-limit -e GATLING_LOAD_USERS_PER_SEC=${env.GATLING_LOAD_USERS_PER_SEC} -e GATLING_STRESS_START_USERS_PER_SEC=${env.GATLING_STRESS_START_USERS_PER_SEC} -e GATLING_STRESS_TARGET_USERS_PER_SEC=${env.GATLING_STRESS_TARGET_USERS_PER_SEC} -e GATLING_MAX_START_USERS_PER_SEC=${env.GATLING_MAX_START_USERS_PER_SEC} -e GATLING_MAX_STEP_USERS_PER_SEC=${env.GATLING_MAX_STEP_USERS_PER_SEC} -e GATLING_MAX_LEVEL_COUNT=${env.GATLING_MAX_LEVEL_COUNT} -e GATLING_MAX_LEVEL_SECONDS=${env.GATLING_MAX_LEVEL_SECONDS} -e GATLING_MAX_RAMP_SECONDS=${env.GATLING_MAX_RAMP_SECONDS}"
           docker.image(env.GATLING_IMAGE).inside(gatlingArgs) {
             sh 'GATLING_DOCKER_PIPELINE=1 GATLING_RUN_TYPE=max-limit ./scripts/run-gatling-container'
           }
@@ -172,7 +177,7 @@ pipeline {
       }
       steps {
         script {
-          def gatlingArgs = "--platform ${env.GATLING_PLATFORM} --entrypoint= --network meta --volumes-from meta-jenkins -w /workspace/final-project -e APP_BASE_URL=${env.APP_BASE_URL} -e GATLING_RUN_TYPE=load-5m -e GATLING_LOAD_USERS_PER_SEC=${env.GATLING_LOAD_USERS_PER_SEC} -e GATLING_STRESS_START_USERS_PER_SEC=${env.GATLING_STRESS_START_USERS_PER_SEC} -e GATLING_STRESS_TARGET_USERS_PER_SEC=${env.GATLING_STRESS_TARGET_USERS_PER_SEC} -e GATLING_MAX_START_USERS_PER_SEC=${env.GATLING_MAX_START_USERS_PER_SEC} -e GATLING_MAX_STEP_USERS_PER_SEC=${env.GATLING_MAX_STEP_USERS_PER_SEC} -e GATLING_MAX_LEVEL_COUNT=${env.GATLING_MAX_LEVEL_COUNT} -e GATLING_MAX_LEVEL_SECONDS=${env.GATLING_MAX_LEVEL_SECONDS} -e GATLING_MAX_RAMP_SECONDS=${env.GATLING_MAX_RAMP_SECONDS}"
+          def gatlingArgs = "--platform ${env.GATLING_PLATFORM} --entrypoint= --network meta --volumes-from meta-jenkins -w ${env.WORKSPACE} -e APP_BASE_URL=${env.APP_BASE_URL} -e GATLING_RUN_TYPE=load-5m -e GATLING_LOAD_USERS_PER_SEC=${env.GATLING_LOAD_USERS_PER_SEC} -e GATLING_STRESS_START_USERS_PER_SEC=${env.GATLING_STRESS_START_USERS_PER_SEC} -e GATLING_STRESS_TARGET_USERS_PER_SEC=${env.GATLING_STRESS_TARGET_USERS_PER_SEC} -e GATLING_MAX_START_USERS_PER_SEC=${env.GATLING_MAX_START_USERS_PER_SEC} -e GATLING_MAX_STEP_USERS_PER_SEC=${env.GATLING_MAX_STEP_USERS_PER_SEC} -e GATLING_MAX_LEVEL_COUNT=${env.GATLING_MAX_LEVEL_COUNT} -e GATLING_MAX_LEVEL_SECONDS=${env.GATLING_MAX_LEVEL_SECONDS} -e GATLING_MAX_RAMP_SECONDS=${env.GATLING_MAX_RAMP_SECONDS}"
           docker.image(env.GATLING_IMAGE).inside(gatlingArgs) {
             sh 'GATLING_DOCKER_PIPELINE=1 GATLING_RUN_TYPE=load-5m ./scripts/run-gatling-container'
           }
@@ -191,7 +196,7 @@ pipeline {
       }
       steps {
         script {
-          def gatlingArgs = "--platform ${env.GATLING_PLATFORM} --entrypoint= --network meta --volumes-from meta-jenkins -w /workspace/final-project -e APP_BASE_URL=${env.APP_BASE_URL} -e GATLING_RUN_TYPE=stress-5m -e GATLING_LOAD_USERS_PER_SEC=${env.GATLING_LOAD_USERS_PER_SEC} -e GATLING_STRESS_START_USERS_PER_SEC=${env.GATLING_STRESS_START_USERS_PER_SEC} -e GATLING_STRESS_TARGET_USERS_PER_SEC=${env.GATLING_STRESS_TARGET_USERS_PER_SEC} -e GATLING_MAX_START_USERS_PER_SEC=${env.GATLING_MAX_START_USERS_PER_SEC} -e GATLING_MAX_STEP_USERS_PER_SEC=${env.GATLING_MAX_STEP_USERS_PER_SEC} -e GATLING_MAX_LEVEL_COUNT=${env.GATLING_MAX_LEVEL_COUNT} -e GATLING_MAX_LEVEL_SECONDS=${env.GATLING_MAX_LEVEL_SECONDS} -e GATLING_MAX_RAMP_SECONDS=${env.GATLING_MAX_RAMP_SECONDS}"
+          def gatlingArgs = "--platform ${env.GATLING_PLATFORM} --entrypoint= --network meta --volumes-from meta-jenkins -w ${env.WORKSPACE} -e APP_BASE_URL=${env.APP_BASE_URL} -e GATLING_RUN_TYPE=stress-5m -e GATLING_LOAD_USERS_PER_SEC=${env.GATLING_LOAD_USERS_PER_SEC} -e GATLING_STRESS_START_USERS_PER_SEC=${env.GATLING_STRESS_START_USERS_PER_SEC} -e GATLING_STRESS_TARGET_USERS_PER_SEC=${env.GATLING_STRESS_TARGET_USERS_PER_SEC} -e GATLING_MAX_START_USERS_PER_SEC=${env.GATLING_MAX_START_USERS_PER_SEC} -e GATLING_MAX_STEP_USERS_PER_SEC=${env.GATLING_MAX_STEP_USERS_PER_SEC} -e GATLING_MAX_LEVEL_COUNT=${env.GATLING_MAX_LEVEL_COUNT} -e GATLING_MAX_LEVEL_SECONDS=${env.GATLING_MAX_LEVEL_SECONDS} -e GATLING_MAX_RAMP_SECONDS=${env.GATLING_MAX_RAMP_SECONDS}"
           docker.image(env.GATLING_IMAGE).inside(gatlingArgs) {
             sh 'GATLING_DOCKER_PIPELINE=1 GATLING_RUN_TYPE=stress-5m ./scripts/run-gatling-container'
           }
@@ -211,7 +216,7 @@ pipeline {
             fileExists('output/gatling/stress-5m/index.html')
           )
         ) {
-          def pdfArgs = "--network meta --volumes-from meta-jenkins -w /workspace/final-project -e CI=true -e GATLING_PDF_REQUIRE_ALL=false"
+          def pdfArgs = "--network meta --volumes-from meta-jenkins -w ${env.WORKSPACE} -e CI=true -e GATLING_PDF_REQUIRE_ALL=false"
           docker.image(env.PLAYWRIGHT_IMAGE).inside(pdfArgs) {
             sh 'GATLING_PDF_DOCKER_PIPELINE=1 GATLING_PDF_REQUIRE_ALL=false ./scripts/export-gatling-pdfs'
           }

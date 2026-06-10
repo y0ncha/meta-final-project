@@ -127,3 +127,24 @@ Remaining risks and follow-up:
 
 - The validation used Docker Pipeline-equivalent `docker run` commands and Jenkins declarative linter because the SCM-backed `meta-container-ci-cd` job would fetch committed GitHub content, not uncommitted local edits.
 - `AGENTS.md` contains a user-side uncommitted change that says not to run Gatling tests directly. It was discovered after the Gatling validation commands above had already run, was left untouched, and no further Gatling tests were run after discovery.
+
+## 2026-06-10 SCM Workspace Source Correction
+
+- Updated `Jenkinsfile` so non-timer `checkout scm` records `CHECKED_OUT_COMMIT`.
+- Updated Docker Pipeline args for Playwright, Gatling, and Gatling PDF export to use working directory `env.WORKSPACE` instead of the legacy `/workspace/final-project` bind mount.
+- Updated `Docker Pipeline Preflight` to prove the disposable container is in the Jenkins SCM workspace, is inside a Git worktree, matches `CHECKED_OUT_COMMIT`, and can still reach `http://tomcat:8080/meta/`.
+- Updated Jenkins, Playwright, Plan 05, and Plan 08 documentation so current Docker Pipeline execution is described as SCM-workspace based. Historical `/workspace/final-project` validation notes remain as past evidence only.
+
+Validation:
+
+- `git diff --check`: passed.
+- `sh -n scripts/run-playwright-container scripts/run-gatling-container scripts/run-gatling-max-limit scripts/run-gatling-load-5m scripts/run-gatling-stress-5m scripts/export-gatling-pdfs scripts/capture-har`: passed.
+- `docker compose config --quiet`: passed.
+- Jenkins declarative linter for `/workspace/final-project/Jenkinsfile`: passed with `Jenkinsfile successfully validated.`
+- Docker Pipeline-equivalent Playwright smoke with `--network meta --volumes-from meta-jenkins -w /var/jenkins_home/workspace/meta-container-ci-cd`: passed; the container printed `/var/jenkins_home/workspace/meta-container-ci-cd`, confirmed a Git worktree, matched commit `36d246f9e7d25a7c6602541af51d343091a6d863`, and reached Tomcat.
+- Active stale-reference scan across `Jenkinsfile`, current docs, and plans for Docker Pipeline `/workspace/final-project` working-directory references: passed with no matches.
+- `python3 .agents/skills/compliance-validator/scripts/validate_compliance.py --target . --rules rules/compliance.md`: passed with `pass=70`, `warn=0`, `manual=9`, `fail=0`.
+
+Remaining risks and follow-up:
+
+- Gatling validation was not run for this correction because `AGENTS.md` requires asking the user to run Gatling commands directly.

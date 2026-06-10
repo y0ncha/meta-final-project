@@ -59,7 +59,7 @@ The source-controlled `Jenkinsfile` already contains stage `Playwright Functiona
 ./scripts/run-playwright-container
 ```
 
-Jenkins mounts the host Docker socket and uses Docker Pipeline to start the same official Playwright container used by local execution. The Pipeline passes `--network meta`, `--volumes-from meta-jenkins`, and working directory `/workspace/final-project`, so the disposable Playwright container can see the Jenkins workspace and write evidence back under `output/playwright/`.
+Jenkins mounts the host Docker socket and uses Docker Pipeline to start the same official Playwright container used by local execution. The Pipeline passes `--network meta`, `--volumes-from meta-jenkins`, and working directory `env.WORKSPACE`, so the disposable Playwright container runs from the checked-out SCM workspace and writes evidence back under `output/playwright/`.
 
 This 2026-06-10 Plan 06 follow-up replaces the original Jenkins execution path where Node, npm, and Debian Chromium were installed directly inside the Jenkins image. Jenkins now orchestrates the official Playwright container instead.
 

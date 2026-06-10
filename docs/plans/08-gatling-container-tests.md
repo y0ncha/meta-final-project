@@ -205,7 +205,7 @@ Follow-up update on 2026-06-10 after review: local `./scripts/export-gatling-pdf
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
 | TASK-082 | Remove profiled runner services from `docker-compose.yml` so only `tomcat` and `jenkins` remain as Compose services. | Yes | 2026-06-10 |
-| TASK-083 | Update Jenkins Playwright and Gatling stages to use `docker.image(...).inside(...)` with `--network meta`, `--volumes-from meta-jenkins`, and working directory `/workspace/final-project`. | Yes | 2026-06-10 |
+| TASK-083 | Update Jenkins Playwright and Gatling stages to use `docker.image(...).inside(...)` with `--network meta`, `--volumes-from meta-jenkins`, and working directory `env.WORKSPACE` so containers run from the SCM checkout. | Yes | 2026-06-10 |
 | TASK-084 | Update `scripts/run-playwright-container` to use direct local `docker run` and `PLAYWRIGHT_DOCKER_PIPELINE=1` inside Jenkins Docker Pipeline. | Yes | 2026-06-10 |
 | TASK-085 | Update `scripts/capture-har` to use a separate direct Docker container, preserving validation isolation from the functional Playwright test. | Yes | 2026-06-10 |
 | TASK-086 | Update `scripts/run-gatling-container` to use direct local Docker and `GATLING_DOCKER_PIPELINE=1` while preserving stable report normalization. | Yes | 2026-06-10 |

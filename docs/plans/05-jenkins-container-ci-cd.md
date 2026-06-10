@@ -32,7 +32,7 @@ This follow-up refactors the completed Jenkins container CI/CD plan so Jenkins r
 - **REQ-008**: Run Gatling max-limit from `Jenkinsfile` with `docker.image(env.GATLING_IMAGE).inside(...)` only when `RUN_GATLING_MAX_LIMIT=true`.
 - **REQ-009**: Run Gatling load and stress from `Jenkinsfile` with `docker.image(env.GATLING_IMAGE).inside(...)`.
 - **REQ-010**: Run Gatling PDF export from `Jenkinsfile` with `docker.image(env.PLAYWRIGHT_IMAGE).inside(...)` when Gatling HTML reports exist.
-- **REQ-011**: Pass Docker Pipeline args that preserve Jenkins-in-Docker workspace behavior: `--network meta`, `--volumes-from meta-jenkins`, working directory `/workspace/final-project`, and explicit environment values including `APP_BASE_URL=http://tomcat:8080/meta/`.
+- **REQ-011**: Pass Docker Pipeline args that preserve Jenkins-in-Docker SCM workspace behavior: `--network meta`, `--volumes-from meta-jenkins`, working directory `env.WORKSPACE`, and explicit environment values including `APP_BASE_URL=http://tomcat:8080/meta/`.
 - **REQ-012**: Preserve local manual commands `./scripts/run-playwright-container`, `./scripts/run-gatling-max-limit`, `./scripts/run-gatling-load-5m`, `./scripts/run-gatling-stress-5m`, and `./scripts/export-gatling-pdfs`.
 - **REQ-013**: Rewrite local runner scripts away from profiled Compose one-shot execution; local scripts must use direct disposable `docker run` wrappers.
 - **REQ-014**: Remove the legacy Compose runner services for Playwright, HAR, Gatling, and their Jenkins workspace variants.
@@ -152,7 +152,7 @@ This follow-up refactors the completed Jenkins container CI/CD plan so Jenkins r
 - **TEST-010**: `docker compose exec -T jenkins docker --version` must pass.
 - **TEST-011**: `docker compose exec -T jenkins docker compose version` must pass.
 - **TEST-012**: Plugin-file checks for `docker-workflow`, `htmlpublisher`, and `gatling` inside `/var/jenkins_home/plugins` must pass.
-- **TEST-013**: A Jenkins Docker Pipeline smoke run using the Playwright image must prove the container can see `/workspace/final-project` and reach `http://tomcat:8080/meta/`.
+- **TEST-013**: A Jenkins Docker Pipeline smoke run using the Playwright image must prove the container runs from `env.WORKSPACE`, sees the same Git commit captured by `checkout scm`, and reaches `http://tomcat:8080/meta/`.
 - **TEST-014**: Jenkins Pipeline validation must prove Playwright, Gatling load, and Gatling stress execute through Docker Pipeline; if the SCM-backed job cannot run uncommitted local edits, validate the Jenkinsfile with the declarative linter and record the limitation.
 - **TEST-015**: `git diff --check` must pass.
 - **TEST-016**: A stale-reference scan of changed docs and scripts must find no current references to removed Jenkins runner service names or profiled Compose one-shot commands.
