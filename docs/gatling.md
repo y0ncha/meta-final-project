@@ -72,7 +72,7 @@ Generated evidence remains ignored by Git under `output/`.
 - `Gatling Load Test` runs `./scripts/run-gatling-load-5m`.
 - `Gatling Stress Test` runs `./scripts/run-gatling-stress-5m`.
 
-Timer-triggered availability builds still run only `Availability Check`. Jenkins publishes Gatling HTML/PDF evidence through HTML Publisher when `index.html` exists under `output/gatling/max-limit/`, `output/gatling/load-5m/`, or `output/gatling/stress-5m/`.
+Availability monitoring is handled by the separate Jenkins job `meta-availability-monitor` from `Jenkinsfile.availability`; the Gatling stages are not part of that scheduled job. Jenkins publishes Gatling HTML/PDF evidence through HTML Publisher when `index.html` exists under `output/gatling/max-limit/`, `output/gatling/load-5m/`, or `output/gatling/stress-5m/`.
 
 Jenkins finalization exports Gatling PDFs from completed HTML reports in the `post` block before generating the final pipeline report. PDF export uses a temporary Playwright Docker Pipeline container because it is administrative report generation, not application validation.
 

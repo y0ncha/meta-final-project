@@ -9,7 +9,8 @@
 - Tomcat Compose service: `tomcat`
 - Jenkins home volume: `jenkins_home`
 - Tomcat webapps volume: `tomcat_webapps`
-- Jenkins SCM workspace: the Jenkins job workspace created from the GitHub repository checkout.
+- Jenkins CI/CD SCM workspace: the `meta-container-ci-cd` workspace created from the GitHub repository checkout.
+- Jenkins monitoring workspace: the `meta-availability-monitor` workspace that writes availability evidence.
 - Legacy local validation mount: `/workspace/final-project`
 - Jenkins Tomcat deployment mount: `/tomcat-webapps`
 - Jenkins Docker socket mount: `/var/run/docker.sock`
@@ -33,11 +34,16 @@
    - `HTML Publisher` (`htmlpublisher`)
    - `Gatling` (`gatling`)
 
-## Pipeline Job
+## Jenkins Jobs
+
+This project uses two source-controlled Jenkins Pipeline jobs because the instructor confirmed that availability monitoring should be separate from the CI/CD build/deploy/test job.
+
+### CI/CD Job
 
 - Job name: `meta-container-ci-cd`
 - Job type: `Pipeline`
 - Script path: `Jenkinsfile`
+- Purpose: build the WAR, deploy to Tomcat, verify Tomcat, run Playwright, run Gatling, and publish reports.
 
 Final GitHub-backed setup:
 
@@ -45,10 +51,24 @@ Final GitHub-backed setup:
 - SCM: `Git`
 - Repository URL: `https://github.com/y0ncha/meta-final-project.git`
 - Credentials: leave empty for a public repository. If the repository is private, create Jenkins credentials and reference only the credentials ID.
-- Branch specifier: use the branch being defended or reviewed, for example `*/feature/jenkins-trigger-split`. Switch to `*/main` after the branch is merged into the default branch.
+- Branch specifier: use the branch being defended or reviewed, for example `*/feature/09-monitoring-and-jenkins-schedule`. Switch to `*/main` after the branch is merged into the default branch.
 - Script path: `Jenkinsfile`
 - The source-controlled Jenkinsfile includes `pollSCM('H/2 * * * *')` so a local Jenkins instance can detect pushed GitHub changes without needing an inbound GitHub webhook.
 - If Jenkins is exposed through a stable public URL, prefer a GitHub webhook that triggers this same Pipeline job on push or merge events. Keep `pollSCM` as the local defense fallback unless the webhook evidence is already captured.
+
+### Availability Monitoring Job
+
+- Job name: `meta-availability-monitor`
+- Job type: `Pipeline`
+- Purpose: run only the five-minute application availability check.
+- Definition: `Pipeline script from SCM`
+- SCM: `Git`
+- Repository URL: `https://github.com/y0ncha/meta-final-project.git`
+- Credentials: leave empty for a public repository. If the repository is private, use the same read-only GitHub credentials policy as the CI/CD job.
+- Branch specifier: use the same branch as `meta-container-ci-cd` while validating a branch, then switch to `*/main` after merge.
+- Script path: `Jenkinsfile.availability`
+- The source-controlled availability Jenkinsfile includes `cron('H/5 * * * *')`.
+- The job checks `http://tomcat:8080/meta/`, writes `output/monitoring/latest-check.txt`, and archives `output/monitoring/**/*`.
 
 Previous local validation setup used for Plan 05:
 
@@ -58,31 +78,26 @@ Previous local validation setup used for Plan 05:
 
 ## Pipeline Stages
 
-The source-controlled `Jenkinsfile` handles two different trigger classes:
+The source-controlled `Jenkinsfile` is only for the `meta-container-ci-cd` job. It does not contain the five-minute availability schedule.
 
-- SCM or manual builds run the CI/CD path: checkout, build, deploy, availability verification, and optional Playwright/Gatling scripts.
-- Timer builds run only the Jenkins-side availability check every five minutes.
-
-1. `Checkout`: Runs `checkout scm` only for non-timer builds and records the checked-out commit in `CHECKED_OUT_COMMIT`. This makes Jenkins fetch the repository and branch configured in the Pipeline job, so the build uses GitHub source code instead of files copied manually into the Jenkins container.
-2. `Prepare Evidence Workspace`: Removes generated `output/gatling`, `output/playwright`, `output/har`, and `output/reports` directories only for non-timer builds so published artifacts cannot come from a previous workspace run.
-3. `Build WAR`: Runs `mvn -B clean package` and archives `target/meta.war` only for non-timer builds. Maven turns the JSP application into the WAR file Tomcat can deploy; archiving the WAR gives Jenkins build evidence and a traceable artifact.
-4. `Deploy Tomcat`: Runs `./scripts/deploy-war` with `SKIP_BUILD=1`, `TOMCAT_SHARED_WEBAPPS_DIR=/tomcat-webapps`, and `DEPLOY_CHECK_URL="$DEPLOY_CHECK_URL"` only for non-timer builds. This reuses the repository deployment script, avoids rebuilding the WAR twice, writes the WAR into the shared Tomcat webapps volume, and waits until Tomcat serves the deployed app.
-5. `Availability Check`: Runs `curl -fsS "$APP_BASE_URL" >/dev/null` for both trigger paths. On SCM/manual builds it proves the deployed WAR is reachable through Tomcat at `http://tomcat:8080/meta/` from inside the Docker network. On timer builds it is the Jenkins-side five-minute availability monitor evidence required by the project.
-6. `Docker Pipeline Preflight`: Runs only for non-timer builds before disposable test containers. It checks Docker CLI access, Compose CLI access, Docker daemon access, workspace mapping, checked-out commit identity, and Tomcat reachability from the Playwright image.
-7. `Playwright Functional Test`: Runs only for non-timer builds and only when `scripts/run-playwright-container` exists. Jenkins starts the official Playwright image through Docker Pipeline with working directory `env.WORKSPACE`, then calls `PLAYWRIGHT_DOCKER_PIPELINE=1 ./scripts/run-playwright-container` inside that container so evidence is written under the checked-out SCM workspace.
-8. `Gatling Max Limit`: Runs `./scripts/run-gatling-max-limit` only for non-timer builds, only when that script exists, and only when build parameter `RUN_GATLING_MAX_LIMIT=true`. This keeps disruptive max-limit discovery out of ordinary CI/CD runs while still making it Jenkins-runnable for evidence capture.
-9. `Gatling Load Test`: Runs `./scripts/run-gatling-load-5m` only for non-timer builds and only when that script exists. This is the required five-minute Gatling load test.
-10. `Gatling Stress Test`: Runs `./scripts/run-gatling-stress-5m` only for non-timer builds and only when that script exists. This is the required five-minute Gatling stress test.
+1. `Checkout`: Runs `checkout scm` and records the checked-out commit in `CHECKED_OUT_COMMIT`. This makes Jenkins fetch the repository and branch configured in the Pipeline job, so the build uses GitHub source code instead of files copied manually into the Jenkins container.
+2. `Prepare Evidence Workspace`: Removes generated `output/gatling`, `output/playwright`, `output/har`, and `output/reports` directories so published artifacts cannot come from a previous workspace run.
+3. `Build WAR`: Runs `mvn -B clean package` and archives `target/meta.war`. Maven turns the JSP application into the WAR file Tomcat can deploy; archiving the WAR gives Jenkins build evidence and a traceable artifact.
+4. `Deploy Tomcat`: Runs `./scripts/deploy-war` with `SKIP_BUILD=1`, `TOMCAT_SHARED_WEBAPPS_DIR=/tomcat-webapps`, and `DEPLOY_CHECK_URL="$DEPLOY_CHECK_URL"`. This reuses the repository deployment script, avoids rebuilding the WAR twice, writes the WAR into the shared Tomcat webapps volume, and waits until Tomcat serves the deployed app.
+5. `Verify Tomcat`: Runs `curl -fsS "$APP_BASE_URL" >/dev/null` after deployment. It proves the deployed WAR is reachable through Tomcat at `http://tomcat:8080/meta/` from inside the Docker network.
+6. `Docker Pipeline Preflight`: Runs before disposable test containers. It checks Docker CLI access, Compose CLI access, Docker daemon access, workspace mapping, checked-out commit identity, and Tomcat reachability from the Playwright image.
+7. `Playwright Functional Test`: Runs only when `scripts/run-playwright-container` exists. Jenkins starts the official Playwright image through Docker Pipeline with working directory `env.WORKSPACE`, then calls `PLAYWRIGHT_DOCKER_PIPELINE=1 ./scripts/run-playwright-container` inside that container so evidence is written under the checked-out SCM workspace.
+8. `Gatling Max Limit`: Runs `./scripts/run-gatling-max-limit` only when that script exists and build parameter `RUN_GATLING_MAX_LIMIT=true`. This keeps disruptive max-limit discovery out of ordinary CI/CD runs while still making it Jenkins-runnable for evidence capture.
+9. `Gatling Load Test`: Runs `./scripts/run-gatling-load-5m` only when that script exists. This is the required five-minute Gatling load test.
+10. `Gatling Stress Test`: Runs `./scripts/run-gatling-stress-5m` only when that script exists. This is the required five-minute Gatling stress test.
 
 The `post` block performs administrative finalization after validation stages finish. It exports PDFs for the Gatling HTML reports that exist in the checked-out SCM workspace, generates `output/reports/pipeline-report.html`, archives `output/**/*`, publishes the final Pipeline HTML report, publishes Playwright JUnit XML and HTML reports, and publishes Gatling HTML/PDF reports from `output/gatling/max-limit/`, `output/gatling/load-5m/`, and `output/gatling/stress-5m/`. Jenkins runs the PDF exporter with `GATLING_PDF_REQUIRE_ALL=false` because the max-limit stage is optional. `gatlingArchive()` is intentionally deferred until Plan 08 validates the Gatling output shape expected by the Jenkins Gatling plugin.
 
 ## Schedule
 
-- The source-controlled availability schedule is `H/5 * * * *`.
-- The source-controlled SCM polling schedule is `H/2 * * * *`.
-- Timer-triggered runs execute only the `Availability Check` stage every five minutes.
-- SCM-triggered or manual runs execute the build, deploy, `Availability Check`, Docker preflight, and optional test stages.
-- The availability target from inside Jenkins is `http://tomcat:8080/meta/`.
+- `meta-container-ci-cd` uses SCM polling schedule `H/2 * * * *` or manual builds.
+- `meta-availability-monitor` uses availability schedule `H/5 * * * *`.
+- The monitoring target from inside Jenkins is `http://tomcat:8080/meta/`.
 - Do not schedule Gatling every five minutes. The project requires five-minute Gatling test duration, not a five-minute Gatling cadence.
 
 ## Security Notes
@@ -98,13 +113,14 @@ The `post` block performs administrative finalization after validation stages fi
 
 - Jenkins dashboard screenshot with `localhost:8081` visible.
 - Successful manual or SCM-triggered `meta-container-ci-cd` build log.
-- Successful timer-triggered `meta-container-ci-cd` availability log.
+- Successful scheduled `meta-availability-monitor` availability log.
+- `output/monitoring/latest-check.txt` from `meta-availability-monitor`.
 - Console line showing `mvn -B clean package`.
 - Console line showing `./scripts/deploy-war`.
 - Console line showing `curl -fsS http://tomcat:8080/meta/`.
 - Tomcat app screenshot with `http://localhost:8080/meta/` visible.
-- Timer-triggered evidence should show `Started by timer`, skip the build/deploy/test stages, and run only the availability `curl` check.
 - SCM-triggered evidence should show Jenkins detected a repository change or was manually run after a push, then checked out the configured branch and deployed the WAR.
+- Monitoring evidence should show `Started by timer` in `meta-availability-monitor` and no Maven, deploy, Playwright, or Gatling commands.
 - Playwright evidence from Plan 06:
   - `output/playwright/06-playwright-run.log`
   - `output/playwright/junit.xml`

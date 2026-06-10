@@ -184,3 +184,9 @@ Validation:
 Remaining risks and follow-up:
 
 - This validates the source-controlled Jenkinsfile shape locally. The live SCM-backed Jenkins job will only execute this change after it is committed and the job checks out the updated branch.
+
+## 2026-06-10 Superseded Availability Split
+
+- Instructor confirmation superseded the trigger-aware availability design above.
+- Plan 09 now owns availability monitoring through separate Jenkins job `meta-availability-monitor` with script path `Jenkinsfile.availability`.
+- Plan 05 now owns only the CI/CD job `meta-container-ci-cd`: checkout, build, deploy, `Verify Tomcat`, Docker Pipeline preflight, Playwright, Gatling, and report publishing.

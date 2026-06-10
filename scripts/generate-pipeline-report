@@ -157,7 +157,7 @@ cat > "$REPORT_FILE" <<EOF
 <body>
   <header>
     <h1>MeTA Jenkins Pipeline Report</h1>
-    <p class="muted">Consolidated build evidence for the JSP deployment, Playwright validation, and Gatling performance stages.</p>
+    <p class="muted">Consolidated build evidence for the JSP deployment, Playwright validation, and Gatling performance stages. Availability monitoring is handled by the separate Jenkins job <code>meta-availability-monitor</code>.</p>
     <section class="summary">
       <div class="metric"><span>Job</span><strong>$build_label_html</strong></div>
       <div class="metric"><span>Build</span><strong>$build_number_html</strong></div>
@@ -172,12 +172,11 @@ cat > "$REPORT_FILE" <<EOF
       <tbody>
 EOF
 
-write_stage_row "Checkout" "Jenkins console log" "Runs only for manual or SCM-triggered builds."
+write_stage_row "Checkout" "Jenkins console log" "Checks out the configured GitHub branch for manual or SCM-triggered builds."
 write_stage_row "Build WAR" "Archived target/meta.war" "Builds the Maven WAR for Tomcat deployment."
 write_stage_row "Deploy Tomcat" "Jenkins console log" "Deploys meta.war into the Tomcat webapps volume."
-write_stage_row "Verify Tomcat" "Jenkins console log" "Checks http://tomcat:8080/meta/ from the Docker network."
-write_stage_row "Availability Check" "Jenkins console log" "Runs only for timer-triggered five-minute availability checks."
-write_stage_row "Playwright Functional Test" "HTML, JUnit XML, screenshots, log" "Runs only for non-timer builds when the Playwright runner script exists."
+write_stage_row "Verify Tomcat" "Jenkins console log" "Checks http://tomcat:8080/meta/ after deployment from the Docker network."
+write_stage_row "Playwright Functional Test" "HTML, JUnit XML, screenshots, log" "Runs when the Playwright runner script exists."
 write_stage_row "Gatling Max Limit" "HTML, PDF, raw report, log" "Runs only when RUN_GATLING_MAX_LIMIT=true."
 write_stage_row "Gatling Load Test" "HTML, PDF, raw report, log" "Required five-minute load test."
 write_stage_row "Gatling Stress Test" "HTML, PDF, raw report, log" "Required five-minute stress test."

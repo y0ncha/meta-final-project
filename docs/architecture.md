@@ -2,40 +2,47 @@
 
 ## Overview
 
-The project is one Jenkins-driven CI/CD pipeline for a JSP application. Jenkins pulls the code from GitHub, builds the WAR, deploys it to Tomcat, verifies the app, and runs the required automated checks.
+The project uses two Jenkins Pipeline jobs for a JSP application. The CI/CD job pulls code from GitHub, builds the WAR, deploys it to Tomcat, verifies the app, and runs the required automated checks. The separate availability job checks the deployed app every 5 minutes, matching the instructor-confirmed monitoring split.
 
 ```mermaid
 flowchart LR
   Dev["Developer"] -->|push code| GitHub["GitHub"]
-  GitHub -->|SCM poll| Jenkins["Jenkins (localhost:8081)"]
-  Jenkins -->|build WAR| Maven["Maven"]
+  GitHub -->|SCM poll| CICD["Jenkins job: meta-container-ci-cd"]
+  CICD -->|build WAR| Maven["Maven"]
   Maven -->|meta.war| Tomcat["Tomcat (localhost:8080/meta/)"]
-  Jenkins -->|deploy + verify| Tomcat
-  Jenkins -->|run browser test| Playwright["Playwright container"]
+  CICD -->|deploy + verify| Tomcat
+  CICD -->|run browser test| Playwright["Playwright container"]
   Playwright -->|test app| Tomcat
-  Jenkins -->|run performance tests| Gatling["Gatling containers"]
+  CICD -->|run performance tests| Gatling["Gatling containers"]
   Gatling -->|load/stress app| Tomcat
-  Jenkins -->|5-minute check| Monitor["Availability check"]
+  MonitorJob["Jenkins job: meta-availability-monitor"] -->|5-minute check| Monitor["Availability check"]
   Monitor -->|curl app| Tomcat
 ```
 
 ## CI/CD Pipeline
 
-The assignment asks for a single CI/CD pipeline. This Jenkins job keeps one pipeline while using trigger-aware stages: source changes run the build/deploy/test path, and timer runs only the availability check.
+The CI/CD job is `meta-container-ci-cd` and uses script path `Jenkinsfile`. It runs on SCM polling or manual execution. It does not contain the availability-monitor schedule.
 
 ```mermaid
 flowchart TD
-  Start["Jenkins: meta-container-ci-cd"] --> Trigger{"Trigger"}
-
-  Trigger -->|Git push or manual run| Build["Build WAR"]
+  Start["Jenkins job: meta-container-ci-cd"] --> Build["Build WAR"]
   Build --> Deploy["Deploy to Tomcat"]
   Deploy --> Verify["Verify app"]
   Verify --> Browser["Run Playwright"]
   Browser --> Perf["Run Gatling load/stress"]
   Perf --> Done["Archive evidence"]
+```
 
-  Trigger -->|Every 5 minutes| Availability["Availability check only"]
-  Availability --> Done
+## Availability Monitoring Job
+
+The availability job is `meta-availability-monitor` and uses script path `Jenkinsfile.availability`. It runs every 5 minutes and performs only a `curl` availability check.
+
+```mermaid
+flowchart TD
+  Start["Jenkins job: meta-availability-monitor"] --> Schedule["H/5 * * * *"]
+  Schedule --> Availability["curl http://tomcat:8080/meta/"]
+  Availability --> Evidence["Archive output/monitoring/latest-check.txt"]
+  Evidence --> Done["Finish"]
 ```
 
 ## Runtime Notes
@@ -43,7 +50,7 @@ flowchart TD
 - Tomcat serves the app at `http://localhost:8080/meta/`.
 - Jenkins is available at `http://localhost:8081/`.
 - Jenkins uses Docker only to start disposable Playwright and Gatling test containers.
-- Timer-triggered runs must not rebuild, redeploy, or run Playwright/Gatling.
+- The scheduled monitoring job must not rebuild, redeploy, or run Playwright/Gatling.
 - Generated evidence is written under `output/` and stays out of Git.
 
 ## Plan Status

@@ -14,7 +14,6 @@ pipeline {
   }
 
   triggers {
-    cron('H/5 * * * *')
     pollSCM('H/2 * * * *')
   }
 
@@ -37,11 +36,6 @@ pipeline {
 
   stages {
     stage('Checkout') {
-      when {
-        not {
-          triggeredBy 'TimerTrigger'
-        }
-      }
       steps {
         script {
           def scmVars = checkout scm
@@ -51,22 +45,12 @@ pipeline {
     }
 
     stage('Prepare Evidence Workspace') {
-      when {
-        not {
-          triggeredBy 'TimerTrigger'
-        }
-      }
       steps {
         sh 'rm -rf output/gatling output/playwright output/har output/reports'
       }
     }
 
     stage('Build WAR') {
-      when {
-        not {
-          triggeredBy 'TimerTrigger'
-        }
-      }
       steps {
         sh 'mvn -B clean package'
         archiveArtifacts artifacts: 'target/meta.war', fingerprint: true
@@ -74,28 +58,18 @@ pipeline {
     }
 
     stage('Deploy Tomcat') {
-      when {
-        not {
-          triggeredBy 'TimerTrigger'
-        }
-      }
       steps {
         sh 'SKIP_BUILD=1 TOMCAT_SHARED_WEBAPPS_DIR=/tomcat-webapps DEPLOY_CHECK_URL="$DEPLOY_CHECK_URL" ./scripts/deploy-war'
       }
     }
 
-    stage('Availability Check') {
+    stage('Verify Tomcat') {
       steps {
         sh 'curl -fsS "$APP_BASE_URL" >/dev/null'
       }
     }
 
     stage('Docker Pipeline Preflight') {
-      when {
-        not {
-          triggeredBy 'TimerTrigger'
-        }
-      }
       steps {
         sh 'docker --version'
         sh 'docker compose version'
@@ -124,12 +98,7 @@ NODE'''
 
     stage('Playwright Functional Test') {
       when {
-        allOf {
-          not {
-            triggeredBy 'TimerTrigger'
-          }
-          expression { fileExists('scripts/run-playwright-container') }
-        }
+        expression { fileExists('scripts/run-playwright-container') }
       }
       steps {
         script {
@@ -144,9 +113,6 @@ NODE'''
     stage('Gatling Max Limit') {
       when {
         allOf {
-          not {
-            triggeredBy 'TimerTrigger'
-          }
           expression { params.RUN_GATLING_MAX_LIMIT }
           expression { fileExists('scripts/run-gatling-max-limit') }
         }
@@ -163,12 +129,7 @@ NODE'''
 
     stage('Gatling Load Test') {
       when {
-        allOf {
-          not {
-            triggeredBy 'TimerTrigger'
-          }
-          expression { fileExists('scripts/run-gatling-load-5m') }
-        }
+        expression { fileExists('scripts/run-gatling-load-5m') }
       }
       steps {
         script {
@@ -182,12 +143,7 @@ NODE'''
 
     stage('Gatling Stress Test') {
       when {
-        allOf {
-          not {
-            triggeredBy 'TimerTrigger'
-          }
-          expression { fileExists('scripts/run-gatling-stress-5m') }
-        }
+        expression { fileExists('scripts/run-gatling-stress-5m') }
       }
       steps {
         script {

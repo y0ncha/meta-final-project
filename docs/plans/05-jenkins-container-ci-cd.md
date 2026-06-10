@@ -40,7 +40,7 @@ This follow-up refactors the completed Jenkins container CI/CD plan so Jenkins r
 - **REQ-016**: Keep generated evidence under ignored `output/` paths and do not delete required evidence unless regenerated.
 - **REQ-017**: Keep the Jenkins job name `meta-container-ci-cd` and root `Jenkinsfile` as the source-controlled Pipeline entrypoint.
 - **REQ-018**: Keep the Docker Pipeline preflight HTTP probe immune to Groovy and shell quote stripping; do not embed JavaScript string literals inside a nested `sh 'node -e "..."'` command.
-- **REQ-019**: Keep `Availability Check` visible in both SCM/manual and timer-triggered build paths while keeping build, deploy, Docker preflight, Playwright, and Gatling excluded from timer-triggered runs.
+- **REQ-019**: Superseded on 2026-06-10 by Plan 09. Keep `meta-container-ci-cd` focused on SCM/manual CI/CD work only; availability monitoring must run in separate Jenkins job `meta-availability-monitor` using `Jenkinsfile.availability`.
 - **CON-001**: Read `contribution.md` and `rules/compliance.md` before mutating files.
 - **CON-002**: Stop before editing if this plan conflicts with `rules/compliance.md`; no conflict was found because the rules prefer containerized Jenkins, Playwright, and Gatling.
 - **CON-003**: Do not add Jenkins Docker Cloud agents or dynamic agent configuration.
@@ -187,4 +187,4 @@ This follow-up refactors the completed Jenkins container CI/CD plan so Jenkins r
 ## 9. Follow-Up Notes
 
 - 2026-06-10: Replaced the Docker Pipeline preflight `node -e` HTTP probe with a single-quoted heredoc. Jenkins had executed `require(http)` and `.on(error)` after Groovy and shell quote handling removed the JavaScript string quotes, causing `TypeError [ERR_INVALID_ARG_TYPE]` before the Tomcat reachability check could run.
-- 2026-06-10: Merged the old non-timer `Verify Tomcat` curl stage into `Availability Check` so both SCM/manual and timer builds show the same availability evidence stage. Timer builds still skip checkout, evidence cleanup, Maven build, deploy, Docker preflight, Playwright, and Gatling.
+- 2026-06-10: Superseded the trigger-aware availability design after instructor confirmation. Plan 09 separates availability monitoring into Jenkins job `meta-availability-monitor` with script path `Jenkinsfile.availability`. Plan 05 now keeps `meta-container-ci-cd` as the CI/CD build/deploy/test job only.

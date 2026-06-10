@@ -154,7 +154,7 @@ Follow-up update on 2026-06-10 after review: local `./scripts/export-gatling-pdf
 
 ### Implementation Phase 5
 
-- GOAL-005: Integrate Gatling execution with Jenkins while preserving scheduled availability behavior.
+- GOAL-005: Integrate Gatling execution with Jenkins while preserving the separate scheduled availability monitoring job.
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
