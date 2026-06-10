@@ -22,6 +22,8 @@ This plan implements the containerized Jenkins CI/CD path for the MTA DevOps fin
 
 The 2026-06-10 Plan 06 follow-up supersedes this plan's original no-Docker-socket decision for browser-test execution only. Tomcat deployment through the shared `tomcat_webapps` volume remains unchanged.
 
+The 2026-06-10 Jenkins tooling follow-up upgrades the custom Jenkins image to install Docker CLI and Docker Compose from Docker's official Debian apt repository and preinstall Jenkins plugins `docker-workflow`, `htmlpublisher`, and `gatling`. Jenkins still deploys Tomcat through `/tomcat-webapps`; Docker tooling is for diagnostics and disposable test-container orchestration.
+
 ## 1. Requirements & Constraints
 
 - **REQ-001**: Jenkins must run as Docker Compose service `jenkins` and be exposed on host URL `http://localhost:8081/`.
@@ -49,6 +51,9 @@ The 2026-06-10 Plan 06 follow-up supersedes this plan's original no-Docker-socke
 - **REQ-021**: Jenkins evidence must include a successful manual or SCM-triggered CI/CD build log and a successful scheduled availability build log or screenshot.
 - **REQ-022**: Later plans must be able to activate Playwright and Gatling stages by adding the scripts those stages check for; Plan 05 must not hard-fail while those later plan files do not exist.
 - **REQ-023**: Non-timer CI/CD builds must fail if `Deploy Tomcat` or `Verify Tomcat` cannot reach `http://tomcat:8080/meta/`; timer-triggered availability builds must fail if `Availability Check` cannot reach the same target.
+- **REQ-024**: The custom Jenkins image must provide `docker` and `docker compose` inside the Jenkins container.
+- **REQ-025**: The custom Jenkins image must preinstall Jenkins plugins `docker-workflow`, `htmlpublisher`, and `gatling`.
+- **REQ-026**: `Jenkinsfile` must publish Playwright JUnit/HTML reports and Gatling HTML/PDF reports when those files exist, while keeping raw `output/**/*` archival.
 - **CON-001**: Read `contribution.md` and `rules/compliance.md` from the repository root before implementation and stop if any task conflicts with the compliance rules.
 - **CON-002**: Create or switch to branch `feature/plan-05-jenkins-container-ci-cd` before mutating tracked files for this plan.
 - **CON-003**: Do not use host Jenkins, `/Users/yonatan/.jenkins`, host Tomcat, `/usr/local/tomcat8`, host Catalina scripts, or non-containerized project runtime services.
@@ -154,6 +159,19 @@ The 2026-06-10 Plan 06 follow-up supersedes this plan's original no-Docker-socke
 | TASK-049 | Run `git diff -- Jenkinsfile docker-compose.yml scripts/deploy-war ops/jenkins/Dockerfile docs/jenkins.md docs/changelog/05-jenkins-container-ci-cd.changelog.md docs/plans/05-jenkins-container-ci-cd.md | rtk diff -` and verify the diff contains no secrets, no generated WAR content, no screenshots, and no unrelated files. | ✅ | 2026-06-10 |
 | TASK-050 | Run `git status --short --branch` and confirm Plan 05 tracked changes are limited to `Jenkinsfile`, `docker-compose.yml`, `scripts/deploy-war`, `ops/jenkins/Dockerfile`, `docs/jenkins.md`, `docs/changelog/05-jenkins-container-ci-cd.changelog.md`, and `docs/plans/05-jenkins-container-ci-cd.md`; document any unrelated pre-existing tracked diff separately instead of reverting it. | ✅ | 2026-06-10 |
 
+### Implementation Phase 6
+
+- GOAL-006: Add Jenkins Docker Compose tooling and Jenkins-native report publishing without changing the containerized test-runner model.
+
+| Task | Description | Completed | Date |
+|------|-------------|-----------|------|
+| TASK-051 | Update `ops/jenkins/Dockerfile` to add Docker's official Debian apt repository and install `docker-ce-cli` and `docker-compose-plugin` instead of the Debian `docker-cli` package. | ✅ | 2026-06-10 |
+| TASK-052 | Update `ops/jenkins/Dockerfile` to preinstall Jenkins plugins `docker-workflow`, `htmlpublisher`, and `gatling` with `jenkins-plugin-cli`. | ✅ | 2026-06-10 |
+| TASK-053 | Update `Jenkinsfile` post-build behavior to publish `output/playwright/junit.xml` through `junit` when present. | ✅ | 2026-06-10 |
+| TASK-054 | Update `Jenkinsfile` post-build behavior to publish Playwright and Gatling HTML reports with `publishHTML` when each report `index.html` exists. | ✅ | 2026-06-10 |
+| TASK-055 | Keep `gatlingArchive()` deferred until Plan 08 validates a real Gatling output shape compatible with the Jenkins Gatling plugin. | ✅ | 2026-06-10 |
+| TASK-056 | Update `docs/jenkins.md`, `docs/playwright.md`, `docs/plans/06-playwright-container-functional-test.md`, and `docs/plans/08-gatling-container-tests.md` so the report publishing and plugin roles are explicit. | ✅ | 2026-06-10 |
+
 ## 3. Alternatives
 
 - **ALT-001**: Configure a Jenkins freestyle job entirely through the UI. Rejected because the pipeline would not be source-controlled, reviewable, or reproducible from Git.
@@ -182,6 +200,8 @@ The 2026-06-10 Plan 06 follow-up supersedes this plan's original no-Docker-socke
 - **DEP-013**: Jenkins plugins `Git`, `Pipeline`, `Pipeline: SCM Step`, `Pipeline: Declarative`, and `Pipeline: Stage View` must be installed before the Pipeline job can run from SCM.
 - **DEP-014**: Plan 06 must create `scripts/run-playwright-container` before the `Playwright Functional Test` stage performs real browser automation.
 - **DEP-015**: Plan 08 must create `scripts/run-gatling-load-5m` and `scripts/run-gatling-stress-5m` before the Gatling stages perform real load and stress tests.
+- **DEP-016**: Docker's Debian apt repository must be reachable or cached when rebuilding the Jenkins image for Docker Compose support.
+- **DEP-017**: Jenkins plugin update center must be reachable or cached when rebuilding the Jenkins image for `docker-workflow`, `htmlpublisher`, and `gatling`.
 
 ## 5. Files
 
@@ -198,6 +218,7 @@ The 2026-06-10 Plan 06 follow-up supersedes this plan's original no-Docker-socke
 - **FILE-011**: `docs/plans/06-playwright-container-functional-test.md` will be read for future stage contract alignment and not modified by this plan.
 - **FILE-012**: `docs/plans/08-gatling-container-tests.md` will be read for future stage contract alignment and not modified by this plan.
 - **FILE-013**: `docs/plans/09-monitoring-and-jenkins-schedule.md` will be read for monitoring contract alignment and not modified by this plan.
+- **FILE-014**: `docs/plans/08-gatling-container-tests.md` is updated by the 2026-06-10 tooling follow-up to document Jenkins HTML publishing and deferred `gatlingArchive()` use.
 
 ## 6. Testing
 
@@ -217,6 +238,10 @@ The 2026-06-10 Plan 06 follow-up supersedes this plan's original no-Docker-socke
 - **TEST-014**: Jenkins archived artifacts must include `target/meta.war` for the successful build.
 - **TEST-015**: `git diff -- Jenkinsfile docker-compose.yml scripts/deploy-war ops/jenkins/Dockerfile docs/jenkins.md docs/changelog/05-jenkins-container-ci-cd.changelog.md docs/plans/05-jenkins-container-ci-cd.md | rtk diff -` must show no secrets and no generated artifacts.
 - **TEST-016**: `git status --short --branch` must show no tracked `target/`, `*.war`, Jenkins home data, Docker volume state, screenshots, logs, Playwright reports, Gatling reports, credentials, or `.env` files. Any unrelated tracked diff must be called out separately.
+- **TEST-017**: `docker compose exec -T jenkins docker compose version` must exit with status `0` after rebuilding and recreating Jenkins.
+- **TEST-018**: `docker compose exec -T jenkins sh -lc 'test -f /var/jenkins_home/plugins/docker-workflow.jpi || test -f /var/jenkins_home/plugins/docker-workflow.hpi'` must exit with status `0`.
+- **TEST-019**: `docker compose exec -T jenkins sh -lc 'test -f /var/jenkins_home/plugins/htmlpublisher.jpi || test -f /var/jenkins_home/plugins/htmlpublisher.hpi'` must exit with status `0`.
+- **TEST-020**: `docker compose exec -T jenkins sh -lc 'test -f /var/jenkins_home/plugins/gatling.jpi || test -f /var/jenkins_home/plugins/gatling.hpi'` must exit with status `0`.
 
 ## 7. Risks & Assumptions
 
@@ -228,6 +253,8 @@ The 2026-06-10 Plan 06 follow-up supersedes this plan's original no-Docker-socke
 - **RISK-006**: The scheduled availability check runs every five minutes and may create noisy Jenkins history; use `buildDiscarder` to bound retained build records.
 - **RISK-007**: Later Playwright and Gatling stages are gated by script existence, so Plan 05 alone proves Jenkins deployment and availability checks but not final browser or performance compliance.
 - **RISK-008**: Tomcat may need several seconds to expand `meta.war` after Jenkins replaces it in the shared volume; the deployment script must wait on `http://tomcat:8080/meta/`.
+- **RISK-009**: Existing `jenkins_home` volume contents can hide image reference-plugin changes until Jenkins is rebuilt and restarted; verify plugin files inside `/var/jenkins_home/plugins`.
+- **RISK-010**: The Jenkins Gatling plugin is used only for future report/trend visibility. If Plan 08 output is not compatible, keep `archiveArtifacts` and `htmlpublisher` as the authoritative evidence path.
 - **ASSUMPTION-001**: The GitHub repository `https://github.com/y0ncha/meta-final-project.git` is public by the time the final Jenkins Pipeline job is configured from SCM. During earlier local Plan 05 validation, the repository had no Git remote, so Jenkins read the mounted source-controlled `Jenkinsfile` directly.
 - **ASSUMPTION-002**: The Compose service names remain `jenkins` and `tomcat`.
 - **ASSUMPTION-003**: The Jenkins container can resolve `http://tomcat:8080/meta/` through the shared Compose network `meta`.

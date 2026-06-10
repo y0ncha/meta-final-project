@@ -4,14 +4,15 @@
 
 - Local command: `./scripts/run-playwright-container`
 - Jenkins command: `./scripts/run-playwright-container` from the `Playwright Functional Test` stage in `Jenkinsfile`
-- Local default container image: `mcr.microsoft.com/playwright:v1.52.0-noble`
+- Local default container image: `mcr.microsoft.com/playwright:v1.60.0-noble`
 - Local default Docker network: `meta`
 - Local default app URL from the Playwright container: `http://tomcat:8080/meta/`
 - Jenkins default app URL from the Playwright container: `http://tomcat:8080/meta/`
 - Jenkins runner container: `meta-jenkins`
+- Default disposable Playwright container name: `meta-playwright-${BUILD_NUMBER:-local}`
 - Host browser URL for manual checks: `http://localhost:8080/meta/`
 
-The runner keeps `APP_BASE_URL` configurable. Override it only when the Tomcat target changes for a real environment, for example a public-IP bonus target.
+The runner keeps `APP_BASE_URL` configurable. Override it only when the Tomcat target changes for a real environment, for example a public-IP bonus target. The disposable container name is configurable with `PLAYWRIGHT_CONTAINER_NAME`; by default local runs use `meta-playwright-local` and Jenkins runs use `meta-playwright-<build-number>`.
 
 ## Functional Validations
 
@@ -22,6 +23,18 @@ The test file is `tests/playwright/meta-functional.spec.js`. It contains one bro
 3. Text input: fills `#nameInput` with `Yonatan` and verifies the input value.
 4. Valid submit: clicks `#submitButton`, verifies `#resultMessage` equals `Hello, Yonatan. Your JSP form submission worked.`, and captures `output/playwright/screenshots/06-valid-submit.png`.
 5. Empty submit: reloads the configured app root, submits an empty form, verifies `#validationMessage` equals `Please enter a name before submitting.`, and captures `output/playwright/screenshots/06-empty-submit.png`.
+
+## Assertion And Validation Types
+
+Playwright uses `expect(...)` assertions for every automated validation in this project. In Selenium IDE terms, these behave like `assert` commands: if one fails, the test fails immediately. The project does not use soft `verify` checks that continue after failure.
+
+| Step | Playwright assertion | Validation type | Reason |
+|------|----------------------|-----------------|--------|
+| Page shell visibility | `toHaveText('DevOps Final Project')`, `toBeVisible()` | Positive assertion | Confirms the deployed JSP page loaded and exposes the required button and text input. |
+| Link navigation | `toHaveURL(/#about$/)`, `toContainText('About')` | Positive assertion | Confirms the required link works and navigates to the about section. |
+| Text input | `toHaveValue('Yonatan')` | Positive assertion | Confirms the required text input accepts user-entered text. |
+| Valid submit | `toHaveText('Hello, Yonatan. Your JSP form submission worked.')` | Positive assertion | Confirms the JSP form accepts valid input and renders the success message. |
+| Empty submit | `toHaveText('Please enter a name before submitting.')` | Negative validation assertion | Confirms the app rejects an empty submission and shows validation feedback instead of a success message. |
 
 ## Local Execution
 
@@ -45,6 +58,8 @@ The source-controlled `Jenkinsfile` already contains stage `Playwright Functiona
 Jenkins mounts the host Docker socket and uses the Docker CLI to start the same official Playwright container used by local execution. The runner uses `--volumes-from meta-jenkins` so the disposable Playwright container can see the Jenkins workspace and write evidence back under `output/playwright/`.
 
 This 2026-06-10 Plan 06 follow-up replaces the original Jenkins execution path where Node, npm, and Debian Chromium were installed directly inside the Jenkins image. Jenkins now orchestrates the official Playwright container instead.
+
+The Jenkins post-build behavior publishes `output/playwright/junit.xml` through the Jenkins JUnit publisher and `output/playwright/playwright-report/index.html` through HTML Publisher when those files exist. The raw files are still archived under `output/**/*`.
 
 ## Evidence Files
 

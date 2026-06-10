@@ -1,0 +1,47 @@
+#!/usr/bin/env sh
+set -eu
+
+# Optional environment variables:
+# PLAYWRIGHT_IMAGE, PLAYWRIGHT_NETWORK, APP_BASE_URL, HAR_PATH, LOG_FILE,
+# HAR_CONTAINER_NAME.
+
+PROJECT_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
+cd "$PROJECT_ROOT"
+
+PLAYWRIGHT_IMAGE="${PLAYWRIGHT_IMAGE:-mcr.microsoft.com/playwright:v1.60.0-noble}"
+PLAYWRIGHT_NETWORK="${PLAYWRIGHT_NETWORK:-meta}"
+APP_BASE_URL="${APP_BASE_URL:-http://tomcat:8080/meta/}"
+HAR_PATH="${HAR_PATH:-output/har/meta-functional-flow.har}"
+LOG_FILE="${LOG_FILE:-output/har/07-har-capture.log}"
+HAR_CONTAINER_NAME="${HAR_CONTAINER_NAME:-meta-har-${BUILD_NUMBER:-local}}"
+
+mkdir -p output/har
+
+run_and_log() {
+  set +e
+  "$@" > "$LOG_FILE" 2>&1
+  status=$?
+  set -e
+  cat "$LOG_FILE"
+  return "$status"
+}
+
+if ! command -v docker >/dev/null 2>&1; then
+  printf '%s\n' 'Docker is required to capture HAR in the Playwright container.' >&2
+  exit 127
+fi
+
+run_and_log docker run --rm \
+  --name "$HAR_CONTAINER_NAME" \
+  --network "$PLAYWRIGHT_NETWORK" \
+  -v "$PROJECT_ROOT:/work" \
+  -w /work \
+  -e APP_BASE_URL="$APP_BASE_URL" \
+  -e HAR_PATH="$HAR_PATH" \
+  -e CI=true \
+  "$PLAYWRIGHT_IMAGE" \
+  /bin/bash -lc 'npm ci && node tests/playwright/capture-har.js'
+
+printf '%s\n' 'HAR evidence:'
+printf '%s\n' "  $LOG_FILE"
+printf '%s\n' "  $HAR_PATH"

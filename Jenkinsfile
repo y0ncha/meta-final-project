@@ -120,6 +120,39 @@ pipeline {
   post {
     always {
       archiveArtifacts artifacts: 'output/**/*', allowEmptyArchive: true
+      script {
+        if (fileExists('output/playwright/junit.xml')) {
+          junit testResults: 'output/playwright/junit.xml', allowEmptyResults: true
+        }
+
+        if (fileExists('output/playwright/playwright-report/index.html')) {
+          publishHTML(target: [
+            allowMissing: true,
+            alwaysLinkToLastBuild: true,
+            keepAll: true,
+            reportDir: 'output/playwright/playwright-report',
+            reportFiles: 'index.html',
+            reportName: 'Playwright Report'
+          ])
+        }
+
+        [
+          [name: 'Gatling Max Limit Report', dir: 'output/gatling/max-limit'],
+          [name: 'Gatling Load 5m Report', dir: 'output/gatling/load-5m'],
+          [name: 'Gatling Stress 5m Report', dir: 'output/gatling/stress-5m']
+        ].each { report ->
+          if (fileExists("${report.dir}/index.html")) {
+            publishHTML(target: [
+              allowMissing: true,
+              alwaysLinkToLastBuild: true,
+              keepAll: true,
+              reportDir: report.dir,
+              reportFiles: 'index.html,*.pdf',
+              reportName: report.name
+            ])
+          }
+        }
+      }
     }
   }
 }

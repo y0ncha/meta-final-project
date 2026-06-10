@@ -26,6 +26,11 @@ Run Gatling in Docker for max-limit discovery, 5-minute load test, and 5-minute 
   - 5-minute stress test.
 - Run via Gatling container, not host `gatling`.
 - Save generated reports to `output/gatling/`.
+- Jenkins publishes generated Gatling HTML/PDF evidence with HTML Publisher when `index.html` exists under:
+  - `output/gatling/max-limit/`
+  - `output/gatling/load-5m/`
+  - `output/gatling/stress-5m/`
+- Do not enable `gatlingArchive()` until a real Plan 08 run validates that the generated Gatling output matches what the Jenkins Gatling plugin expects.
 - Do not invent the max limit; rerun or document uncertainty if the limit is unclear.
 
 ## Validation
@@ -33,6 +38,7 @@ Run Gatling in Docker for max-limit discovery, 5-minute load test, and 5-minute 
 - Each run produces a terminal summary screenshot.
 - Each run produces an `index.html` report.
 - Each report is exported/printed to PDF.
+- Jenkins build pages expose the generated Gatling reports through HTML Publisher after the reports exist.
 
 ## Human Configuration Needed
 - Capture terminal screenshots.

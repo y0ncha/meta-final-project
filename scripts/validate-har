@@ -1,0 +1,58 @@
+#!/usr/bin/env node
+
+const fs = require('node:fs');
+
+const harPath = process.argv[2] || 'output/har/meta-functional-flow.har';
+
+function fail(message, exitCode) {
+  console.error(message);
+  process.exit(exitCode);
+}
+
+if (!fs.existsSync(harPath)) {
+  fail(`HAR file is not readable: ${harPath}`, 64);
+}
+
+let har;
+try {
+  har = JSON.parse(fs.readFileSync(harPath, 'utf8'));
+} catch (error) {
+  fail(`HAR file is not valid JSON: ${error.message}`, 65);
+}
+
+if (!har || !har.log || !Array.isArray(har.log.entries)) {
+  fail('HAR file is missing log.entries array', 65);
+}
+
+const entries = har.log.entries;
+const metaRequests = entries.filter((entry) => {
+  const requestUrl = entry && entry.request && entry.request.url;
+  if (typeof requestUrl !== 'string') {
+    return false;
+  }
+
+  try {
+    return new URL(requestUrl).pathname.startsWith('/meta/');
+  } catch (_) {
+    return false;
+  }
+});
+
+if (metaRequests.length === 0) {
+  fail('HAR file does not contain any request URL whose path starts with /meta/', 66);
+}
+
+const hasContentEvidence = entries.some((entry) => {
+  const content = entry && entry.response && entry.response.content;
+  if (!content || typeof content !== 'object') {
+    return false;
+  }
+
+  return (typeof content.text === 'string' && content.text.length > 0) || typeof content.size === 'number';
+});
+
+if (!hasContentEvidence) {
+  fail('HAR file does not contain response content evidence', 67);
+}
+
+console.log(`Validated HAR: ${harPath} entries=${entries.length} metaRequests=${metaRequests.length}`);

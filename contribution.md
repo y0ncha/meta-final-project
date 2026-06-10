@@ -5,6 +5,7 @@ This file defines how code and documentation changes are contributed to this rep
 ## Before Implementation
 
 - Read the relevant source plan from `docs/plans/<plan-name>.md`.
+- Briefly review `docs/changelog/` before writing a new implementation plan so the plan stays aligned with prior decisions and reuses existing logic where appropriate.
 - Rewrite the source plan into an implementation plan using the `create-implementation-plan` skill before making implementation changes.
 - Read `rules/compliance.md` and confirm the implementation plan does not conflict with the project constraints.
 - If the implementation plan conflicts with `rules/compliance.md`, stop and report the conflict before editing files or running mutating commands.

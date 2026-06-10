@@ -59,3 +59,28 @@
 - The user removed the previous Compose containers/network before final validation; `docker compose up -d tomcat jenkins` recreated the required runtime.
 - `git status --short --branch` also shows an unrelated `.env.example` one-line comment diff. It is not required by Plan 05 and was left untouched.
 - Generated evidence should remain under ignored `output/` paths.
+
+## 2026-06-10 Jenkins Docker Tooling And Report Publishing Follow-Up
+
+- Updated `ops/jenkins/Dockerfile` to use Docker's official Debian apt repository and install `docker-ce-cli` plus `docker-compose-plugin`.
+- Added image-managed Jenkins plugins with `jenkins-plugin-cli --plugins "docker-workflow htmlpublisher gatling"`.
+- Updated `Jenkinsfile` post-build behavior to keep archiving `output/**/*`, publish Playwright JUnit XML, publish Playwright HTML, and publish Gatling HTML/PDF reports when those files exist.
+- Left `gatlingArchive()` deferred until Plan 08 validates a real Gatling output layout compatible with the Jenkins Gatling plugin.
+
+Validation:
+
+- `docker compose config`: passed.
+- `sh -n scripts/run-playwright-container`: passed.
+- `git diff --check`: passed.
+- `docker compose build jenkins`: passed; `jenkins-plugin-cli` completed with `Done`.
+- `docker compose up -d tomcat jenkins`: passed; Jenkins was recreated from the rebuilt image.
+- `docker compose exec -T jenkins docker --version`: passed with `Docker version 29.5.3, build d1c06ef`.
+- `docker compose exec -T jenkins docker compose version`: passed with `Docker Compose version v5.1.4`.
+- `docker compose exec -T jenkins jenkins-plugin-cli --version`: passed with `2.13.2`.
+- `docker compose exec -T jenkins sh -lc 'for p in docker-workflow htmlpublisher gatling; do if [ -f /var/jenkins_home/plugins/$p.jpi ] || [ -f /var/jenkins_home/plugins/$p.hpi ]; then echo "$p present"; else echo "$p missing"; exit 1; fi; done'`: passed for all three plugins.
+- Jenkins declarative linter API for `/workspace/final-project/Jenkinsfile`: passed with `Jenkinsfile successfully validated.`
+- `python3 .agents/skills/compliance-validator/scripts/validate_compliance.py --target . --rules rules/compliance.md`: passed with `pass=70`, `warn=0`, `manual=9`, `fail=0`.
+
+Live Jenkins build note:
+
+- The current `meta-container-ci-cd` job is configured as `org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition` against `https://github.com/y0ncha/meta-final-project.git`. A live non-timer build before committing would fetch the GitHub version of `Jenkinsfile`, not these uncommitted local edits, so the local Jenkinsfile was validated through the Jenkins declarative linter instead.

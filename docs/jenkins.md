@@ -13,6 +13,8 @@
 - Legacy local validation mount: `/workspace/final-project`
 - Jenkins Tomcat deployment mount: `/tomcat-webapps`
 - Jenkins Docker socket mount: `/var/run/docker.sock`
+- Jenkins Docker tooling: `docker-ce-cli` and `docker-compose-plugin` from Docker's Debian apt repository.
+- Jenkins image-managed plugins: `docker-workflow`, `htmlpublisher`, and `gatling`.
 - GitHub repository: `https://github.com/y0ncha/meta-final-project.git`
 
 ## Manual Jenkins Setup
@@ -21,13 +23,15 @@
 2. Open `http://localhost:8081/`.
 3. Unlock Jenkins with the initial admin password from `/var/jenkins_home/secrets/initialAdminPassword`.
 4. Create the Jenkins admin user.
-5. Install required plugins:
+5. Confirm required plugins are installed by the custom Jenkins image:
    - `Git`
    - `Pipeline`
    - `Pipeline: SCM Step`
    - `Pipeline: Declarative`
    - `Pipeline: Stage View`
-   - `HTML Publisher` if report archival is needed by later evidence plans.
+   - `Docker Pipeline` (`docker-workflow`)
+   - `HTML Publisher` (`htmlpublisher`)
+   - `Gatling` (`gatling`)
 
 ## Pipeline Job
 
@@ -68,7 +72,7 @@ The source-controlled `Jenkinsfile` handles two different trigger classes:
 7. `Gatling Load Test`: Runs `./scripts/run-gatling-load-5m` only for non-timer builds and only when that script exists. This is the hook for the required five-minute Gatling load test once the Gatling plan adds the script.
 8. `Gatling Stress Test`: Runs `./scripts/run-gatling-stress-5m` only for non-timer builds and only when that script exists. This is the hook for the required five-minute Gatling stress test once the Gatling plan adds the script.
 
-The `post` block always archives `output/**/*` if files exist. Later Playwright, Gatling, HAR, screenshots, and report files should be written under `output/` so Jenkins can attach them to the build without tracking generated evidence in Git.
+The `post` block always archives `output/**/*` if files exist. When present, it also publishes Playwright JUnit XML, the Playwright HTML report, and Gatling HTML/PDF reports from `output/gatling/max-limit/`, `output/gatling/load-5m/`, and `output/gatling/stress-5m/`. `gatlingArchive()` is intentionally deferred until Plan 08 validates the Gatling output shape expected by the Jenkins Gatling plugin.
 
 ## Schedule
 
@@ -82,7 +86,8 @@ The `post` block always archives `output/**/*` if files exist. Later Playwright,
 ## Security Notes
 
 - Jenkins mounts `/var/run/docker.sock` for this coursework stack so it can run disposable test containers such as the official Playwright image.
-- Playwright runs in `mcr.microsoft.com/playwright:v1.52.0-noble`, not directly in the Jenkins image. The 2026-06-10 Plan 06 follow-up supersedes the original no-Docker-socket decision in favor of one consistent Playwright execution model.
+- Playwright runs in `mcr.microsoft.com/playwright:v1.60.0-noble`, not directly in the Jenkins image. The 2026-06-10 Plan 06 follow-up supersedes the original no-Docker-socket decision in favor of one consistent Playwright execution model.
+- The Jenkins image installs Docker CLI and Docker Compose from Docker's official Debian apt repository so Jenkins-side diagnostics and test-container orchestration can use `docker` and `docker compose`.
 - Jenkins deploys by writing `meta.war` into the shared Docker volume mounted at `/tomcat-webapps`.
 - The Jenkins service currently runs as `root` inside the container so it can write to the Tomcat `webapps` volume. This is a local coursework tradeoff and must not be described as production-secure.
 - Do not store GitHub tokens, Jenkins admin passwords, API keys, cookies, private keys, or other secrets in tracked files.
@@ -104,6 +109,10 @@ The `post` block always archives `output/**/*` if files exist. Later Playwright,
   - `output/playwright/playwright-report/index.html`
   - `output/playwright/screenshots/06-valid-submit.png`
   - `output/playwright/screenshots/06-empty-submit.png`
+- Jenkins published report evidence:
+  - Playwright JUnit result from `output/playwright/junit.xml`.
+  - Playwright HTML report from `output/playwright/playwright-report/index.html`.
+  - Gatling HTML/PDF reports from `output/gatling/max-limit/`, `output/gatling/load-5m/`, and `output/gatling/stress-5m/` after Plan 08 generates them.
 - Previous Plan 05 remote-backed Jenkins evidence, captured before the trigger split:
   - Build `#7`: `SUCCESS`
   - Source: `https://github.com/y0ncha/meta-final-project.git`
@@ -121,3 +130,4 @@ The `post` block always archives `output/**/*` if files exist. Later Playwright,
 - If `docker exec meta-jenkins ...` hangs while `curl -fsS http://localhost:8081/login` succeeds, Jenkins is serving HTTP but Docker exec is blocked by the local container runtime. Restart OrbStack or Docker Desktop before rerunning container-side validation.
 - If Jenkins cannot write `/tomcat-webapps/meta.war`, confirm service `jenkins` mounts volume `tomcat_webapps` at `/tomcat-webapps` and runs with write permission to that mount.
 - If Jenkins can deploy but Tomcat does not serve the updated app, remove `/tomcat-webapps/meta` and `/tomcat-webapps/meta.war`, rerun `scripts/deploy-war`, and wait for Tomcat to expand the WAR.
+- If `docker compose` is missing inside Jenkins, rebuild the custom Jenkins image and recreate the service with `docker compose build jenkins` followed by `docker compose up -d jenkins`.
