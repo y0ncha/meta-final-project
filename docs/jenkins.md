@@ -84,7 +84,7 @@ The source-controlled `Jenkinsfile` is only for the `meta-container-ci-cd` job. 
 
 ### Pre-build
 
-The `Build WAR` stage begins with the setup work that must happen before Maven runs:
+The `Pre-build` stage runs the setup work that must happen before Maven runs:
 
 - `checkout scm`: fetches the repository and branch configured in the Jenkins Pipeline job.
 - `CHECKED_OUT_COMMIT`: records the exact Git commit so disposable Docker test containers can prove they are testing the same source revision.
@@ -94,14 +94,15 @@ The pipeline keeps `skipDefaultCheckout(true)` so Jenkins does not perform a hid
 
 ### Visible Stages
 
-1. `Build WAR`: Runs the pre-build steps, then runs `mvn -B clean package` and archives `target/meta.war`. Maven turns the JSP application into the WAR file Tomcat can deploy; archiving the WAR gives Jenkins build evidence and a traceable artifact.
-2. `Deploy Tomcat`: Runs `./scripts/deploy-war` with `SKIP_BUILD=1`, `TOMCAT_SHARED_WEBAPPS_DIR=/tomcat-webapps`, and `DEPLOY_CHECK_URL="$DEPLOY_CHECK_URL"`. This reuses the repository deployment script, avoids rebuilding the WAR twice, writes the WAR into the shared Tomcat webapps volume, and waits until Tomcat serves the deployed app.
-3. `Verify Tomcat`: Runs `curl -fsS "$APP_BASE_URL" >/dev/null` after deployment. It proves the deployed WAR is reachable through Tomcat at `http://tomcat:8080/meta/` from inside the Docker network.
-4. `Docker Pipeline Preflight`: Runs before disposable test containers. It checks Docker CLI access, Compose CLI access, Docker daemon access, workspace mapping, checked-out commit identity, and Tomcat reachability from the Playwright image.
-5. `Playwright Functional Test`: Runs only when `scripts/run-playwright-container` exists. Jenkins starts the official Playwright image through Docker Pipeline with working directory `env.WORKSPACE`, then calls `PLAYWRIGHT_DOCKER_PIPELINE=1 ./scripts/run-playwright-container` inside that container so evidence is written under the checked-out SCM workspace.
-6. `Gatling Max Limit`: Runs `./scripts/run-gatling-max-limit` only when that script exists and build parameter `RUN_GATLING_MAX_LIMIT=true`. This keeps disruptive max-limit discovery out of ordinary CI/CD runs while still making it Jenkins-runnable for evidence capture.
-7. `Gatling Load Test`: Runs `./scripts/run-gatling-load-5m` only when that script exists. This is the required five-minute Gatling load test.
-8. `Gatling Stress Test`: Runs `./scripts/run-gatling-stress-5m` only when that script exists. This is the required five-minute Gatling stress test.
+1. `Pre-build`: Checks out the configured SCM branch, records `CHECKED_OUT_COMMIT`, and cleans old generated evidence directories before Maven runs.
+2. `Build WAR`: Runs `mvn -B clean package` and archives `target/meta.war`. Maven turns the JSP application into the WAR file Tomcat can deploy; archiving the WAR gives Jenkins build evidence and a traceable artifact.
+3. `Deploy Tomcat`: Runs `./scripts/deploy-war` with `SKIP_BUILD=1`, `TOMCAT_SHARED_WEBAPPS_DIR=/tomcat-webapps`, and `DEPLOY_CHECK_URL="$DEPLOY_CHECK_URL"`. This reuses the repository deployment script, avoids rebuilding the WAR twice, writes the WAR into the shared Tomcat webapps volume, and waits until Tomcat serves the deployed app.
+4. `Verify Tomcat`: Runs `curl -fsS "$APP_BASE_URL" >/dev/null` after deployment. It proves the deployed WAR is reachable through Tomcat at `http://tomcat:8080/meta/` from inside the Docker network.
+5. `Docker Pipeline Preflight`: Runs before disposable test containers. It checks Docker CLI access, Compose CLI access, Docker daemon access, workspace mapping, checked-out commit identity, and Tomcat reachability from the Playwright image.
+6. `Playwright Functional Test`: Runs only when `scripts/run-playwright-container` exists. Jenkins starts the official Playwright image through Docker Pipeline with working directory `env.WORKSPACE`, then calls `PLAYWRIGHT_DOCKER_PIPELINE=1 ./scripts/run-playwright-container` inside that container so evidence is written under the checked-out SCM workspace.
+7. `Gatling Max Limit`: Runs `./scripts/run-gatling-max-limit` only when that script exists and build parameter `RUN_GATLING_MAX_LIMIT=true`. This keeps disruptive max-limit discovery out of ordinary CI/CD runs while still making it Jenkins-runnable for evidence capture.
+8. `Gatling Load Test`: Runs `./scripts/run-gatling-load-5m` only when that script exists. This is the required five-minute Gatling load test.
+9. `Gatling Stress Test`: Runs `./scripts/run-gatling-stress-5m` only when that script exists. This is the required five-minute Gatling stress test.
 
 ### Post-build
 

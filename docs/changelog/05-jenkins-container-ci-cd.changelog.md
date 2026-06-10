@@ -203,3 +203,16 @@ Validation:
 - `git diff --check`: passed.
 - Jenkins declarative linter for `/workspace/final-project/Jenkinsfile`: passed with `Jenkinsfile successfully validated.`
 - `python3 .agents/skills/compliance-validator/scripts/validate_compliance.py --target . --rules rules/compliance.md`: passed with `pass=71`, `warn=0`, `manual=9`, `fail=0`.
+
+## 2026-06-11 Pre/Post Block Correction Follow-Up
+
+- Restored a separate visible `Pre-build` stage in `Jenkinsfile`.
+- Moved `checkout scm`, `CHECKED_OUT_COMMIT` capture, and generated evidence cleanup out of `Build WAR` and back into `Pre-build`.
+- Kept post-build work in Declarative Pipeline `post { always { ... } }` instead of converting it to a normal final stage, so report generation, artifact archiving, JUnit publishing, and HTML publishing still run after failed visible stages.
+- Updated `docs/jenkins.md` to show `Pre-build` as stage 1 and to keep `Post-build` documented as the real Jenkins `post` block.
+
+Validation:
+
+- `git diff --check`: passed.
+- `python3 .agents/skills/compliance-validator/scripts/validate_compliance.py --target . --rules rules/compliance.md`: passed with `pass=71`, `warn=0`, `manual=9`, `fail=0`.
+- Jenkins declarative linter: not rerun in this follow-up because `curl -fsS -I http://localhost:8081/login` could not connect to local Jenkins.

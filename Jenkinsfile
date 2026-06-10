@@ -35,13 +35,18 @@ pipeline {
   }
 
   stages {
-    stage('Build WAR') {
+    stage('Pre-build') {
       steps {
         script {
           def scmVars = checkout scm
           env.CHECKED_OUT_COMMIT = scmVars.GIT_COMMIT ?: sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
         }
         sh 'rm -rf output/gatling output/playwright output/har output/reports'
+      }
+    }
+
+    stage('Build WAR') {
+      steps {
         sh 'mvn -B clean package'
         archiveArtifacts artifacts: 'target/meta.war', fingerprint: true
       }
