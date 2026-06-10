@@ -19,7 +19,7 @@ tags:
 
 This plan implements the HAR deliverable required by `final-project.pdf` and `rules/compliance.md`. The result must provide a written scenario description in `docs/har-scenario.md`, a real HAR file captured from the JSP application flow, a repeatable Dockerized Playwright capture command, and validation that the HAR contains requests for the deployed application at `http://localhost:8080/meta/` or `http://tomcat:8080/meta/`.
 
-Follow-up update on 2026-06-10: `scripts/capture-har` now launches profiled Compose one-shot service `har-runner` or `har-runner-jenkins` instead of invoking raw `docker run`. HAR capture remains isolated from the Playwright functional-test container to avoid browser-cache or filesystem-state leakage between validation stages.
+Follow-up update on 2026-06-10: `scripts/capture-har` now uses direct `docker run` for local execution and `HAR_DOCKER_PIPELINE=1` as a command body for any future Jenkins Docker Pipeline use. HAR capture remains isolated from the Playwright functional-test container to avoid browser-cache or filesystem-state leakage between validation stages.
 
 ## 1. Requirements & Constraints
 
@@ -108,14 +108,14 @@ Follow-up update on 2026-06-10: `scripts/capture-har` now launches profiled Comp
 
 ### Implementation Phase 4
 
-- GOAL-004: Convert HAR capture from raw Docker invocation to Compose one-shot execution without changing the public command.
+- GOAL-004: Keep HAR capture on disposable Docker containers after removing Compose runner services.
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-040 | Add Compose service `har-runner` for local one-shot HAR capture. | ✅ | 2026-06-10 |
-| TASK-041 | Add Compose service `har-runner-jenkins` for Jenkins one-shot HAR capture with inherited Jenkins workspace volumes. | ✅ | 2026-06-10 |
-| TASK-042 | Update `scripts/capture-har` to call `docker compose --profile tools run --rm --no-deps` while preserving evidence paths. | ✅ | 2026-06-10 |
-| TASK-043 | Update `docs/har-scenario.md` to remove the legacy `PLAYWRIGHT_NETWORK` fallback and document validation isolation. | ✅ | 2026-06-10 |
+| TASK-040 | Remove the HAR Compose runner service model from `docker-compose.yml`. | ✅ | 2026-06-10 |
+| TASK-041 | Update `scripts/capture-har` to use direct local `docker run`. | ✅ | 2026-06-10 |
+| TASK-042 | Add `HAR_DOCKER_PIPELINE=1` support so the script can run as a command body inside a Jenkins Docker Pipeline Playwright container if needed. | ✅ | 2026-06-10 |
+| TASK-043 | Update `docs/har-scenario.md` to document validation isolation without naming removed Compose runner services. | ✅ | 2026-06-10 |
 
 ## 3. Alternatives
 
@@ -166,7 +166,7 @@ Follow-up update on 2026-06-10: `scripts/capture-har` now launches profiled Comp
 - **RISK-001**: HAR files can contain sensitive request and response data; the generated HAR must be reviewed before it is attached to the final email.
 - **RISK-002**: Docker image pull for `mcr.microsoft.com/playwright:v1.60.0-noble` can fail if the machine is offline or the registry is unavailable; rerun when network access is available and document the blocker if it persists.
 - **RISK-003**: Browser HAR capture depends on stable JSP IDs; changing IDs in `src/main/webapp/index.jsp` requires updating `tests/playwright/capture-har.js`, `docs/har-scenario.md`, and this plan.
-- **RISK-004**: The default Docker-network URL `http://tomcat:8080/meta/` will fail if the Compose runner does not join network `meta`; validate with `docker compose --profile tools config --quiet` and rerun after `docker compose up -d tomcat jenkins`.
+- **RISK-004**: The default Docker-network URL `http://tomcat:8080/meta/` will fail if the disposable capture container does not join network `meta`; validate with `docker compose config --quiet` and rerun after `docker compose up -d tomcat jenkins`.
 - **RISK-005**: A HAR captured against `http://tomcat:8080/meta/` proves the same app flow inside Docker but does not show a browser address bar; final submission still needs the separate Tomcat screenshot with `http://localhost:8080/meta/` visible.
 - **ASSUMPTION-001**: The Tomcat app remains deployed at context path `/meta/`.
 - **ASSUMPTION-002**: Docker Compose project name remains `meta`, preserving Docker network name `meta`.

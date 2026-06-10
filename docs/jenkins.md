@@ -69,7 +69,7 @@ The source-controlled `Jenkinsfile` handles two different trigger classes:
 4. `Deploy Tomcat`: Runs `./scripts/deploy-war` with `SKIP_BUILD=1`, `TOMCAT_SHARED_WEBAPPS_DIR=/tomcat-webapps`, and `DEPLOY_CHECK_URL="$DEPLOY_CHECK_URL"` only for non-timer builds. This reuses the repository deployment script, avoids rebuilding the WAR twice, writes the WAR into the shared Tomcat webapps volume, and waits until Tomcat serves the deployed app.
 5. `Verify Tomcat`: Runs `curl -fsS "$APP_BASE_URL" >/dev/null` only for non-timer builds. This proves the deployment is not just copied to disk but reachable through Tomcat at `http://tomcat:8080/meta/` from inside the Docker network.
 6. `Availability Check`: Runs `curl -fsS "$APP_BASE_URL" >/dev/null` only for timer-triggered builds. This is the Jenkins-side five-minute availability monitor evidence required by the project; it does not rebuild, redeploy, or run Gatling.
-7. `Playwright Functional Test`: Runs `./scripts/run-playwright-container` only for non-timer builds and only when that script exists. The Plan 06 follow-up uses this script to start Compose one-shot service `playwright-runner-jenkins`, run the functional test in the official Playwright image, and write ignored evidence under `output/playwright/`.
+7. `Playwright Functional Test`: Runs only for non-timer builds and only when `scripts/run-playwright-container` exists. Jenkins starts the official Playwright image through Docker Pipeline, then calls `PLAYWRIGHT_DOCKER_PIPELINE=1 ./scripts/run-playwright-container` inside that container so evidence is written under `output/playwright/`.
 8. `Gatling Max Limit`: Runs `./scripts/run-gatling-max-limit` only for non-timer builds, only when that script exists, and only when build parameter `RUN_GATLING_MAX_LIMIT=true`. This keeps disruptive max-limit discovery out of ordinary CI/CD runs while still making it Jenkins-runnable for evidence capture.
 9. `Gatling Load Test`: Runs `./scripts/run-gatling-load-5m` only for non-timer builds and only when that script exists. This is the required five-minute Gatling load test.
 10. `Gatling Stress Test`: Runs `./scripts/run-gatling-stress-5m` only for non-timer builds and only when that script exists. This is the required five-minute Gatling stress test.
@@ -87,8 +87,8 @@ The `post` block performs administrative finalization after validation stages fi
 
 ## Security Notes
 
-- Jenkins mounts `/var/run/docker.sock` for this coursework stack so it can run Compose one-shot test containers such as the official Playwright image and the Gatling image.
-- Playwright runs in `mcr.microsoft.com/playwright:v1.60.0-noble`, not directly in the Jenkins image. Functional Playwright and HAR capture use separate Compose one-shot containers so validation stages do not share browser or filesystem state.
+- Jenkins mounts `/var/run/docker.sock` for this coursework stack so Docker Pipeline can run disposable test/report containers such as the official Playwright image and the Gatling image.
+- Playwright runs in `mcr.microsoft.com/playwright:v1.60.0-noble`, not directly in the Jenkins image. Functional Playwright and HAR capture use separate disposable containers so validation stages do not share browser or filesystem state.
 - The Jenkins image installs Docker CLI and Docker Compose from Docker's official Debian apt repository so Jenkins-side diagnostics and test-container orchestration can use `docker` and `docker compose`.
 - Jenkins deploys by writing `meta.war` into the shared Docker volume mounted at `/tomcat-webapps`.
 - The Jenkins service currently runs as `root` inside the container so it can write to the Tomcat `webapps` volume. This is a local coursework tradeoff and must not be described as production-secure.
@@ -136,3 +136,4 @@ The `post` block performs administrative finalization after validation stages fi
 - If Jenkins cannot write `/tomcat-webapps/meta.war`, confirm service `jenkins` mounts volume `tomcat_webapps` at `/tomcat-webapps` and runs with write permission to that mount.
 - If Jenkins can deploy but Tomcat does not serve the updated app, remove `/tomcat-webapps/meta` and `/tomcat-webapps/meta.war`, rerun `scripts/deploy-war`, and wait for Tomcat to expand the WAR.
 - If `docker compose` is missing inside Jenkins, rebuild the custom Jenkins image and recreate the service with `docker compose build jenkins` followed by `docker compose up -d jenkins`.
+- If Docker Pipeline fails before the Playwright/Gatling stages, inspect the `Docker Pipeline Preflight` stage first. It checks Docker CLI access, Compose CLI access, Docker daemon access, the Playwright-image workspace path, and container reachability to `http://tomcat:8080/meta/`.

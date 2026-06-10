@@ -5,8 +5,8 @@
 - Local command: `./scripts/run-playwright-container`
 - Jenkins command: `./scripts/run-playwright-container` from the `Playwright Functional Test` stage in `Jenkinsfile`
 - Local default container image: `mcr.microsoft.com/playwright:v1.60.0-noble`
-- Compose runner service: `playwright-runner`
-- Jenkins Compose runner service: `playwright-runner-jenkins`
+- Local container runner: direct disposable `docker run`
+- Jenkins container runner: Jenkins Docker Pipeline using `docker.image(env.PLAYWRIGHT_IMAGE).inside(...)`
 - Default Docker network: `meta`
 - Local default app URL from the Playwright container: `http://tomcat:8080/meta/`
 - Jenkins default app URL from the Playwright container: `http://tomcat:8080/meta/`
@@ -16,7 +16,7 @@
 
 The runner keeps `APP_BASE_URL` configurable. Override it only when the Tomcat target changes for a real environment, for example a public-IP bonus target. The disposable container name is configurable with `PLAYWRIGHT_CONTAINER_NAME`; by default local runs use `meta-playwright-local` and Jenkins runs use `meta-playwright-<build-number>`.
 
-Playwright validation runs through a fresh Compose one-shot container each time. The functional test and HAR capture intentionally do not reuse the same Playwright container, so filesystem, browser cache, and test output state cannot leak between validation stages.
+Playwright validation runs through a fresh disposable container each time. The functional test and HAR capture intentionally do not reuse the same Playwright container, so filesystem, browser cache, and test output state cannot leak between validation stages.
 
 ## Functional Validations
 
@@ -49,7 +49,7 @@ Run from the repository root after Tomcat is deployed:
 ./scripts/run-playwright-container
 ```
 
-The local runner starts Compose service `playwright-runner` with `docker compose --profile tools run --rm --no-deps`, installs dependencies with `npm ci` inside that one-shot container, and runs `npx playwright test`.
+The local runner starts the official Playwright image with direct `docker run`, mounts the repository at `/work`, installs dependencies with `npm ci` inside that disposable container, and runs `npx playwright test`.
 
 ## Jenkins Execution
 
@@ -59,7 +59,7 @@ The source-controlled `Jenkinsfile` already contains stage `Playwright Functiona
 ./scripts/run-playwright-container
 ```
 
-Jenkins mounts the host Docker socket and uses Docker Compose to start the same official Playwright container used by local execution. The runner uses Compose service `playwright-runner-jenkins`, which inherits the Jenkins workspace volumes, so the disposable Playwright container can see the Jenkins workspace and write evidence back under `output/playwright/`.
+Jenkins mounts the host Docker socket and uses Docker Pipeline to start the same official Playwright container used by local execution. The Pipeline passes `--network meta`, `--volumes-from meta-jenkins`, and working directory `/workspace/final-project`, so the disposable Playwright container can see the Jenkins workspace and write evidence back under `output/playwright/`.
 
 This 2026-06-10 Plan 06 follow-up replaces the original Jenkins execution path where Node, npm, and Debian Chromium were installed directly inside the Jenkins image. Jenkins now orchestrates the official Playwright container instead.
 

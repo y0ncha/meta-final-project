@@ -23,7 +23,7 @@ Follow-up update on 2026-06-10: Jenkins now starts the official Playwright conta
 
 Follow-up update on 2026-06-10: Jenkins now publishes Playwright JUnit and HTML evidence through Jenkins report plugins when the generated files exist. Playwright execution remains containerized.
 
-Follow-up update on 2026-06-10: `scripts/run-playwright-container` now launches profiled Compose one-shot service `playwright-runner` or `playwright-runner-jenkins` instead of invoking raw `docker run`. The Playwright functional test remains isolated from HAR capture; those validations use separate one-shot containers.
+Follow-up update on 2026-06-10: `scripts/run-playwright-container` now uses direct `docker run` for local execution and `PLAYWRIGHT_DOCKER_PIPELINE=1` as the command body inside Jenkins Docker Pipeline. The Playwright functional test remains isolated from HAR capture; those validations use separate disposable containers.
 
 ## 1. Requirements & Constraints
 
@@ -35,7 +35,7 @@ Follow-up update on 2026-06-10: `scripts/run-playwright-container` now launches 
 - **REQ-006**: Save generated Playwright evidence under `output/playwright/`, including a passed-run log, an HTML report, JUnit XML, and at least two deterministic screenshots from the functional flow.
 - **REQ-007**: Keep generated evidence ignored by Git according to `.gitignore`; commit only source files, scripts, documentation, and plan/changelog files.
 - **REQ-008**: Preserve the existing `Jenkinsfile` stage named `Playwright Functional Test`; make that stage pass by adding `scripts/run-playwright-container`.
-- **REQ-009**: Ensure Jenkins-triggered browser automation runs inside Docker by having Jenkins start the official Playwright container through its mounted Docker socket.
+- **REQ-009**: Ensure Jenkins-triggered browser automation runs inside Docker by having Jenkins start the official Playwright container through Docker Pipeline.
 - **REQ-010**: Keep local developer execution in the official Playwright container image `mcr.microsoft.com/playwright:v1.60.0-noble` unless `PLAYWRIGHT_IMAGE` overrides it.
 - **REQ-011**: Publish `output/playwright/junit.xml` through Jenkins JUnit reporting and `output/playwright/playwright-report/index.html` through HTML Publisher when those files exist.
 - **SEC-001**: Do not commit Jenkins credentials, API tokens, browser cookies, HAR content, private keys, `.env`, or generated traces containing sensitive values.
@@ -77,7 +77,7 @@ Follow-up update on 2026-06-10: `scripts/run-playwright-container` now launches 
 | TASK-011 | Create executable script `scripts/run-playwright-container` with shebang `#!/usr/bin/env sh` and `set -eu`. | ✅ | 2026-06-10 |
 | TASK-012 | In `scripts/run-playwright-container`, define `PROJECT_ROOT`, `PLAYWRIGHT_IMAGE="${PLAYWRIGHT_IMAGE:-mcr.microsoft.com/playwright:v1.60.0-noble}"`, `PLAYWRIGHT_NETWORK="${PLAYWRIGHT_NETWORK:-meta}"`, `HOST_APP_BASE_URL="${APP_BASE_URL:-http://tomcat:8080/meta/}"`, `JENKINS_CONTAINER="${JENKINS_CONTAINER:-meta-jenkins}"`, `PLAYWRIGHT_CONTAINER_NAME="${PLAYWRIGHT_CONTAINER_NAME:-meta-playwright-${BUILD_NUMBER:-local}}"`, `OUTPUT_DIR="output/playwright"`, and `LOG_FILE="$OUTPUT_DIR/06-playwright-run.log"`. | ✅ | 2026-06-10 |
 | TASK-013 | In `scripts/run-playwright-container`, create `output/playwright/`, `output/playwright/screenshots/`, `output/playwright/test-results/`, and `output/playwright/playwright-report/` before running tests. | ✅ | 2026-06-10 |
-| TASK-014 | In `scripts/run-playwright-container`, when file `/var/jenkins_home/config.xml` exists, require Docker and run `docker run --rm --name "$PLAYWRIGHT_CONTAINER_NAME" --network "$PLAYWRIGHT_NETWORK" --volumes-from "$JENKINS_CONTAINER" -w "$PROJECT_ROOT" -e APP_BASE_URL="$HOST_APP_BASE_URL" -e CI=true "$PLAYWRIGHT_IMAGE" /bin/bash -lc 'npm ci && npx playwright test'`; capture all output to `output/playwright/06-playwright-run.log` while preserving the test exit code. | ✅ | 2026-06-10 |
+| TASK-014 | In `scripts/run-playwright-container`, when `PLAYWRIGHT_DOCKER_PIPELINE=1`, export `APP_BASE_URL` and `CI=true`, then run `/bin/bash -lc 'npm ci && npx playwright test'`; capture all output to `output/playwright/06-playwright-run.log` while preserving the test exit code. | ✅ | 2026-06-10 |
 | TASK-015 | In `scripts/run-playwright-container`, when not inside Jenkins, require Docker and run `docker run --rm --name "$PLAYWRIGHT_CONTAINER_NAME" --network "$PLAYWRIGHT_NETWORK" -v "$PROJECT_ROOT:/work" -w /work -e APP_BASE_URL="$HOST_APP_BASE_URL" -e CI=true "$PLAYWRIGHT_IMAGE" /bin/bash -lc 'npm ci && npx playwright test'`; capture all output to `output/playwright/06-playwright-run.log` while preserving the test exit code. | ✅ | 2026-06-10 |
 | TASK-016 | In `scripts/run-playwright-container`, print the final evidence paths after a successful run: `output/playwright/06-playwright-run.log`, `output/playwright/junit.xml`, `output/playwright/playwright-report/index.html`, `output/playwright/screenshots/06-valid-submit.png`, and `output/playwright/screenshots/06-empty-submit.png`. | ✅ | 2026-06-10 |
 | TASK-017 | Mark `scripts/run-playwright-container` executable with `chmod +x scripts/run-playwright-container`. | ✅ | 2026-06-10 |
@@ -119,13 +119,13 @@ Follow-up update on 2026-06-10: `scripts/run-playwright-container` now launches 
 
 ### Implementation Phase 5
 
-- GOAL-005: Convert the Playwright runner from raw Docker invocation to Compose one-shot execution without changing the public command.
+- GOAL-005: Convert Jenkins Playwright execution from nested Docker launch to Jenkins Docker Pipeline while keeping the public script command.
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-038 | Add Compose service `playwright-runner` for local one-shot Playwright execution. | ✅ | 2026-06-10 |
-| TASK-039 | Add Compose service `playwright-runner-jenkins` for Jenkins one-shot Playwright execution with inherited Jenkins workspace volumes. | ✅ | 2026-06-10 |
-| TASK-040 | Update `scripts/run-playwright-container` to call `docker compose --profile tools run --rm --no-deps` while preserving evidence paths. | ✅ | 2026-06-10 |
+| TASK-038 | Remove the Playwright Compose runner service model from `docker-compose.yml`. | ✅ | 2026-06-10 |
+| TASK-039 | Update Jenkins stage `Playwright Functional Test` to start `mcr.microsoft.com/playwright:v1.60.0-noble` with `docker.image(env.PLAYWRIGHT_IMAGE).inside(...)`. | ✅ | 2026-06-10 |
+| TASK-040 | Update `scripts/run-playwright-container` to use direct local `docker run` and `PLAYWRIGHT_DOCKER_PIPELINE=1` for Jenkins Docker Pipeline execution while preserving evidence paths. | ✅ | 2026-06-10 |
 | TASK-041 | Document that Playwright functional validation and HAR capture use separate fresh one-shot containers. | ✅ | 2026-06-10 |
 
 ## 3. Alternatives
@@ -133,7 +133,7 @@ Follow-up update on 2026-06-10: `scripts/run-playwright-container` now launches 
 - **ALT-001**: Use Selenium IDE and commit a `.side` file. Rejected because `rules/compliance.md` records the accepted project override to use Playwright, while preserving the PDF mismatch as a grading risk.
 - **ALT-002**: Run Playwright directly on the host. Rejected because `rules/compliance.md` requires Dockerized, repeatable browser automation and the project must not install browser tooling on the host.
 - **ALT-003**: Run Playwright directly inside Jenkins with Jenkins-installed Node, npm, and Chromium. Rejected by the 2026-06-10 follow-up because the user prioritized one official-container execution model for local and Jenkins runs.
-- **ALT-004**: Add a long-running Playwright service to `docker-compose.yml`. Rejected because Playwright is a test runner, not a production service, and validation stages must not share container state. Profiled Compose one-shot services are accepted.
+- **ALT-004**: Add Playwright runner services to `docker-compose.yml`. Rejected because Compose should contain only regular services `tomcat` and `jenkins`; validation stages use disposable `docker run` or Jenkins Docker Pipeline containers instead.
 - **ALT-005**: Use screenshots only without Playwright assertions. Rejected because the assignment requires functional browser automation with validations, not manual visual evidence.
 
 ## 4. Dependencies
@@ -153,8 +153,8 @@ Follow-up update on 2026-06-10: `scripts/run-playwright-container` now launches 
 - **FILE-003**: `package-lock.json` - deterministic npm dependency lock for Dockerized Playwright execution.
 - **FILE-004**: `playwright.config.js` - Playwright test configuration, reports, screenshots, base URL handling, and optional Jenkins Chromium executable path handling.
 - **FILE-005**: `tests/playwright/meta-functional.spec.js` - five-validation functional browser test.
-- **FILE-006**: `scripts/run-playwright-container` - local official-container runner and Jenkins-container runner.
-- **FILE-007**: `ops/jenkins/Dockerfile` - Jenkins image dependencies for direct Playwright execution inside the Jenkins container.
+- **FILE-006**: `scripts/run-playwright-container` - local official-container runner and Jenkins Docker Pipeline command body.
+- **FILE-007**: `ops/jenkins/Dockerfile` - Jenkins image dependencies for Docker Pipeline orchestration, Maven build, and Tomcat deployment.
 - **FILE-008**: `docs/playwright.md` - Playwright runtime, validation, evidence, and override documentation.
 - **FILE-009**: `docs/jenkins.md` - Jenkins stage, evidence, and security documentation updates.
 - **FILE-010**: `docs/changelog/06-playwright-container-functional-test.changelog.md` - completion record created after validation.

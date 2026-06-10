@@ -3,10 +3,11 @@ set -eu
 
 # Optional environment variables:
 # GATLING_IMAGE, GATLING_PLATFORM, APP_BASE_URL, GATLING_CONTAINER_NAME,
-# GATLING_SIMULATION_CLASS, GATLING_* load values.
+# GATLING_SIMULATION_CLASS, GATLING_DOCKER_NETWORK, GATLING_DOCKER_PIPELINE,
+# GATLING_BIN, GATLING_* load values.
 
-SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
-PROJECT_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd -P)
+SCRIPT_DIR=$(dirname "$0")
+PROJECT_ROOT=$(cd "$SCRIPT_DIR/.." && pwd -P)
 cd "$PROJECT_ROOT"
 
 GATLING_RUN_TYPE="${GATLING_RUN_TYPE:-}"
@@ -22,6 +23,9 @@ GATLING_IMAGE="${GATLING_IMAGE:-denvazh/gatling:3.2.1}"
 GATLING_PLATFORM="${GATLING_PLATFORM:-linux/amd64}"
 APP_BASE_URL="${APP_BASE_URL:-http://tomcat:8080/meta/}"
 GATLING_CONTAINER_NAME="${GATLING_CONTAINER_NAME:-meta-gatling-${GATLING_RUN_TYPE}-${BUILD_NUMBER:-local}}"
+GATLING_DOCKER_NETWORK="${GATLING_DOCKER_NETWORK:-meta}"
+GATLING_DOCKER_PIPELINE="${GATLING_DOCKER_PIPELINE:-0}"
+GATLING_BIN="${GATLING_BIN:-}"
 GATLING_LOAD_USERS_PER_SEC="${GATLING_LOAD_USERS_PER_SEC:-5}"
 GATLING_STRESS_START_USERS_PER_SEC="${GATLING_STRESS_START_USERS_PER_SEC:-5}"
 GATLING_STRESS_TARGET_USERS_PER_SEC="${GATLING_STRESS_TARGET_USERS_PER_SEC:-50}"
@@ -31,7 +35,6 @@ GATLING_MAX_LEVEL_COUNT="${GATLING_MAX_LEVEL_COUNT:-10}"
 GATLING_MAX_LEVEL_SECONDS="${GATLING_MAX_LEVEL_SECONDS:-30}"
 GATLING_MAX_RAMP_SECONDS="${GATLING_MAX_RAMP_SECONDS:-10}"
 SIMULATION_CLASS="${GATLING_SIMULATION_CLASS:-MetaSimulation}"
-GATLING_SERVICE="gatling-runner"
 
 OUTPUT_DIR="output/gatling/$GATLING_RUN_TYPE"
 RAW_DIR="$OUTPUT_DIR/raw"
@@ -39,11 +42,6 @@ LOG_FILE="$OUTPUT_DIR/${GATLING_RUN_TYPE}-run.log"
 
 mkdir -p "$OUTPUT_DIR" "$RAW_DIR" output/gatling/screenshots
 find "$OUTPUT_DIR" -mindepth 1 -maxdepth 1 ! -name raw -exec rm -rf {} +
-
-if ! command -v docker >/dev/null 2>&1; then
-  printf '%s\n' 'docker is required to run Gatling' >&2
-  exit 127
-fi
 
 run_and_log() {
   set +e
@@ -54,44 +52,74 @@ run_and_log() {
   return "$status"
 }
 
-if [ -f /var/jenkins_home/config.xml ]; then
+case "$GATLING_DOCKER_PIPELINE" in
+  0|1) ;;
+  *)
+    printf '%s\n' 'GATLING_DOCKER_PIPELINE must be 0 or 1' >&2
+    exit 2
+    ;;
+esac
+
+if [ "$GATLING_DOCKER_PIPELINE" = "1" ]; then
+  export APP_BASE_URL
+  export GATLING_RUN_TYPE
+  export GATLING_LOAD_USERS_PER_SEC
+  export GATLING_STRESS_START_USERS_PER_SEC
+  export GATLING_STRESS_TARGET_USERS_PER_SEC
+  export GATLING_MAX_START_USERS_PER_SEC
+  export GATLING_MAX_STEP_USERS_PER_SEC
+  export GATLING_MAX_LEVEL_COUNT
+  export GATLING_MAX_LEVEL_SECONDS
+  export GATLING_MAX_RAMP_SECONDS
+
   CONTAINER_PROJECT_ROOT="$PROJECT_ROOT"
-  GATLING_SERVICE="gatling-runner-jenkins"
-else
-  CONTAINER_PROJECT_ROOT="/work"
-fi
+  GATLING_CMD="$GATLING_BIN"
+  if [ -z "$GATLING_CMD" ] && command -v gatling.sh >/dev/null 2>&1; then
+    GATLING_CMD=$(command -v gatling.sh)
+  fi
+  for candidate in /opt/gatling/bin/gatling.sh /gatling/bin/gatling.sh; do
+    if [ -z "$GATLING_CMD" ] && [ -x "$candidate" ]; then
+      GATLING_CMD="$candidate"
+    fi
+  done
+  if [ -z "$GATLING_CMD" ]; then
+    printf '%s\n' 'Could not locate gatling.sh inside the Gatling container' >&2
+    exit 127
+  fi
 
-export \
-  GATLING_IMAGE \
-  GATLING_PLATFORM \
-  APP_BASE_URL \
-  GATLING_RUN_TYPE \
-  GATLING_LOAD_USERS_PER_SEC \
-  GATLING_STRESS_START_USERS_PER_SEC \
-  GATLING_STRESS_TARGET_USERS_PER_SEC \
-  GATLING_MAX_START_USERS_PER_SEC \
-  GATLING_MAX_STEP_USERS_PER_SEC \
-  GATLING_MAX_LEVEL_COUNT \
-  GATLING_MAX_LEVEL_SECONDS \
-  GATLING_MAX_RAMP_SECONDS
-
-gatling_status=0
-run_and_log docker compose --profile tools run --rm --no-deps \
-  --name "$GATLING_CONTAINER_NAME" \
-  -e APP_BASE_URL="$APP_BASE_URL" \
-  -e GATLING_RUN_TYPE="$GATLING_RUN_TYPE" \
-  -e GATLING_LOAD_USERS_PER_SEC="$GATLING_LOAD_USERS_PER_SEC" \
-  -e GATLING_STRESS_START_USERS_PER_SEC="$GATLING_STRESS_START_USERS_PER_SEC" \
-  -e GATLING_STRESS_TARGET_USERS_PER_SEC="$GATLING_STRESS_TARGET_USERS_PER_SEC" \
-  -e GATLING_MAX_START_USERS_PER_SEC="$GATLING_MAX_START_USERS_PER_SEC" \
-  -e GATLING_MAX_STEP_USERS_PER_SEC="$GATLING_MAX_STEP_USERS_PER_SEC" \
-  -e GATLING_MAX_LEVEL_COUNT="$GATLING_MAX_LEVEL_COUNT" \
-  -e GATLING_MAX_LEVEL_SECONDS="$GATLING_MAX_LEVEL_SECONDS" \
-  -e GATLING_MAX_RAMP_SECONDS="$GATLING_MAX_RAMP_SECONDS" \
-  "$GATLING_SERVICE" \
+  gatling_status=0
+  run_and_log "$GATLING_CMD" \
     -sf "$CONTAINER_PROJECT_ROOT/src/gatling/user-files/simulations" \
     -rf "$CONTAINER_PROJECT_ROOT/$RAW_DIR" \
     -s "$SIMULATION_CLASS" || gatling_status=$?
+else
+  if ! command -v docker >/dev/null 2>&1; then
+    printf '%s\n' 'docker is required to run Gatling' >&2
+    exit 127
+  fi
+
+  gatling_status=0
+  run_and_log docker run --rm \
+    --platform "$GATLING_PLATFORM" \
+    --name "$GATLING_CONTAINER_NAME" \
+    --network "$GATLING_DOCKER_NETWORK" \
+    -v "$PROJECT_ROOT:/work" \
+    -w /work \
+    -e APP_BASE_URL="$APP_BASE_URL" \
+    -e GATLING_RUN_TYPE="$GATLING_RUN_TYPE" \
+    -e GATLING_LOAD_USERS_PER_SEC="$GATLING_LOAD_USERS_PER_SEC" \
+    -e GATLING_STRESS_START_USERS_PER_SEC="$GATLING_STRESS_START_USERS_PER_SEC" \
+    -e GATLING_STRESS_TARGET_USERS_PER_SEC="$GATLING_STRESS_TARGET_USERS_PER_SEC" \
+    -e GATLING_MAX_START_USERS_PER_SEC="$GATLING_MAX_START_USERS_PER_SEC" \
+    -e GATLING_MAX_STEP_USERS_PER_SEC="$GATLING_MAX_STEP_USERS_PER_SEC" \
+    -e GATLING_MAX_LEVEL_COUNT="$GATLING_MAX_LEVEL_COUNT" \
+    -e GATLING_MAX_LEVEL_SECONDS="$GATLING_MAX_LEVEL_SECONDS" \
+    -e GATLING_MAX_RAMP_SECONDS="$GATLING_MAX_RAMP_SECONDS" \
+    "$GATLING_IMAGE" \
+    -sf /work/src/gatling/user-files/simulations \
+    -rf "/work/$RAW_DIR" \
+    -s "$SIMULATION_CLASS" || gatling_status=$?
+fi
 
 REPORT_INDEX=$(find "$RAW_DIR" -mindepth 2 -maxdepth 2 -name index.html -type f -print | sort | tail -n 1)
 if [ -z "$REPORT_INDEX" ]; then
@@ -103,7 +131,7 @@ if [ -z "$REPORT_INDEX" ]; then
   exit 1
 fi
 
-REPORT_DIR=${REPORT_INDEX%/index.html}
+REPORT_DIR=$(dirname "$REPORT_INDEX")
 if [ ! -s "$REPORT_DIR/index.html" ]; then
   printf '%s\n' "Gatling report index.html was not created under $RAW_DIR" >&2
   exit 1

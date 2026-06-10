@@ -21,7 +21,7 @@ tags:
 
 This plan implements the Gatling deliverables required by `final-project.pdf` and `rules/compliance.md`. The result must run Gatling only through Docker, execute one max-limit discovery run, execute one 5-minute load test through Jenkins, execute one 5-minute stress test through Jenkins, save stable HTML reports under `output/gatling/`, export each report to PDF, capture terminal or Jenkins-console screenshots for all three runs, and document the actual graph interpretation without inventing performance numbers.
 
-Follow-up update on 2026-06-10: Playwright, HAR, and Gatling validation runners now use profiled Compose one-shot services instead of direct `docker run`. Playwright functional validation and HAR capture intentionally use separate one-shot services so browser cache, filesystem state, and test output cannot leak between validation stages. Jenkins still requires Docker socket access to launch these project-owned Compose runners.
+Follow-up update on 2026-06-10: Playwright, HAR, and Gatling validation runners no longer use profiled Compose runner services. Local validation scripts use direct disposable `docker run`; Jenkins starts Playwright and Gatling images through Docker Pipeline. Playwright functional validation and HAR capture intentionally use separate disposable containers so browser cache, filesystem state, and test output cannot leak between validation stages.
 
 Follow-up update on 2026-06-10 after review: local `./scripts/export-gatling-pdfs` remains strict and requires all three Gatling reports, while Jenkins finalization runs it with `GATLING_PDF_REQUIRE_ALL=false` so the normal load/stress pipeline does not fail when optional max-limit discovery is skipped. The plan status is evidence pending, not completed, until the three Gatling terminal or Jenkins-console screenshots and live Jenkins build evidence are captured.
 
@@ -31,8 +31,8 @@ Follow-up update on 2026-06-10 after review: local `./scripts/export-gatling-pdf
 - **REQ-002**: Keep the target application URL configurable with `APP_BASE_URL`; default Gatling container execution to `http://tomcat:8080/meta/` on Docker network `meta`.
 - **REQ-003**: Use Docker image `denvazh/gatling:3.2.1` by default through environment variable `GATLING_IMAGE="${GATLING_IMAGE:-denvazh/gatling:3.2.1}"`, because Docker Hub does not provide public image `gatlingcorp/gatling:3.15.0`.
 - **REQ-003A**: Use Docker platform `linux/amd64` by default through environment variable `GATLING_PLATFORM="${GATLING_PLATFORM:-linux/amd64}"`, because `denvazh/gatling:3.2.1` is an amd64 image and the current Mac Docker host is arm64.
-- **REQ-004**: Run Gatling containers on Compose network `meta` through profiled Compose one-shot service `gatling-runner` or `gatling-runner-jenkins`.
-- **REQ-005**: Add one shared runner script `scripts/run-gatling-container` that starts a disposable Gatling container with `docker compose --profile tools run --rm --no-deps`.
+- **REQ-004**: Run Gatling containers on Docker network `meta` through direct local `docker run` or Jenkins Docker Pipeline.
+- **REQ-005**: Add one shared runner script `scripts/run-gatling-container` that starts a disposable Gatling container locally and acts as the command body inside Jenkins Docker Pipeline when `GATLING_DOCKER_PIPELINE=1`.
 - **REQ-006**: Add wrapper script `scripts/run-gatling-max-limit` for max-limit discovery and stable output directory `output/gatling/max-limit/`.
 - **REQ-007**: Add wrapper script `scripts/run-gatling-load-5m` for the 5-minute load test and stable output directory `output/gatling/load-5m/`.
 - **REQ-008**: Add wrapper script `scripts/run-gatling-stress-5m` for the 5-minute stress test and stable output directory `output/gatling/stress-5m/`.
@@ -56,7 +56,7 @@ Follow-up update on 2026-06-10 after review: local `./scripts/export-gatling-pdf
 - **REQ-026**: Keep `Jenkinsfile` post-build HTML Publisher behavior compatible with stable report directories `output/gatling/max-limit/`, `output/gatling/load-5m/`, and `output/gatling/stress-5m/`.
 - **REQ-027**: Keep generated Gatling reports, screenshots, PDFs, logs, and raw result directories ignored by Git under `output/`.
 - **REQ-028**: Generate one final Jenkins Pipeline HTML report at `output/reports/pipeline-report.html` that summarizes stage evidence and links to archived Playwright, Gatling, HAR, and WAR artifacts when present.
-- **REQ-029**: Add profiled Compose one-shot services `playwright-runner`, `har-runner`, and `gatling-runner` for local execution, plus Jenkins workspace variants `playwright-runner-jenkins`, `har-runner-jenkins`, and `gatling-runner-jenkins`.
+- **REQ-029**: Keep `docker-compose.yml` limited to long-running services `tomcat` and `jenkins`; disposable validation containers must not be Compose services.
 - **REQ-030**: Keep Playwright functional validation and HAR capture isolated by running them in separate fresh one-shot containers.
 - **REQ-031**: Keep Gatling PDF export as Jenkins finalization work in `post { always { ... } }`, not as a separate validation stage.
 - **SEC-001**: Do not mount `/var/run/docker.sock` into the Gatling container.
@@ -66,11 +66,11 @@ Follow-up update on 2026-06-10 after review: local `./scripts/export-gatling-pdf
 - **CON-002**: Keep this work on branch `feature/08-gatling-container-tests` unless the user explicitly requests another branch.
 - **CON-003**: Do not use host Tomcat, host Jenkins, `/usr/local/tomcat8`, `/Users/yonatan/.jenkins`, or any host Gatling installation.
 - **CON-004**: Do not change Maven coordinate `mta.devops:meta:1.0.0`, Maven final name `meta`, Tomcat context path `/meta/`, Jenkins port `8081`, or Tomcat port `8080`.
-- **CON-005**: Do not add Gatling or Playwright as long-running application services in `docker-compose.yml`; runner services must be profiled with `profiles: ["tools"]` and started only as one-shot containers through scripts or Jenkins.
+- **CON-005**: Do not add Gatling, Playwright, or HAR runner services in `docker-compose.yml`; scripts and Jenkins Docker Pipeline must start disposable validation containers directly.
 - **CON-006**: Do not install, upgrade, reinstall, or replace host tools while executing this plan.
 - **GUD-001**: Prefer source-controlled scripts in `scripts/` over Jenkins UI-only shell commands so the defense workflow is repeatable.
 - **GUD-002**: Prefer `rtk read`, `rtk grep`, `rtk diff`, and `rtk docker` for noisy inspection output when they preserve required detail.
-- **PAT-001**: Follow the Compose one-shot runner pattern in `scripts/run-playwright-container`, `scripts/capture-har`, and `scripts/run-gatling-container`: project-root detection, configurable image, Jenkins-context detection through `/var/jenkins_home/config.xml`, local Compose runner services for host execution, Jenkins Compose runner services with inherited Jenkins volumes for Jenkins execution, and clear evidence paths.
+- **PAT-001**: Follow the disposable-container runner pattern in `scripts/run-playwright-container`, `scripts/capture-har`, and `scripts/run-gatling-container`: project-root detection, configurable image, direct local Docker execution, explicit Docker Pipeline mode for Jenkins, and clear evidence paths.
 - **PAT-002**: Follow the existing repository evidence pattern: source files are tracked, generated evidence is written under ignored `output/`, and plan completion is recorded in `docs/changelog/08-gatling-container-tests.changelog.md`.
 
 ## 2. Implementation Steps
@@ -200,27 +200,27 @@ Follow-up update on 2026-06-10 after review: local `./scripts/export-gatling-pdf
 
 ### Implementation Phase 7
 
-- GOAL-007: Convert disposable runners from raw Docker commands to profiled Compose one-shot services while preserving validation isolation.
+- GOAL-007: Convert disposable runners from profiled Compose services to direct Docker local execution plus Jenkins Docker Pipeline.
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-082 | Add profiled Compose runner services `playwright-runner`, `har-runner`, and `gatling-runner` for local execution. | Yes | 2026-06-10 |
-| TASK-083 | Add Jenkins-specific profiled Compose runner services `playwright-runner-jenkins`, `har-runner-jenkins`, and `gatling-runner-jenkins` that inherit the Jenkins workspace volumes. | Yes | 2026-06-10 |
-| TASK-084 | Update `scripts/run-playwright-container` to call `docker compose --profile tools run --rm --no-deps` instead of direct `docker run`. | Yes | 2026-06-10 |
-| TASK-085 | Update `scripts/capture-har` to use a separate `har-runner` one-shot service, preserving validation isolation from the functional Playwright test. | Yes | 2026-06-10 |
-| TASK-086 | Update `scripts/run-gatling-container` to call the Compose Gatling one-shot service and preserve stable report normalization. | Yes | 2026-06-10 |
-| TASK-087 | Update `scripts/export-gatling-pdfs` to use the Playwright Compose one-shot runner for administrative PDF export. | Yes | 2026-06-10 |
-| TASK-088 | Update `Jenkinsfile` post-build behavior so Gatling PDF export runs in `post { always { ... } }` before final report generation and publishing. | Yes | 2026-06-10 |
-| TASK-089 | Update Playwright, HAR, Gatling, Jenkins, and changelog documentation to describe Compose one-shot execution and validation isolation. | Yes | 2026-06-10 |
-| TASK-090 | Validate Compose runner configuration with `docker compose config --quiet` and `docker compose --profile tools config --quiet`. | Yes | 2026-06-10 |
-| TASK-091 | Validate script syntax and representative runner execution after the Compose conversion. | Yes | 2026-06-10 |
+| TASK-082 | Remove profiled runner services from `docker-compose.yml` so only `tomcat` and `jenkins` remain as Compose services. | Yes | 2026-06-10 |
+| TASK-083 | Update Jenkins Playwright and Gatling stages to use `docker.image(...).inside(...)` with `--network meta`, `--volumes-from meta-jenkins`, and working directory `/workspace/final-project`. | Yes | 2026-06-10 |
+| TASK-084 | Update `scripts/run-playwright-container` to use direct local `docker run` and `PLAYWRIGHT_DOCKER_PIPELINE=1` inside Jenkins Docker Pipeline. | Yes | 2026-06-10 |
+| TASK-085 | Update `scripts/capture-har` to use a separate direct Docker container, preserving validation isolation from the functional Playwright test. | Yes | 2026-06-10 |
+| TASK-086 | Update `scripts/run-gatling-container` to use direct local Docker and `GATLING_DOCKER_PIPELINE=1` while preserving stable report normalization. | Yes | 2026-06-10 |
+| TASK-087 | Update `scripts/export-gatling-pdfs` to use direct local Docker and Playwright Docker Pipeline mode for administrative PDF export. | Yes | 2026-06-10 |
+| TASK-088 | Update `Jenkinsfile` post-build behavior so Gatling PDF export runs in a Playwright Docker Pipeline container before final report generation and publishing. | Yes | 2026-06-10 |
+| TASK-089 | Update Playwright, HAR, Gatling, Jenkins, and Plan 05 documentation to describe Docker Pipeline/direct Docker execution and validation isolation. | Yes | 2026-06-10 |
+| TASK-090 | Validate Compose configuration with `docker compose config --quiet`. | Yes | 2026-06-10 |
+| TASK-091 | Validate script syntax and representative runner execution after the Docker Pipeline conversion. | Yes | 2026-06-10 |
 | TASK-092 | Fix Jenkins Gatling PDF finalization so builds that skip optional max-limit discovery still export produced load/stress reports. | Yes | 2026-06-10 |
 | TASK-093 | Clear stale generated evidence at the start of non-timer Jenkins builds and preserve Gatling reports when assertion failures produce useful evidence. | Yes | 2026-06-10 |
 
 ## 3. Alternatives
 
 - **ALT-001**: Install Gatling on the host and run `gatling.sh` directly. Rejected because `rules/compliance.md` requires Gatling in Docker and forbids host Gatling as a project runtime dependency.
-- **ALT-002**: Add Gatling or Playwright as persistent services in `docker-compose.yml`. Rejected because validation runners must not remain stateful across stages; profiled Compose one-shot services are accepted because each validation starts fresh and exits.
+- **ALT-002**: Add Gatling or Playwright runner services in `docker-compose.yml`. Rejected because Compose now owns only regular services `tomcat` and `jenkins`; validation runners start as disposable direct Docker or Jenkins Docker Pipeline containers.
 - **ALT-003**: Run Gatling only from the Jenkins UI with inline shell commands. Rejected because the workflow would not be reproducible from source control and would be harder to defend live.
 - **ALT-004**: Use the Jenkins Gatling plugin `gatlingArchive()` immediately. Rejected until a real Plan 08 run proves that the generated Gatling output shape matches the plugin's expectations; HTML Publisher already satisfies report visibility for this coursework deliverable.
 - **ALT-005**: Run max-limit discovery on every Jenkins CI/CD build. Rejected because max-limit discovery can be disruptive and is not required on every source change; it must be manually enabled with `RUN_GATLING_MAX_LIMIT=true`.
@@ -245,11 +245,11 @@ Follow-up update on 2026-06-10 after review: local `./scripts/export-gatling-pdf
 ## 5. Files
 
 - **FILE-001**: `docs/plans/08-gatling-container-tests.md` - this executable implementation plan.
-- **FILE-002**: `docker-compose.yml` - Compose project with profiled one-shot runner services for Playwright, HAR, and Gatling.
+- **FILE-002**: `docker-compose.yml` - Compose project with only regular services `tomcat` and `jenkins`.
 - **FILE-003**: `src/gatling/user-files/simulations/MetaSimulation.scala` - Gatling simulation for max-limit, load, and stress profiles.
-- **FILE-003A**: `scripts/run-playwright-container` - Compose one-shot Playwright functional-test runner.
-- **FILE-003B**: `scripts/capture-har` - Compose one-shot HAR capture runner using a separate Playwright service.
-- **FILE-003C**: `scripts/run-gatling-container` - shared Compose one-shot Gatling runner for local and Jenkins execution.
+- **FILE-003A**: `scripts/run-playwright-container` - direct Docker local runner and Jenkins Docker Pipeline command body.
+- **FILE-003B**: `scripts/capture-har` - direct Docker HAR capture runner using a separate Playwright container.
+- **FILE-003C**: `scripts/run-gatling-container` - shared direct Docker local runner and Jenkins Docker Pipeline command body.
 - **FILE-004**: `scripts/run-gatling-max-limit` - wrapper for max-limit discovery.
 - **FILE-005**: `scripts/run-gatling-load-5m` - wrapper for the 5-minute load test.
 - **FILE-006**: `scripts/run-gatling-stress-5m` - wrapper for the 5-minute stress test.
@@ -271,7 +271,7 @@ Follow-up update on 2026-06-10 after review: local `./scripts/export-gatling-pdf
 - **TEST-001**: `sh -n scripts/run-gatling-container scripts/run-gatling-max-limit scripts/run-gatling-load-5m scripts/run-gatling-stress-5m scripts/export-gatling-pdfs scripts/generate-pipeline-report` must pass.
 - **TEST-002**: `node --check tests/playwright/export-gatling-pdfs.js` must pass.
 - **TEST-003**: `./scripts/generate-pipeline-report` must create non-empty `output/reports/pipeline-report.html`.
-- **TEST-004**: `docker compose config --quiet` and `docker compose --profile tools config --quiet` must pass.
+- **TEST-004**: `docker compose config --quiet` must pass.
 - **TEST-004A**: `docker compose up -d tomcat jenkins` must start both services.
 - **TEST-005**: `./scripts/deploy-war` must pass and print `Deployed URL: http://localhost:8080/meta/`.
 - **TEST-006**: `./scripts/run-gatling-max-limit` must pass or fail only with a documented threshold failure; it must create `output/gatling/max-limit/max-limit-run.log`.
@@ -291,7 +291,7 @@ Follow-up update on 2026-06-10 after review: local `./scripts/export-gatling-pdf
 - **TEST-018**: `git check-ignore output/reports/pipeline-report.html output/gatling/max-limit/index.html output/gatling/load-5m/index.html output/gatling/stress-5m/index.html output/gatling/max-limit/max-limit-report.pdf output/gatling/screenshots/max-limit-terminal.png` must report every path as ignored.
 - **TEST-019**: `python3 .agents/skills/compliance-validator/scripts/validate_compliance.py --target . --rules rules/compliance.md` must report no unreviewed failures before completion.
 - **TEST-020**: `git diff --check` must pass before commit.
-- **TEST-021**: `./scripts/run-playwright-container` and `./scripts/capture-har` must each launch a fresh Compose one-shot container rather than reusing the same Playwright container.
+- **TEST-021**: `./scripts/run-playwright-container` and `./scripts/capture-har` must each launch a fresh disposable container rather than reusing the same Playwright container.
 
 ## 7. Risks & Assumptions
 

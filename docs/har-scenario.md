@@ -34,7 +34,7 @@ Run the default Dockerized capture from the project root:
 ./scripts/capture-har
 ```
 
-`scripts/capture-har` does not call `scripts/run-playwright-container`. Both scripts use the same official Playwright image, but `capture-har` launches separate Compose service `har-runner` so the HAR validation cannot inherit browser or filesystem state from the functional Playwright test.
+`scripts/capture-har` does not call `scripts/run-playwright-container`. Both scripts use the same official Playwright image, but `capture-har` launches a separate disposable container so the HAR validation cannot inherit browser or filesystem state from the functional Playwright test.
 
 The disposable HAR capture container name is configurable with `HAR_CONTAINER_NAME`. By default local runs use `meta-har-local` and Jenkins-triggered runs use `meta-har-<build-number>`.
 

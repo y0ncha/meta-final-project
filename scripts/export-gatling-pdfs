@@ -2,7 +2,8 @@
 set -eu
 
 # Optional environment variables:
-# PLAYWRIGHT_IMAGE, GATLING_PDF_CONTAINER_NAME, GATLING_PDF_REQUIRE_ALL.
+# PLAYWRIGHT_IMAGE, GATLING_PDF_CONTAINER_NAME, GATLING_PDF_REQUIRE_ALL,
+# GATLING_PDF_DOCKER_NETWORK, GATLING_PDF_DOCKER_PIPELINE.
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 PROJECT_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd -P)
@@ -11,15 +12,11 @@ cd "$PROJECT_ROOT"
 PLAYWRIGHT_IMAGE="${PLAYWRIGHT_IMAGE:-mcr.microsoft.com/playwright:v1.60.0-noble}"
 GATLING_PDF_CONTAINER_NAME="${GATLING_PDF_CONTAINER_NAME:-meta-gatling-pdf-${BUILD_NUMBER:-local}}"
 GATLING_PDF_REQUIRE_ALL="${GATLING_PDF_REQUIRE_ALL:-true}"
+GATLING_PDF_DOCKER_NETWORK="${GATLING_PDF_DOCKER_NETWORK:-meta}"
+GATLING_PDF_DOCKER_PIPELINE="${GATLING_PDF_DOCKER_PIPELINE:-0}"
 LOG_FILE="output/gatling/export-pdfs.log"
-PLAYWRIGHT_SERVICE="playwright-runner"
 
 mkdir -p output/gatling
-
-if ! command -v docker >/dev/null 2>&1; then
-  printf '%s\n' 'docker is required to export Gatling PDFs' >&2
-  exit 127
-fi
 
 run_and_log() {
   set +e
@@ -30,17 +27,33 @@ run_and_log() {
   return "$status"
 }
 
-if [ -f /var/jenkins_home/config.xml ]; then
-  PLAYWRIGHT_SERVICE="playwright-runner-jenkins"
+case "$GATLING_PDF_DOCKER_PIPELINE" in
+  0|1) ;;
+  *)
+    printf '%s\n' 'GATLING_PDF_DOCKER_PIPELINE must be 0 or 1' >&2
+    exit 2
+    ;;
+esac
+
+if [ "$GATLING_PDF_DOCKER_PIPELINE" = "1" ]; then
+  export CI=true
+  export GATLING_PDF_REQUIRE_ALL
+  run_and_log /bin/bash -lc 'npm ci && node tests/playwright/export-gatling-pdfs.js'
+else
+  if ! command -v docker >/dev/null 2>&1; then
+    printf '%s\n' 'docker is required to export Gatling PDFs' >&2
+    exit 127
+  fi
+
+  run_and_log docker run --rm \
+    --name "$GATLING_PDF_CONTAINER_NAME" \
+    --network "$GATLING_PDF_DOCKER_NETWORK" \
+    -v "$PROJECT_ROOT:/work" \
+    -w /work \
+    -e CI=true \
+    -e GATLING_PDF_REQUIRE_ALL="$GATLING_PDF_REQUIRE_ALL" \
+    "$PLAYWRIGHT_IMAGE" \
+    /bin/bash -lc 'npm ci && node tests/playwright/export-gatling-pdfs.js'
 fi
-
-export PLAYWRIGHT_IMAGE
-
-run_and_log docker compose --profile tools run --rm --no-deps \
-  --name "$GATLING_PDF_CONTAINER_NAME" \
-  -e CI=true \
-  -e GATLING_PDF_REQUIRE_ALL="$GATLING_PDF_REQUIRE_ALL" \
-  "$PLAYWRIGHT_SERVICE" \
-  /bin/bash -lc 'npm ci && node tests/playwright/export-gatling-pdfs.js'
 
 printf '%s\n' "Gatling PDF export complete. Log: $LOG_FILE"

@@ -9,10 +9,10 @@
 - Host evidence URL: `http://localhost:8080/meta/`
 - Simulation source: `src/gatling/user-files/simulations/MetaSimulation.scala`
 - Shared runner: `scripts/run-gatling-container`
-- Compose runner service: `gatling-runner`
-- Jenkins Compose runner service: `gatling-runner-jenkins`
+- Local container runner: direct disposable `docker run`
+- Jenkins container runner: Jenkins Docker Pipeline using `docker.image(env.GATLING_IMAGE).inside(...)`
 
-Gatling runs as a disposable Compose one-shot container through `docker compose --profile tools run --rm --no-deps`. It is not installed on the host, it is not a long-running Compose service, and `/var/run/docker.sock` is not mounted into the Gatling container. The image is pinned to `denvazh/gatling:3.2.1` because the originally planned `gatlingcorp/gatling:3.15.0` image is not a public Docker Hub repository.
+Gatling runs as a disposable container. Local scripts use direct `docker run`; Jenkins starts the same image through Docker Pipeline and runs the shared script body inside that container. Gatling is not installed on the host, it is not a long-running Compose service, and `/var/run/docker.sock` is not mounted into the Gatling container. The image is pinned to `denvazh/gatling:3.2.1` because the originally planned `gatlingcorp/gatling:3.15.0` image is not a public Docker Hub repository.
 
 Each Gatling wrapper clears its stable output directory before starting a new run, preserves raw run directories under `raw/`, and normalizes the newest generated `index.html` into the stable path even when Gatling exits non-zero after producing an assertion-failure report. Jenkins also clears generated evidence directories at the start of non-timer builds so published artifacts come from the current build.
 
@@ -74,7 +74,7 @@ Generated evidence remains ignored by Git under `output/`.
 
 Timer-triggered availability builds still run only `Availability Check`. Jenkins publishes Gatling HTML/PDF evidence through HTML Publisher when `index.html` exists under `output/gatling/max-limit/`, `output/gatling/load-5m/`, or `output/gatling/stress-5m/`.
 
-Jenkins finalization exports Gatling PDFs from completed HTML reports in the `post` block before generating the final pipeline report. PDF export uses a temporary Playwright Compose one-shot container because it is administrative report generation, not application validation.
+Jenkins finalization exports Gatling PDFs from completed HTML reports in the `post` block before generating the final pipeline report. PDF export uses a temporary Playwright Docker Pipeline container because it is administrative report generation, not application validation.
 
 Local `./scripts/export-gatling-pdfs` remains strict and requires all three Gatling reports. Jenkins runs the same script with `GATLING_PDF_REQUIRE_ALL=false` so normal builds that skip optional max-limit discovery can still export the load and stress PDFs that were produced in that build.
 
@@ -104,5 +104,5 @@ The 5-minute stress test ramped from 5 to 50 users per second and completed with
 
 - If the Gatling container cannot resolve `tomcat`, confirm `docker compose up -d tomcat jenkins` has created Docker network `meta`.
 - If Docker cannot pull `denvazh/gatling:3.2.1`, rerun when network access is available and keep the exact error in the changelog.
-- If Jenkins cannot launch the Gatling container, confirm Jenkins has Docker socket access and Docker Compose support.
+- If Jenkins cannot launch the Gatling container, confirm Jenkins has Docker socket access, the `docker-workflow` plugin, and a passing `Docker Pipeline Preflight` stage.
 - If local PDF export fails, confirm the three `index.html` files exist before running `./scripts/export-gatling-pdfs`.

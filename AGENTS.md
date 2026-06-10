@@ -21,3 +21,4 @@
 - Treat `contribution.md` as the active source for the repository contribution workflow.
 - Read `rules/compliance.md` for tool constraints, assignment compliance, evidence standards, and submission requirements.
 - If an implementation plan conflicts with `rules/compliance.md`, stop and report the conflict before editing files or running mutating commands.
+- Do not run Gatling tests directly. If Gatling validation is needed, ask the user to run the required Gatling command and provide the output or artifacts.

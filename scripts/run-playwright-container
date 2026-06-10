@@ -2,7 +2,8 @@
 set -eu
 
 # Optional environment variables:
-# PLAYWRIGHT_IMAGE, APP_BASE_URL, PLAYWRIGHT_CONTAINER_NAME.
+# PLAYWRIGHT_IMAGE, APP_BASE_URL, PLAYWRIGHT_CONTAINER_NAME,
+# PLAYWRIGHT_DOCKER_NETWORK, PLAYWRIGHT_DOCKER_PIPELINE.
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 PROJECT_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd -P)
@@ -11,9 +12,10 @@ cd "$PROJECT_ROOT"
 PLAYWRIGHT_IMAGE="${PLAYWRIGHT_IMAGE:-mcr.microsoft.com/playwright:v1.60.0-noble}"
 HOST_APP_BASE_URL="${APP_BASE_URL:-http://tomcat:8080/meta/}"
 PLAYWRIGHT_CONTAINER_NAME="${PLAYWRIGHT_CONTAINER_NAME:-meta-playwright-${BUILD_NUMBER:-local}}"
+PLAYWRIGHT_DOCKER_NETWORK="${PLAYWRIGHT_DOCKER_NETWORK:-meta}"
+PLAYWRIGHT_DOCKER_PIPELINE="${PLAYWRIGHT_DOCKER_PIPELINE:-0}"
 OUTPUT_DIR="output/playwright"
 LOG_FILE="$OUTPUT_DIR/06-playwright-run.log"
-PLAYWRIGHT_SERVICE="playwright-runner"
 
 mkdir -p \
   "$OUTPUT_DIR" \
@@ -30,23 +32,34 @@ run_and_log() {
   return "$status"
 }
 
-if ! command -v docker >/dev/null 2>&1; then
-  printf '%s\n' 'docker is required to run Playwright' >&2
-  exit 2
-fi
+case "$PLAYWRIGHT_DOCKER_PIPELINE" in
+  0|1) ;;
+  *)
+    printf '%s\n' 'PLAYWRIGHT_DOCKER_PIPELINE must be 0 or 1' >&2
+    exit 2
+    ;;
+esac
 
-if [ -f /var/jenkins_home/config.xml ]; then
-  PLAYWRIGHT_SERVICE="playwright-runner-jenkins"
-fi
+if [ "$PLAYWRIGHT_DOCKER_PIPELINE" = "1" ]; then
+  export APP_BASE_URL="$HOST_APP_BASE_URL"
+  export CI=true
+  run_and_log /bin/bash -lc 'npm ci && npx playwright test'
+else
+  if ! command -v docker >/dev/null 2>&1; then
+    printf '%s\n' 'docker is required to run Playwright' >&2
+    exit 2
+  fi
 
-export PLAYWRIGHT_IMAGE
-
-run_and_log docker compose --profile tools run --rm --no-deps \
-  --name "$PLAYWRIGHT_CONTAINER_NAME" \
-  -e APP_BASE_URL="$HOST_APP_BASE_URL" \
-  -e CI=true \
-  "$PLAYWRIGHT_SERVICE" \
+  run_and_log docker run --rm \
+    --name "$PLAYWRIGHT_CONTAINER_NAME" \
+    --network "$PLAYWRIGHT_DOCKER_NETWORK" \
+    -v "$PROJECT_ROOT:/work" \
+    -w /work \
+    -e APP_BASE_URL="$HOST_APP_BASE_URL" \
+    -e CI=true \
+    "$PLAYWRIGHT_IMAGE" \
     /bin/bash -lc 'npm ci && npx playwright test'
+fi
 
 printf '%s\n' 'Playwright evidence:'
 printf '%s\n' "  $LOG_FILE"

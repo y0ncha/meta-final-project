@@ -2,6 +2,7 @@ pipeline {
   agent any
 
   options {
+    skipDefaultCheckout(true)
     timestamps()
     disableConcurrentBuilds()
     timeout(time: 30, unit: 'MINUTES')
@@ -21,6 +22,17 @@ pipeline {
     APP_BASE_URL = 'http://tomcat:8080/meta/'
     DEPLOY_CHECK_URL = 'http://tomcat:8080/meta/'
     TOMCAT_CONTEXT = 'meta'
+    PLAYWRIGHT_IMAGE = 'mcr.microsoft.com/playwright:v1.60.0-noble'
+    GATLING_IMAGE = 'denvazh/gatling:3.2.1'
+    GATLING_PLATFORM = 'linux/amd64'
+    GATLING_LOAD_USERS_PER_SEC = '5'
+    GATLING_STRESS_START_USERS_PER_SEC = '5'
+    GATLING_STRESS_TARGET_USERS_PER_SEC = '50'
+    GATLING_MAX_START_USERS_PER_SEC = '5'
+    GATLING_MAX_STEP_USERS_PER_SEC = '5'
+    GATLING_MAX_LEVEL_COUNT = '10'
+    GATLING_MAX_LEVEL_SECONDS = '30'
+    GATLING_MAX_RAMP_SECONDS = '10'
   }
 
   stages {
@@ -89,6 +101,27 @@ pipeline {
       }
     }
 
+    stage('Docker Pipeline Preflight') {
+      when {
+        not {
+          triggeredBy 'TimerTrigger'
+        }
+      }
+      steps {
+        sh 'docker --version'
+        sh 'docker compose version'
+        sh 'docker info'
+        script {
+          def playwrightArgs = "--network meta --volumes-from meta-jenkins -w /workspace/final-project -e APP_BASE_URL=${env.APP_BASE_URL} -e CI=true"
+          docker.image(env.PLAYWRIGHT_IMAGE).inside(playwrightArgs) {
+            sh 'pwd'
+            sh 'test "$PWD" = "/workspace/final-project"'
+            sh 'node -e "const url = process.env.APP_BASE_URL; require(\"http\").get(url, (res) => process.exit(res.statusCode >= 200 && res.statusCode < 400 ? 0 : 1)).on(\"error\", () => process.exit(1))"'
+          }
+        }
+      }
+    }
+
     stage('Playwright Functional Test') {
       when {
         allOf {
@@ -99,7 +132,12 @@ pipeline {
         }
       }
       steps {
-        sh './scripts/run-playwright-container'
+        script {
+          def playwrightArgs = "--network meta --volumes-from meta-jenkins -w /workspace/final-project -e APP_BASE_URL=${env.APP_BASE_URL} -e CI=true"
+          docker.image(env.PLAYWRIGHT_IMAGE).inside(playwrightArgs) {
+            sh 'PLAYWRIGHT_DOCKER_PIPELINE=1 ./scripts/run-playwright-container'
+          }
+        }
       }
     }
 
@@ -114,7 +152,12 @@ pipeline {
         }
       }
       steps {
-        sh './scripts/run-gatling-max-limit'
+        script {
+          def gatlingArgs = "--platform ${env.GATLING_PLATFORM} --entrypoint= --network meta --volumes-from meta-jenkins -w /workspace/final-project -e APP_BASE_URL=${env.APP_BASE_URL} -e GATLING_RUN_TYPE=max-limit -e GATLING_LOAD_USERS_PER_SEC=${env.GATLING_LOAD_USERS_PER_SEC} -e GATLING_STRESS_START_USERS_PER_SEC=${env.GATLING_STRESS_START_USERS_PER_SEC} -e GATLING_STRESS_TARGET_USERS_PER_SEC=${env.GATLING_STRESS_TARGET_USERS_PER_SEC} -e GATLING_MAX_START_USERS_PER_SEC=${env.GATLING_MAX_START_USERS_PER_SEC} -e GATLING_MAX_STEP_USERS_PER_SEC=${env.GATLING_MAX_STEP_USERS_PER_SEC} -e GATLING_MAX_LEVEL_COUNT=${env.GATLING_MAX_LEVEL_COUNT} -e GATLING_MAX_LEVEL_SECONDS=${env.GATLING_MAX_LEVEL_SECONDS} -e GATLING_MAX_RAMP_SECONDS=${env.GATLING_MAX_RAMP_SECONDS}"
+          docker.image(env.GATLING_IMAGE).inside(gatlingArgs) {
+            sh 'GATLING_DOCKER_PIPELINE=1 GATLING_RUN_TYPE=max-limit ./scripts/run-gatling-container'
+          }
+        }
       }
     }
 
@@ -128,7 +171,12 @@ pipeline {
         }
       }
       steps {
-        sh './scripts/run-gatling-load-5m'
+        script {
+          def gatlingArgs = "--platform ${env.GATLING_PLATFORM} --entrypoint= --network meta --volumes-from meta-jenkins -w /workspace/final-project -e APP_BASE_URL=${env.APP_BASE_URL} -e GATLING_RUN_TYPE=load-5m -e GATLING_LOAD_USERS_PER_SEC=${env.GATLING_LOAD_USERS_PER_SEC} -e GATLING_STRESS_START_USERS_PER_SEC=${env.GATLING_STRESS_START_USERS_PER_SEC} -e GATLING_STRESS_TARGET_USERS_PER_SEC=${env.GATLING_STRESS_TARGET_USERS_PER_SEC} -e GATLING_MAX_START_USERS_PER_SEC=${env.GATLING_MAX_START_USERS_PER_SEC} -e GATLING_MAX_STEP_USERS_PER_SEC=${env.GATLING_MAX_STEP_USERS_PER_SEC} -e GATLING_MAX_LEVEL_COUNT=${env.GATLING_MAX_LEVEL_COUNT} -e GATLING_MAX_LEVEL_SECONDS=${env.GATLING_MAX_LEVEL_SECONDS} -e GATLING_MAX_RAMP_SECONDS=${env.GATLING_MAX_RAMP_SECONDS}"
+          docker.image(env.GATLING_IMAGE).inside(gatlingArgs) {
+            sh 'GATLING_DOCKER_PIPELINE=1 GATLING_RUN_TYPE=load-5m ./scripts/run-gatling-container'
+          }
+        }
       }
     }
 
@@ -142,7 +190,12 @@ pipeline {
         }
       }
       steps {
-        sh './scripts/run-gatling-stress-5m'
+        script {
+          def gatlingArgs = "--platform ${env.GATLING_PLATFORM} --entrypoint= --network meta --volumes-from meta-jenkins -w /workspace/final-project -e APP_BASE_URL=${env.APP_BASE_URL} -e GATLING_RUN_TYPE=stress-5m -e GATLING_LOAD_USERS_PER_SEC=${env.GATLING_LOAD_USERS_PER_SEC} -e GATLING_STRESS_START_USERS_PER_SEC=${env.GATLING_STRESS_START_USERS_PER_SEC} -e GATLING_STRESS_TARGET_USERS_PER_SEC=${env.GATLING_STRESS_TARGET_USERS_PER_SEC} -e GATLING_MAX_START_USERS_PER_SEC=${env.GATLING_MAX_START_USERS_PER_SEC} -e GATLING_MAX_STEP_USERS_PER_SEC=${env.GATLING_MAX_STEP_USERS_PER_SEC} -e GATLING_MAX_LEVEL_COUNT=${env.GATLING_MAX_LEVEL_COUNT} -e GATLING_MAX_LEVEL_SECONDS=${env.GATLING_MAX_LEVEL_SECONDS} -e GATLING_MAX_RAMP_SECONDS=${env.GATLING_MAX_RAMP_SECONDS}"
+          docker.image(env.GATLING_IMAGE).inside(gatlingArgs) {
+            sh 'GATLING_DOCKER_PIPELINE=1 GATLING_RUN_TYPE=stress-5m ./scripts/run-gatling-container'
+          }
+        }
       }
     }
   }
@@ -158,7 +211,10 @@ pipeline {
             fileExists('output/gatling/stress-5m/index.html')
           )
         ) {
-          sh 'GATLING_PDF_REQUIRE_ALL=false ./scripts/export-gatling-pdfs'
+          def pdfArgs = "--network meta --volumes-from meta-jenkins -w /workspace/final-project -e CI=true -e GATLING_PDF_REQUIRE_ALL=false"
+          docker.image(env.PLAYWRIGHT_IMAGE).inside(pdfArgs) {
+            sh 'GATLING_PDF_DOCKER_PIPELINE=1 GATLING_PDF_REQUIRE_ALL=false ./scripts/export-gatling-pdfs'
+          }
         }
 
         if (fileExists('scripts/generate-pipeline-report')) {
