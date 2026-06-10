@@ -20,6 +20,8 @@ tags:
 
 This plan implements the containerized Jenkins CI/CD path for the MTA DevOps final project. Jenkins must run at `http://localhost:8081/`, check out the GitHub repository, build `target/meta.war`, deploy it into Tomcat through the shared Docker volume mounted at `/tomcat-webapps`, verify `http://tomcat:8080/meta/` from inside Docker, and provide a source-controlled `Jenkinsfile` that later Playwright, Gatling, and monitoring plans can extend without changing the runtime topology.
 
+The 2026-06-10 Plan 06 follow-up supersedes this plan's original no-Docker-socket decision for browser-test execution only. Tomcat deployment through the shared `tomcat_webapps` volume remains unchanged.
+
 ## 1. Requirements & Constraints
 
 - **REQ-001**: Jenkins must run as Docker Compose service `jenkins` and be exposed on host URL `http://localhost:8081/`.
@@ -55,7 +57,7 @@ This plan implements the containerized Jenkins CI/CD path for the MTA DevOps fin
 - **CON-006**: Do not commit Jenkins home data, Docker volume state, generated `target/` output, generated `*.war` files, screenshots, logs, Playwright reports, Gatling reports, or secrets.
 - **CON-007**: Do not install, upgrade, reinstall, or replace host tools while executing this plan.
 - **SEC-001**: Do not write GitHub tokens, Jenkins admin passwords, API keys, cookies, private keys, or other secrets into `Jenkinsfile`, `docker-compose.yml`, `ops/jenkins/Dockerfile`, scripts, documentation, logs, or screenshots.
-- **SEC-002**: Do not mount `/var/run/docker.sock` into Jenkins; Jenkins must deploy by writing to the shared `tomcat_webapps` volume instead of controlling the host Docker daemon.
+- **SEC-002**: Jenkins deployment must continue writing to the shared `tomcat_webapps` volume instead of using Docker control to deploy Tomcat artifacts. The later Plan 06 follow-up allows `/var/run/docker.sock` only so Jenkins can run disposable test containers such as Playwright.
 - **SEC-003**: Use public GitHub repository checkout without credentials when the repository is public; if credentials are required, store them only in Jenkins credentials and reference only the credential ID in documentation.
 - **GUD-001**: Prefer a source-controlled `Jenkinsfile` over UI-only freestyle commands because Jenkins documents it as the auditable, reviewable Pipeline source of truth.
 - **GUD-002**: Use Declarative Pipeline stages and `sh` steps for this Linux-based Jenkins container runtime.
@@ -130,7 +132,7 @@ This plan implements the containerized Jenkins CI/CD path for the MTA DevOps fin
 | TASK-034 | In `docs/jenkins.md` section `Manual Jenkins Setup`, document unlocking Jenkins, creating the admin user, installing required plugins `Git`, `Pipeline`, `Pipeline: SCM Step`, `Pipeline: Declarative`, `Pipeline: Stage View`, and `HTML Publisher` if report archival is needed. | ✅ | 2026-06-10 |
 | TASK-035 | In `docs/jenkins.md` section `Pipeline Job`, document creating a Pipeline job named `meta-container-ci-cd`, selecting `Pipeline script from SCM`, selecting Git, entering `https://github.com/y0ncha/meta-final-project.git`, setting script path `Jenkinsfile`, and leaving credentials empty for a public repository. Also document the previous local validation fallback separately so it is not used as final evidence. | ✅ | 2026-06-10 |
 | TASK-036 | In `docs/jenkins.md` section `Schedule`, document that the source-controlled cron expression `H/5 * * * *` runs only the `Availability Check` stage every five minutes, while SCM/manual builds run the CI/CD stages. | ✅ | 2026-06-10 |
-| TASK-037 | In `docs/jenkins.md` section `Security Notes`, document that Jenkins does not mount `/var/run/docker.sock`; if `user: root` is required, document that it is limited to writing the shared Tomcat webapps volume in this local coursework stack. | ✅ | 2026-06-10 |
+| TASK-037 | In `docs/jenkins.md` section `Security Notes`, document the Jenkins runtime tradeoff and the shared Tomcat webapps deployment mount. The 2026-06-10 Plan 06 follow-up later adds Docker socket access for disposable test containers. | ✅ | 2026-06-10 |
 | TASK-038 | In `docs/jenkins.md` section `Evidence To Capture`, list required screenshots or logs: Jenkins dashboard with URL `localhost:8081`, successful manual or SCM-triggered `meta-container-ci-cd` build, successful scheduled availability build, console log showing `mvn -B clean package`, console log showing `./scripts/deploy-war`, console log showing `curl -fsS http://tomcat:8080/meta/`, and Tomcat app visible at `http://localhost:8080/meta/`. | ✅ | 2026-06-10 |
 | TASK-039 | Create `docs/changelog/05-jenkins-container-ci-cd.changelog.md` during implementation closeout and record changed files, exact observed tool versions, Docker image names, Jenkins job name, schedule, validation commands, and evidence paths. | ✅ | 2026-06-10 |
 
@@ -161,7 +163,7 @@ This plan implements the containerized Jenkins CI/CD path for the MTA DevOps fin
 - **ALT-005**: Use a separate Jenkins job for each future Playwright, Gatling load, and Gatling stress action. Rejected for Plan 05 because one source-controlled Pipeline job can handle SCM/manual CI/CD builds and timer-triggered availability checks with explicit stage gating.
 - **ALT-006**: Run Playwright and Gatling stages unconditionally before Plans 06 and 08 create their scripts. Rejected because Plan 05 must produce a Jenkins deployment pipeline that can pass before later plan files exist.
 - **ALT-007**: Use `*/5 * * * *` for the Jenkins availability schedule. Rejected because Jenkins convention prefers hashed schedules such as `H/5 * * * *` to avoid synchronized load.
-- **ALT-008**: Mount `/var/run/docker.sock` into Jenkins and run `docker compose` from inside the Jenkins container. Rejected after validation because the default Jenkins user cannot access the socket and running Jenkins as root with host Docker daemon control is a worse security tradeoff than mounting the shared `tomcat_webapps` volume.
+- **ALT-008**: Use Docker socket access for Tomcat deployment from Jenkins. Rejected because deployment by shared `tomcat_webapps` volume is simpler and more directly aligned with the existing Tomcat service. A later Plan 06 follow-up accepts Docker socket access only for disposable browser test containers.
 
 ## 4. Dependencies
 

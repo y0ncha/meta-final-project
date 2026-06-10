@@ -12,6 +12,7 @@
 - Jenkins SCM workspace: the Jenkins job workspace created from the GitHub repository checkout.
 - Legacy local validation mount: `/workspace/final-project`
 - Jenkins Tomcat deployment mount: `/tomcat-webapps`
+- Jenkins Docker socket mount: `/var/run/docker.sock`
 - GitHub repository: `https://github.com/y0ncha/meta-final-project.git`
 
 ## Manual Jenkins Setup
@@ -63,7 +64,7 @@ The source-controlled `Jenkinsfile` handles two different trigger classes:
 3. `Deploy Tomcat`: Runs `./scripts/deploy-war` with `SKIP_BUILD=1`, `TOMCAT_SHARED_WEBAPPS_DIR=/tomcat-webapps`, and `DEPLOY_CHECK_URL="$DEPLOY_CHECK_URL"` only for non-timer builds. This reuses the repository deployment script, avoids rebuilding the WAR twice, writes the WAR into the shared Tomcat webapps volume, and waits until Tomcat serves the deployed app.
 4. `Verify Tomcat`: Runs `curl -fsS "$APP_BASE_URL" >/dev/null` only for non-timer builds. This proves the deployment is not just copied to disk but reachable through Tomcat at `http://tomcat:8080/meta/` from inside the Docker network.
 5. `Availability Check`: Runs `curl -fsS "$APP_BASE_URL" >/dev/null` only for timer-triggered builds. This is the Jenkins-side five-minute availability monitor evidence required by the project; it does not rebuild, redeploy, or run Gatling.
-6. `Playwright Functional Test`: Runs `./scripts/run-playwright-container` only for non-timer builds and only when that script exists. This keeps the CI/CD pipeline ready for the browser-test plan without failing before the Playwright script is added.
+6. `Playwright Functional Test`: Runs `./scripts/run-playwright-container` only for non-timer builds and only when that script exists. The Plan 06 follow-up uses this script to start the official Playwright container from Jenkins, run the functional test, and write ignored evidence under `output/playwright/`.
 7. `Gatling Load Test`: Runs `./scripts/run-gatling-load-5m` only for non-timer builds and only when that script exists. This is the hook for the required five-minute Gatling load test once the Gatling plan adds the script.
 8. `Gatling Stress Test`: Runs `./scripts/run-gatling-stress-5m` only for non-timer builds and only when that script exists. This is the hook for the required five-minute Gatling stress test once the Gatling plan adds the script.
 
@@ -80,7 +81,8 @@ The `post` block always archives `output/**/*` if files exist. Later Playwright,
 
 ## Security Notes
 
-- Jenkins does not mount `/var/run/docker.sock`.
+- Jenkins mounts `/var/run/docker.sock` for this coursework stack so it can run disposable test containers such as the official Playwright image.
+- Playwright runs in `mcr.microsoft.com/playwright:v1.52.0-noble`, not directly in the Jenkins image. The 2026-06-10 Plan 06 follow-up supersedes the original no-Docker-socket decision in favor of one consistent Playwright execution model.
 - Jenkins deploys by writing `meta.war` into the shared Docker volume mounted at `/tomcat-webapps`.
 - The Jenkins service currently runs as `root` inside the container so it can write to the Tomcat `webapps` volume. This is a local coursework tradeoff and must not be described as production-secure.
 - Do not store GitHub tokens, Jenkins admin passwords, API keys, cookies, private keys, or other secrets in tracked files.
@@ -96,6 +98,12 @@ The `post` block always archives `output/**/*` if files exist. Later Playwright,
 - Tomcat app screenshot with `http://localhost:8080/meta/` visible.
 - Timer-triggered evidence should show `Started by timer`, skip the build/deploy/test stages, and run only the availability `curl` check.
 - SCM-triggered evidence should show Jenkins detected a repository change or was manually run after a push, then checked out the configured branch and deployed the WAR.
+- Playwright evidence from Plan 06:
+  - `output/playwright/06-playwright-run.log`
+  - `output/playwright/junit.xml`
+  - `output/playwright/playwright-report/index.html`
+  - `output/playwright/screenshots/06-valid-submit.png`
+  - `output/playwright/screenshots/06-empty-submit.png`
 - Previous Plan 05 remote-backed Jenkins evidence, captured before the trigger split:
   - Build `#7`: `SUCCESS`
   - Source: `https://github.com/y0ncha/meta-final-project.git`

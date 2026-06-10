@@ -20,6 +20,12 @@ This file defines how code and documentation changes are contributed to this rep
 - When finishing a plan, create or update `docs/changelog/<plan-file-stem>.changelog.md`.
 - The changelog must include what changed, why it changed, exact validation commands or artifacts, and any remaining risks or follow-up items.
 
+## Follow-Up Changes To Existing Plans
+
+- If a change is an enhancement, correction, or implementation-detail change for an existing plan, update that existing `docs/plans/<plan-name>.md` and `docs/changelog/<plan-name>.changelog.md` instead of creating a standalone plan.
+- Add dated follow-up notes when a later decision supersedes an earlier task, alternative, or risk. Preserve the old rationale only when it is useful history; make the current required behavior unambiguous.
+- Create a new numbered plan only for a genuinely separate deliverable, workflow, or assignment requirement that cannot be evaluated as part of an existing plan.
+
 ## Before Completion
 
 - Run the validation commands required by the implementation plan.

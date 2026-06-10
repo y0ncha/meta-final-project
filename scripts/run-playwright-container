@@ -1,0 +1,63 @@
+#!/usr/bin/env sh
+set -eu
+
+# Optional environment variables:
+# PLAYWRIGHT_IMAGE, PLAYWRIGHT_NETWORK, APP_BASE_URL, JENKINS_CONTAINER.
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
+PROJECT_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd -P)
+cd "$PROJECT_ROOT"
+
+PLAYWRIGHT_IMAGE="${PLAYWRIGHT_IMAGE:-mcr.microsoft.com/playwright:v1.52.0-noble}"
+PLAYWRIGHT_NETWORK="${PLAYWRIGHT_NETWORK:-meta}"
+HOST_APP_BASE_URL="${APP_BASE_URL:-http://tomcat:8080/meta/}"
+JENKINS_CONTAINER="${JENKINS_CONTAINER:-meta-jenkins}"
+OUTPUT_DIR="output/playwright"
+LOG_FILE="$OUTPUT_DIR/06-playwright-run.log"
+
+mkdir -p \
+  "$OUTPUT_DIR" \
+  "$OUTPUT_DIR/screenshots" \
+  "$OUTPUT_DIR/test-results" \
+  "$OUTPUT_DIR/playwright-report"
+
+run_and_log() {
+  set +e
+  "$@" > "$LOG_FILE" 2>&1
+  status=$?
+  set -e
+  cat "$LOG_FILE"
+  return "$status"
+}
+
+if ! command -v docker >/dev/null 2>&1; then
+  printf '%s\n' 'docker is required to run Playwright' >&2
+  exit 2
+fi
+
+if [ -f /var/jenkins_home/config.xml ]; then
+  run_and_log docker run --rm \
+    --network "$PLAYWRIGHT_NETWORK" \
+    --volumes-from "$JENKINS_CONTAINER" \
+    -w "$PROJECT_ROOT" \
+    -e APP_BASE_URL="$HOST_APP_BASE_URL" \
+    -e CI=true \
+    "$PLAYWRIGHT_IMAGE" \
+    /bin/bash -lc 'npm ci && npx playwright test'
+else
+  run_and_log docker run --rm \
+    --network "$PLAYWRIGHT_NETWORK" \
+    -v "$PROJECT_ROOT:/work" \
+    -w /work \
+    -e APP_BASE_URL="$HOST_APP_BASE_URL" \
+    -e CI=true \
+    "$PLAYWRIGHT_IMAGE" \
+    /bin/bash -lc 'npm ci && npx playwright test'
+fi
+
+printf '%s\n' 'Playwright evidence:'
+printf '%s\n' "  $LOG_FILE"
+printf '%s\n' "  $OUTPUT_DIR/junit.xml"
+printf '%s\n' "  $OUTPUT_DIR/playwright-report/index.html"
+printf '%s\n' "  $OUTPUT_DIR/screenshots/06-valid-submit.png"
+printf '%s\n' "  $OUTPUT_DIR/screenshots/06-empty-submit.png"

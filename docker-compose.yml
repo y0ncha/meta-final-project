@@ -34,6 +34,9 @@ services:
       - type: volume
         source: tomcat_webapps
         target: /tomcat-webapps
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
     networks:
       - meta
 

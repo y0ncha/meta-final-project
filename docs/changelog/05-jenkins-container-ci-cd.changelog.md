@@ -7,7 +7,7 @@
 
 ## Files Changed
 
-- `docs/plans/05-jenkins-container-ci-cd.md`: Expanded and then updated the implementation plan to use shared-volume deployment instead of a host Docker socket.
+- `docs/plans/05-jenkins-container-ci-cd.md`: Expanded and then updated the implementation plan to use shared-volume deployment instead of Docker-socket-based Tomcat deployment.
 - `ops/jenkins/Dockerfile`: Added a custom Jenkins image based on `jenkins/jenkins:2.528.1-lts-jdk21` with Maven and curl.
 - `docker-compose.yml`: Configured Jenkins to build the custom image, run on `8081`, persist `jenkins_home`, mount the repository at `/workspace/final-project`, and mount `tomcat_webapps` at `/tomcat-webapps`.
 - `scripts/deploy-war`: Added `SKIP_BUILD`, `DEPLOY_CHECK_URL`, and `TOMCAT_SHARED_WEBAPPS_DIR` support while preserving the original local Docker Compose deployment path.
@@ -54,7 +54,8 @@
 ## Notes
 
 - Follow-up correction on 2026-06-10: The Jenkins trigger design was tightened after re-reading the assignment PDF. Timer-triggered runs now provide only the five-minute availability check, while manual or SCM-triggered runs perform checkout, build, deploy, verification, and optional Playwright/Gatling stages.
-- The initial Docker-socket approach was rejected by the approval layer when recreating Jenkins as root with `/var/run/docker.sock` mounted. The implementation was changed to the safer shared-volume deployment path.
+- The initial Docker-socket approach for Tomcat deployment was rejected by the approval layer when recreating Jenkins as root with `/var/run/docker.sock` mounted. The implementation was changed to the shared-volume deployment path.
+- Follow-up correction on 2026-06-10: Plan 06 later adds `/var/run/docker.sock` to Jenkins only for disposable browser test containers. Tomcat deployment remains shared-volume based.
 - The user removed the previous Compose containers/network before final validation; `docker compose up -d tomcat jenkins` recreated the required runtime.
 - `git status --short --branch` also shows an unrelated `.env.example` one-line comment diff. It is not required by Plan 05 and was left untouched.
 - Generated evidence should remain under ignored `output/` paths.
