@@ -216,3 +216,36 @@ Validation:
 - `git diff --check`: passed.
 - `python3 .agents/skills/compliance-validator/scripts/validate_compliance.py --target . --rules rules/compliance.md`: passed with `pass=71`, `warn=0`, `manual=9`, `fail=0`.
 - Jenkins declarative linter: not rerun in this follow-up because `curl -fsS -I http://localhost:8081/login` could not connect to local Jenkins.
+
+## 2026-06-11 Preflight Naming And Placement Follow-Up
+
+- Moved Docker CLI, Compose CLI, and Docker daemon readiness checks from `Docker Pipeline Preflight` into `Pre-build`.
+- Renamed the remaining `Docker Pipeline Preflight` stage to `Container Test Preflight`.
+- Kept the disposable Playwright-image workspace, commit identity, and Tomcat reachability checks after deployment. Moving those checks into `Pre-build` would validate the test container against an old Tomcat deployment instead of the WAR produced by the current build.
+- Updated `docs/jenkins.md` and `scripts/generate-pipeline-report` so project-facing language says `Post-build`, while documenting that Jenkins Stage View may still show `Declarative: Post Actions` for the real Declarative `post` block.
+
+Validation:
+
+- `git diff --check`: passed.
+- `sh -n scripts/generate-pipeline-report`: passed.
+- `python3 .agents/skills/compliance-validator/scripts/validate_compliance.py --target . --rules rules/compliance.md`: passed with `pass=71`, `warn=0`, `manual=9`, `fail=0`.
+- Jenkins declarative linter: not rerun in this follow-up because local Jenkins was not reachable in the prior check at `http://localhost:8081/login`.
+
+## 2026-06-11 Stage Ownership Follow-Up
+
+- Renamed `Pre-build` to `Pre Actions`.
+- Removed the standalone `Container Test Preflight` stage from `Jenkinsfile`.
+- Moved Playwright-image workspace, checked-out commit, and Tomcat reachability checks into `Playwright Functional Test`.
+- Added lightweight workspace and runner-script checks inside each Gatling container stage before the stage invokes `scripts/run-gatling-container`.
+- Updated `docs/jenkins.md`, `docs/plans/05-jenkins-container-ci-cd.md`, and `scripts/generate-pipeline-report` so the pipeline graph and plan requirements document validation under the stage that owns the relevant container.
+- Updated `tests/scripts/test-generate-pipeline-report.sh` so the report-rendering test expects the renamed `Pre Actions` stage instead of the removed `Checkout` stage.
+
+Validation:
+
+- `git diff --check`: passed.
+- `sh -n scripts/generate-pipeline-report`: passed.
+- `sh tests/scripts/test-generate-pipeline-report.sh`: passed.
+- `python3 .agents/skills/compliance-validator/scripts/validate_compliance.py --target . --rules rules/compliance.md`: passed with `pass=71`, `warn=0`, `manual=9`, `fail=0`.
+- Active stage-name scan: passed; `Jenkinsfile` now has `stage('Pre Actions')` and no `stage('Container Test Preflight')`.
+- Code-review follow-up: fixed stale plan requirements and task text, fixed stale Jenkins Gatling-stage wording, and fixed the report-rendering test expectation.
+- `docker compose exec -T jenkins sh -lc '. /var/jenkins_home/codex-automation.env && curl -fsS -u "$JENKINS_USER:$JENKINS_TOKEN" -X POST -F "jenkinsfile=</workspace/final-project/Jenkinsfile" "http://localhost:8080/pipeline-model-converter/validate"'`: passed with `Jenkinsfile successfully validated.`

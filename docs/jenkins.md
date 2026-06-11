@@ -76,35 +76,37 @@ Previous local validation setup used for Plan 05:
 
 - The first local validation job was created with Jenkins' authenticated script API and read `/workspace/final-project/Jenkinsfile` from the repository mount because the repository did not have a GitHub remote yet.
 - Do not use that mounted-script job as final evidence after the GitHub repository exists.
-- The final Jenkins job must load `Jenkinsfile` from SCM. At the start of `Build WAR`, it then runs `checkout scm`, so build, deploy, and CI/CD evidence come from the GitHub branch selected in the job configuration.
+- The final Jenkins job must load `Jenkinsfile` from SCM. At the start of `Pre Actions`, it then runs `checkout scm`, so build, deploy, and CI/CD evidence come from the GitHub branch selected in the job configuration.
 
 ## Pipeline Flow
 
 The source-controlled `Jenkinsfile` is only for the `meta-container-ci-cd` job. It does not contain the five-minute monitoring schedule.
 
-### Pre-build
+### Pre Actions
 
-The `Pre-build` stage runs the setup work that must happen before Maven runs:
+The `Pre Actions` stage runs the setup work that must happen before Maven runs:
 
 - `checkout scm`: fetches the repository and branch configured in the Jenkins Pipeline job.
 - `CHECKED_OUT_COMMIT`: records the exact Git commit so disposable Docker test containers can prove they are testing the same source revision.
 - Evidence cleanup: removes generated `output/gatling`, `output/playwright`, `output/har`, and `output/reports` directories so published artifacts cannot come from a previous workspace run.
+- Docker readiness checks: verifies Docker CLI access, Compose CLI access, and Docker daemon access before the build spends time producing test artifacts.
 
-The pipeline keeps `skipDefaultCheckout(true)` so Jenkins does not perform a hidden checkout before the visible CI/CD flow starts. This keeps checkout timing explicit and lets the pipeline record `CHECKED_OUT_COMMIT` before Docker Pipeline preflight checks use it.
+The pipeline keeps `skipDefaultCheckout(true)` so Jenkins does not perform a hidden checkout before the visible CI/CD flow starts. This keeps checkout timing explicit and lets later test stages verify that their disposable containers are using the same checked-out commit.
 
 ### Visible Stages
 
-1. `Pre-build`: Checks out the configured SCM branch, records `CHECKED_OUT_COMMIT`, and cleans old generated evidence directories before Maven runs.
+1. `Pre Actions`: Checks out the configured SCM branch, records `CHECKED_OUT_COMMIT`, cleans old generated evidence directories, and confirms Jenkins can reach Docker before Maven runs.
 2. `Build WAR`: Runs `mvn -B clean package` and archives `target/meta.war`. Maven turns the JSP application into the WAR file Tomcat can deploy; archiving the WAR gives Jenkins build evidence and a traceable artifact.
 3. `Deploy Tomcat`: Runs `./scripts/deploy-war` with `SKIP_BUILD=1`, `TOMCAT_SHARED_WEBAPPS_DIR=/tomcat-webapps`, and `DEPLOY_CHECK_URL="$DEPLOY_CHECK_URL"`. This reuses the repository deployment script, avoids rebuilding the WAR twice, writes the WAR into the shared Tomcat webapps volume, and waits until Tomcat serves the deployed app.
 4. `Verify Tomcat`: Runs `curl -fsS "$APP_BASE_URL" >/dev/null` after deployment. It proves the deployed WAR is reachable through Tomcat at `http://tomcat:8080/meta/` from inside the Docker network.
-5. `Docker Pipeline Preflight`: Runs before disposable test containers. It checks Docker CLI access, Compose CLI access, Docker daemon access, workspace mapping, checked-out commit identity, and Tomcat reachability from the Playwright image.
-6. `Playwright Functional Test`: Runs only when `scripts/run-playwright-container` exists. Jenkins starts the official Playwright image through Docker Pipeline with working directory `env.WORKSPACE`, then calls `PLAYWRIGHT_DOCKER_PIPELINE=1 ./scripts/run-playwright-container` inside that container so evidence is written under the checked-out SCM workspace.
-7. `Gatling Max Limit`: Runs `./scripts/run-gatling-max-limit` only when that script exists and build parameter `RUN_GATLING_MAX_LIMIT=true`. This keeps disruptive max-limit discovery out of ordinary CI/CD runs while still making it Jenkins-runnable for evidence capture.
-8. `Gatling Load Test`: Runs `./scripts/run-gatling-load-5m` only when that script exists. This is the required five-minute Gatling load test.
-9. `Gatling Stress Test`: Runs `./scripts/run-gatling-stress-5m` only when that script exists. This is the required five-minute Gatling stress test.
+5. `Playwright Functional Test`: Runs only when `scripts/run-playwright-container` exists. Jenkins starts the official Playwright image through Docker Pipeline, verifies workspace mapping, verifies the container sees the same checked-out commit, verifies Tomcat reachability from inside the Playwright image, then calls `PLAYWRIGHT_DOCKER_PIPELINE=1 ./scripts/run-playwright-container` so evidence is written under the checked-out SCM workspace.
+6. `Gatling Max Limit`: Runs only when `scripts/run-gatling-max-limit` exists and build parameter `RUN_GATLING_MAX_LIMIT=true`. Jenkins uses that wrapper as the existence gate, then starts the Gatling image through Docker Pipeline, verifies the Gatling container workspace and shared runner script, and calls `GATLING_DOCKER_PIPELINE=1 GATLING_RUN_TYPE=max-limit ./scripts/run-gatling-container`. This keeps disruptive max-limit discovery out of ordinary CI/CD runs while still making it Jenkins-runnable for evidence capture.
+7. `Gatling Load Test`: Runs only when `scripts/run-gatling-load-5m` exists. Jenkins uses that wrapper as the existence gate, then starts the Gatling image through Docker Pipeline, verifies the Gatling container workspace and shared runner script, and calls `GATLING_DOCKER_PIPELINE=1 GATLING_RUN_TYPE=load-5m ./scripts/run-gatling-container`. This is the required five-minute Gatling load test.
+8. `Gatling Stress Test`: Runs only when `scripts/run-gatling-stress-5m` exists. Jenkins uses that wrapper as the existence gate, then starts the Gatling image through Docker Pipeline, verifies the Gatling container workspace and shared runner script, and calls `GATLING_DOCKER_PIPELINE=1 GATLING_RUN_TYPE=stress-5m ./scripts/run-gatling-container`. This is the required five-minute Gatling stress test.
 
 ### Post-build
+
+The Jenkins UI may label this as `Declarative: Post Actions` because that is Jenkins' built-in name for Declarative Pipeline `post` blocks. In the project documentation and defense explanation, this is the `Post-build` block.
 
 The `post` block runs after the visible stages finish. It exports PDFs for the Gatling HTML reports that exist in the checked-out SCM workspace, generates `output/reports/pipeline-report.html` plus `output/reports/pipeline-report.css`, archives `output/**/*`, publishes the final Pipeline HTML report, publishes Playwright JUnit XML and HTML reports, and publishes Gatling HTML/PDF reports from `output/gatling/max-limit/`, `output/gatling/load-5m/`, and `output/gatling/stress-5m/`. Jenkins runs the PDF exporter with `GATLING_PDF_REQUIRE_ALL=false` because the max-limit stage is optional. `gatlingArchive()` is intentionally deferred until Plan 08 validates the Gatling output shape expected by the Jenkins Gatling plugin.
 
@@ -169,4 +171,4 @@ The `post` block runs after the visible stages finish. It exports PDFs for the G
 - If Jenkins cannot write `/tomcat-webapps/meta.war`, confirm service `jenkins` mounts volume `tomcat_webapps` at `/tomcat-webapps` and runs with write permission to that mount.
 - If Jenkins can deploy but Tomcat does not serve the updated app, remove `/tomcat-webapps/meta` and `/tomcat-webapps/meta.war`, rerun `scripts/deploy-war`, and wait for Tomcat to expand the WAR.
 - If `docker compose` is missing inside Jenkins, rebuild the custom Jenkins image and recreate the service with `docker compose build jenkins` followed by `docker compose up -d jenkins`.
-- If Docker Pipeline fails before the Playwright/Gatling stages, inspect the `Docker Pipeline Preflight` stage first. It checks Docker CLI access, Compose CLI access, Docker daemon access, the Playwright-image workspace path, and container reachability to `http://tomcat:8080/meta/`.
+- If container startup fails before the Playwright/Gatling stages, inspect `Pre Actions` for Docker CLI/daemon access, then inspect the failing Playwright or Gatling stage for that container's workspace mapping and reachability checks.

@@ -482,14 +482,15 @@ gatling_stress_status=$(bundle_status "required" \
   "output/gatling/stress-5m/index.html" \
   "output/gatling/stress-5m/stress-5m-report.pdf")
 
-write_stage_row "Checkout" "Jenkins console log" "Console log" "Checks out the configured GitHub branch for manual or SCM-triggered builds."
+write_stage_row "Pre Actions" "Jenkins console log" "Console log" "Checks out the configured GitHub branch, records the commit, cleans old evidence, and checks Docker access."
 write_stage_row "Build WAR" "Archived target/meta.war" "$build_war_status" "Builds the Maven WAR for Tomcat deployment."
 write_stage_row "Deploy Tomcat" "Jenkins console log" "Console log" "Deploys meta.war into the Tomcat webapps volume."
 write_stage_row "Verify Tomcat" "Jenkins console log" "Console log" "Checks http://tomcat:8080/meta/ after deployment from the Docker network."
-write_stage_row "Playwright Functional Test" "HTML, JUnit XML, screenshots, log" "$playwright_status" "Runs when the Playwright runner script exists."
-write_stage_row "Gatling Max Limit" "HTML, PDF, raw report, log" "$gatling_max_status" "Requires RUN_GATLING_MAX_LIMIT=true. Skipped on normal automatic builds unless manually enabled."
-write_stage_row "Gatling Load Test" "HTML, PDF, raw report, log" "$gatling_load_status" "Required five-minute load test."
-write_stage_row "Gatling Stress Test" "HTML, PDF, raw report, log" "$gatling_stress_status" "Required five-minute stress test."
+write_stage_row "Playwright Functional Test" "HTML, JUnit XML, screenshots, log" "$playwright_status" "Validates the Playwright container workspace, commit identity, and Tomcat reachability before running the test."
+write_stage_row "Gatling Max Limit" "HTML, PDF, raw report, log" "$gatling_max_status" "Validates the Gatling container workspace before execution. Requires RUN_GATLING_MAX_LIMIT=true."
+write_stage_row "Gatling Load Test" "HTML, PDF, raw report, log" "$gatling_load_status" "Validates the Gatling container workspace before running the required five-minute load test."
+write_stage_row "Gatling Stress Test" "HTML, PDF, raw report, log" "$gatling_stress_status" "Validates the Gatling container workspace before running the required five-minute stress test."
+write_stage_row "Post-build" "Generated reports and archived output" "Console log" "Jenkins may show this as Declarative: Post Actions because it is implemented with a Declarative post block."
 
 cat >> "$REPORT_FILE" <<EOF
           </tbody>
