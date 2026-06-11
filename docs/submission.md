@@ -7,7 +7,7 @@ This file maps the assignment requirements from `docs/final-project.txt` to the 
 - Recipient: `mosh.mta2@gmail.com`
 - Subject: `Final Exercise from: <yournames>`
 - Deadline from assignment: `2026-06-15` at midnight
-- Base local app URL for evidence: `http://localhost:8080/meta/`
+- Base local app URL for evidence: `http://localhost:8080/MeTA/`
 - Jenkins URL for local evidence: `http://localhost:8081/`
 - Public GitHub repository: `https://github.com/y0ncha/meta-final-project`
 
@@ -33,7 +33,7 @@ Replace `<yournames>` with the final group member names before sending.
    - Jenkins scheduled monitoring build after `meta-monitoring` points at the public GitHub repo.
 2. Capture manual screenshots where browser chrome or third-party UI must be visible:
    - GitHub repository page showing the JSP/app.
-   - Tomcat app with `http://localhost:8080/meta/` visible in the address bar.
+   - Tomcat app with `http://localhost:8080/MeTA/` visible in the address bar.
    - Monitor tool showing the monitored target and a passed/up state.
    - Gatling terminal/CMD summaries for max-limit, load, and stress.
 3. Export each Gatling `index.html` report to PDF:
@@ -55,7 +55,7 @@ These are the required services, features, and pipeline capabilities that must w
 |---|---|---|---|
 | JSP web application | A simple JSP application with at least one link, one button, and one text input. | Source file, GitHub screenshot, Tomcat screenshot, Playwright validations. | Ready |
 | Git/GitHub source control | Application and automation code are stored in Git and the public GitHub repository. | Public repository link and GitHub screenshot showing the JSP/app. | Needs final public accessibility check and screenshot |
-| Tomcat production deployment | Jenkins deploys the WAR into the Tomcat container and the app is reachable at `http://localhost:8080/meta/`. | Jenkins build log, `./scripts/deploy-war` output, Tomcat screenshot with address bar visible. | Partial; final address-bar screenshot still needed |
+| Tomcat production deployment | Jenkins deploys the WAR into the Tomcat container and the app is reachable at `http://localhost:8080/MeTA/`. | Jenkins build log, `./scripts/deploy-war` output, Tomcat screenshot with address bar visible. | Partial; final address-bar screenshot still needed |
 | Jenkins CI/CD pipeline | Jenkins builds, deploys, verifies, and triggers the required automation flows from source control. | `meta-container-ci-cd` SCM/manual build log, Jenkins job configuration, archived/published reports. | Partial; needs final SCM-backed evidence after all stages exist |
 | Monitoring | A separate Jenkins Freestyle job checks the application every 5 minutes and official monitor evidence shows the target is up. | Monitor passed screenshot plus `meta-monitoring` scheduled build log. | Missing official monitor screenshot and final scheduled Jenkins evidence |
 | Browser functional automation | Browser automation validates 5 application behaviors and is triggerable from Jenkins. | Playwright test file, passed run log/report, screenshots, validation explanation. | Ready with Playwright override risk |
@@ -73,7 +73,7 @@ These are the 12 items that `docs/final-project.txt` says to send by email.
 |---|---|---|---|---|
 | a | The JSP file used | `src/main/webapp/index.jsp` | `src/main/webapp/index.jsp` | Ready |
 | b | Screenshot of GitHub with the application/JSP in it | Manual screenshot of GitHub showing the repo and JSP/app file | Public repo URL is documented as `https://github.com/y0ncha/meta-final-project`; screenshot still must be captured | Missing screenshot |
-| c | Screenshot of the app in Tomcat with `localhost:8080/...` visible | Manual browser screenshot with address bar visible at `http://localhost:8080/meta/` | `output/screenshots/04-tomcat-meta-local.png` is supplemental only because it does not show browser chrome | Needs final screenshot |
+| c | Screenshot of the app in Tomcat with `localhost:8080/...` visible | Manual browser screenshot with address bar visible at `http://localhost:8080/MeTA/` | `output/screenshots/04-tomcat-meta-local.png` is supplemental only because it does not show browser chrome | Needs final screenshot |
 | d | Link to public GitHub repo | `https://github.com/y0ncha/meta-final-project` | Git remote is expected to be that repository | Needs final accessibility check |
 | e | Monitor tool name, monitored target, and passed monitor screenshot | UptimeRobot or approved monitor name, target URL, interval, and passed/up screenshot | Jenkins Freestyle job `meta-monitoring` runs `./scripts/run-monitoring-check` on schedule `H/5 * * * *`; official monitor screenshot is not present | Missing |
 | f | Selenium IDE file `.side` | Playwright substitute: `tests/playwright/meta-functional.spec.js` | Playwright override documented in `rules/compliance.md` and `docs/playwright.md` | Ready with override risk |
@@ -99,7 +99,7 @@ Attach these when present and freshly validated:
 - `output/playwright/screenshots/06-valid-submit.png`
 - `output/playwright/screenshots/06-empty-submit.png`
 - Final GitHub screenshot showing the JSP/app.
-- Final Tomcat screenshot with `http://localhost:8080/meta/` visible.
+- Final Tomcat screenshot with `http://localhost:8080/MeTA/` visible.
 - Final monitor passed screenshot.
 - Final Gatling max-limit terminal screenshot.
 - Final Gatling load-test terminal screenshot.

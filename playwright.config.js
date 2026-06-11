@@ -19,7 +19,7 @@ module.exports = defineConfig({
     ['junit', { outputFile: 'output/playwright/junit.xml' }]
   ],
   use: {
-    baseURL: process.env.APP_BASE_URL || 'http://localhost:8080/meta/',
+    baseURL: process.env.APP_BASE_URL || 'http://localhost:8080/MeTA/',
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
     video: 'off'

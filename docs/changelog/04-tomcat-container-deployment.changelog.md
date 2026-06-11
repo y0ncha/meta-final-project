@@ -2,7 +2,7 @@
 
 ## Summary
 
-Implemented repeatable deployment of the Maven WAR into the containerized Tomcat runtime. The deployment command is `./scripts/deploy-war`; it builds `target/meta.war`, ensures the `tomcat` Compose service is running, removes stale `meta` deployment artifacts inside the container, copies the WAR into Tomcat `webapps`, and waits for `http://localhost:8080/meta/`.
+Implemented repeatable deployment of the Maven WAR into the containerized Tomcat runtime. The deployment command is `./scripts/deploy-war`; it builds `target/MeTA.war`, ensures the `tomcat` Compose service is running, removes stale `meta` deployment artifacts inside the container, copies the WAR into Tomcat `webapps`, and waits for `http://localhost:8080/MeTA/`.
 
 ## Files Changed
 
@@ -23,22 +23,22 @@ Implemented repeatable deployment of the Maven WAR into the containerized Tomcat
 - Tomcat image: `tomcat:8.5.100-jdk17-temurin`
 - Published port: `0.0.0.0:8080->8080/tcp`
 - Docker volume: `tomcat_webapps`
-- Container WAR path: `/usr/local/tomcat/webapps/meta.war`
+- Container WAR path: `/usr/local/tomcat/webapps/MeTA.war`
 - Container expanded app path: `/usr/local/tomcat/webapps/meta`
-- Local app URL: `http://localhost:8080/meta/`
+- Local app URL: `http://localhost:8080/MeTA/`
 
 ## Validation Evidence
 
 - `docker compose config`: passed and resolved service `tomcat` to image `tomcat:8.5.100-jdk17-temurin`, published port `8080`, and volume `meta_tomcat_webapps`.
-- `./scripts/deploy-war`: passed with final output `Deployed URL: http://localhost:8080/meta/`.
+- `./scripts/deploy-war`: passed with final output `Deployed URL: http://localhost:8080/MeTA/`.
 - `test -x scripts/deploy-war`: passed.
-- `test -f target/meta.war`: passed.
+- `test -f target/MeTA.war`: passed.
 - `docker compose ps tomcat`: showed `meta-tomcat`, image `tomcat:8.5.100-jdk17-temurin`, command `catalina.sh run`, status `Up`, and ports `0.0.0.0:8080->8080/tcp` and `[::]:8080->8080/tcp`.
-- `docker compose exec -T tomcat sh -lc 'test -f /usr/local/tomcat/webapps/meta.war'`: passed.
+- `docker compose exec -T tomcat sh -lc 'test -f /usr/local/tomcat/webapps/MeTA.war'`: passed.
 - `docker compose exec -T tomcat sh -lc 'test -d /usr/local/tomcat/webapps/meta'`: passed.
-- `curl -f http://localhost:8080/meta/`: passed outside the sandbox and returned the JSP HTML.
-- `curl -s http://localhost:8080/meta/`: returned HTML containing `DevOps Final Project`, `About this app`, `nameInput`, and `submitButton`.
-- Browser automation verified the tab URL as `http://localhost:8080/meta/` and page title as `DevOps Final Project`.
+- `curl -f http://localhost:8080/MeTA/`: passed outside the sandbox and returned the JSP HTML.
+- `curl -s http://localhost:8080/MeTA/`: returned HTML containing `MeTA`, `About this app`, `nameInput`, and `submitButton`.
+- Browser automation verified the tab URL as `http://localhost:8080/MeTA/` and page title as `MeTA`.
 - `git diff -- scripts/deploy-war docs/changelog/04-tomcat-container-deployment.changelog.md docs/plans/04-tomcat-container-deployment.md | rtk diff -`: passed and showed only the intended deployment script, plan, and changelog changes.
 
 ## Screenshot Evidence
@@ -47,7 +47,7 @@ Implemented repeatable deployment of the Maven WAR into the containerized Tomcat
 - Git tracking status: ignored by `.gitignore` through `output/**`.
 - Evidence classification: supplemental local evidence, not final submission-grade address-bar evidence.
 - Evidence caveat: the saved screenshot captures the rendered browser viewport. The in-app browser screenshot API does not include browser chrome, and the host `screencapture -x output/screenshots/04-tomcat-meta-local.png` attempt failed with `could not create image from display`, so the address-bar URL is proven by browser automation URL state and HTTP validation instead of appearing inside this screenshot.
-- Final submission action: capture a normal manual browser screenshot with `http://localhost:8080/meta/` visible in the address bar before sending the final assignment package.
+- Final submission action: capture a normal manual browser screenshot with `http://localhost:8080/MeTA/` visible in the address bar before sending the final assignment package.
 
 ## Environment Notes
 

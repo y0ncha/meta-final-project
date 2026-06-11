@@ -46,7 +46,7 @@ test -s "$CSS_FILE"
 assert_contains '<link rel="stylesheet" href="pipeline-report.css">'
 assert_contains '<dl class="meta-grid">'
 assert_contains '<th>Evidence State</th>'
-assert_contains 'Build WAR</td><td>Archived target/meta.war</td><td><span class="status status-missing">Missing</span>'
+assert_contains 'Build WAR</td><td>Archived target/MeTA.war</td><td><span class="status status-missing">Missing</span>'
 assert_contains 'Pre Actions</td><td>Jenkins console log</td><td><span class="status status-log">Console log</span>'
 assert_contains 'Gatling Load Test</td><td>HTML, PDF, raw report, log</td><td><span class="status status-ok">Available</span>'
 assert_contains 'Gatling Stress Test</td><td>HTML, PDF, raw report, log</td><td><span class="status status-missing">Missing</span>'

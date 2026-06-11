@@ -2,8 +2,8 @@
 
 ## Target
 
-- Host browser URL: `http://localhost:8080/meta/`
-- Docker-network URL: `http://tomcat:8080/meta/`
+- Host browser URL: `http://localhost:8080/MeTA/`
+- Docker-network URL: `http://tomcat:8080/MeTA/`
 
 ## What This HAR Tests
 
@@ -19,10 +19,10 @@ This HAR documents the network traffic for the JSP application functional flow. 
 
 Expected network behavior:
 
-1. Browser requests the application page at `/meta/`.
+1. Browser requests the application page at `/MeTA/`.
 2. Browser clicks `About this app`; this changes the URL fragment to `#about` and should not create a separate network request because the target section is already on the same page.
-3. Browser submits the form to `/meta/index.jsp` with `nameInput=Yonatan`.
-4. Tomcat returns an HTTP `200` response containing the success message `Hello, Yonatan. Your JSP form submission worked.`
+3. Browser submits the form to `/MeTA/index.jsp` with `nameInput=Yonatan`.
+4. Tomcat returns an HTTP `200` response containing the success message `Hello, Yonatan. MeTA Corporate reviewed your form, opened a committee, and somehow approved it.`
 
 This HAR does not test Jenkins scheduling, Gatling performance limits, public-IP availability, or monitor uptime. Those are separate final-project evidence items.
 

@@ -18,7 +18,7 @@ chmod +x "$FAKE_BIN/curl"
 
 PATH="$FAKE_BIN:$PATH" \
 CURL_ARGS_FILE="$CURL_ARGS_FILE" \
-APP_BASE_URL="http://example.test/meta/" \
+APP_BASE_URL="http://example.test/MeTA/" \
 JOB_NAME="meta-monitoring-test" \
 BUILD_NUMBER="42" \
   sh -c 'cd "$1" && "$2/scripts/run-monitoring-check"' sh "$TEST_ROOT" "$PROJECT_ROOT" >/tmp/run-monitoring-check-test.log
@@ -37,9 +37,9 @@ test -s "$CURL_ARGS_FILE"
 assert_contains "$CURL_ARGS_FILE" '--connect-timeout 5'
 assert_contains "$CURL_ARGS_FILE" '--max-time 15'
 assert_contains "$CURL_ARGS_FILE" '-fsS'
-assert_contains "$CURL_ARGS_FILE" 'http://example.test/meta/'
+assert_contains "$CURL_ARGS_FILE" 'http://example.test/MeTA/'
 assert_contains "$OUTPUT_FILE" 'status=up'
-assert_contains "$OUTPUT_FILE" 'target=http://example.test/meta/'
+assert_contains "$OUTPUT_FILE" 'target=http://example.test/MeTA/'
 assert_contains "$OUTPUT_FILE" 'job=meta-monitoring-test'
 assert_contains "$OUTPUT_FILE" 'build=42'
 

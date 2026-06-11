@@ -17,7 +17,7 @@
   </properties>
 
   <build>
-    <finalName>meta</finalName>
+    <finalName>MeTA</finalName>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

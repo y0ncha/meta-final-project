@@ -32,14 +32,14 @@ const metaRequests = entries.filter((entry) => {
   }
 
   try {
-    return new URL(requestUrl).pathname.startsWith('/meta/');
+    return new URL(requestUrl).pathname.startsWith('/MeTA/');
   } catch (_) {
     return false;
   }
 });
 
 if (metaRequests.length === 0) {
-  fail('HAR file does not contain any request URL whose path starts with /meta/', 66);
+  fail('HAR file does not contain any request URL whose path starts with /MeTA/', 66);
 }
 
 const hasContentEvidence = entries.some((entry) => {
@@ -55,4 +55,4 @@ if (!hasContentEvidence) {
   fail('HAR file does not contain response content evidence', 67);
 }
 
-console.log(`Validated HAR: ${harPath} entries=${entries.length} metaRequests=${metaRequests.length}`);
+console.log(`Validated HAR: ${harPath} entries=${entries.length} MeTARequests=${metaRequests.length}`);

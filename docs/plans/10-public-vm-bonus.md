@@ -17,7 +17,7 @@ Deploy the same Docker Compose stack on a public VM and run required evidence ag
 - Clone the GitHub repo.
 - Run the same Compose stack.
 - Deploy the same WAR under Tomcat `webapps`.
-- Set `APP_BASE_URL=http://<public-ip>:8080/meta/`.
+- Set `APP_BASE_URL=http://<public-ip>:8080/MeTA/`.
 - Run UptimeRobot, Playwright, and Gatling against the public URL.
 
 ## Validation
