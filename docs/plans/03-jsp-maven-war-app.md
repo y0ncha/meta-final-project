@@ -102,7 +102,7 @@ This plan creates the required MTA DevOps final-project JSP application as a Mav
 | TASK-024 | Run `rtk grep -n "pageTitle|aboutLink|nameInput|submitButton|resultMessage|validationMessage" src/main/webapp/index.jsp` and confirm every required stable selector appears in the JSP source. | ✅ | 2026-06-10 |
 | TASK-025 | Create `docs/changelog/03-jsp-maven-war-app.changelog.md` after implementation and validation are complete. | ✅ | 2026-06-10 |
 | TASK-026 | In `docs/changelog/03-jsp-maven-war-app.changelog.md`, document files changed, Maven and Java versions observed, the command `mvn clean package`, the generated WAR path `target/yonatan-csasznik-yoed-halberstam-niv-levin.war`, the intended Plan 04 URL `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`, and the `MeTA` context-path override in `rules/compliance.md`. | ✅ | 2026-06-10 |
-| TASK-027 | Run `git diff -- pom.xml src/main/webapp/index.jsp README.md contribution.md docs/plans/03-jsp-maven-war-app.md docs/plans/04-tomcat-container-deployment.md docs/plans/05-jenkins-container-ci-cd.md docs/plans/09-monitoring-and-jenkins-schedule.md docs/plans/10-public-vm-bonus.md docs/changelog/03-jsp-maven-war-app.changelog.md` and verify no secrets, no generated `target/` files, and no unrelated changes are present. | ✅ | 2026-06-10 |
+| TASK-027 | Run `git diff -- pom.xml src/main/webapp/index.jsp README.md contribution.md docs/plans/03-jsp-maven-war-app.md docs/plans/04-tomcat-container-deployment.md docs/plans/05-jenkins-container-ci-cd.md docs/plans/09-monitoring-and-jenkins-schedule.md docs/plans/10-aws-ec2-public-vm-bonus.md docs/changelog/03-jsp-maven-war-app.changelog.md` and verify no secrets, no generated `target/` files, and no unrelated changes are present. | ✅ | 2026-06-10 |
 | TASK-028 | Run `git status --short --branch` and confirm only intentional Plan 03 files are modified or untracked. | ✅ | 2026-06-10 |
 
 ## 3. Alternatives
@@ -129,7 +129,7 @@ This plan creates the required MTA DevOps final-project JSP application as a Mav
 - **FILE-003**: `docs/changelog/03-jsp-maven-war-app.changelog.md` will record implementation summary, current-machine tool versions, validation commands, and WAR output evidence after execution.
 - **FILE-004**: `rules/compliance.md` defines the group-member context path and remains the project compliance source.
 - **FILE-005**: `README.md` will document `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` as the local Tomcat application URL.
-- **FILE-006**: `docs/plans/04-tomcat-container-deployment.md`, `docs/plans/05-jenkins-container-ci-cd.md`, `docs/plans/09-monitoring-and-jenkins-schedule.md`, and `docs/plans/10-public-vm-bonus.md` will use `/yonatan-csasznik-yoed-halberstam-niv-levin/` for downstream deployment, CI, monitoring, and public VM references.
+- **FILE-006**: `docs/plans/04-tomcat-container-deployment.md`, `docs/plans/05-jenkins-container-ci-cd.md`, `docs/plans/09-monitoring-and-jenkins-schedule.md`, and `docs/plans/10-aws-ec2-public-vm-bonus.md` will use `/yonatan-csasznik-yoed-halberstam-niv-levin/` for downstream deployment, CI, monitoring, and public VM references.
 - **FILE-007**: `.gitignore` will be read to confirm `target/` and `*.war` remain ignored; it will be modified only if generated Maven output is not ignored.
 - **FILE-008**: `src/main/webapp/WEB-INF/web.xml` will not be created unless Maven validation proves the WAR cannot build without it.
 
@@ -139,7 +139,7 @@ This plan creates the required MTA DevOps final-project JSP application as a Mav
 - **TEST-002**: `test -f target/yonatan-csasznik-yoed-halberstam-niv-levin.war` must exit with status `0`.
 - **TEST-003**: `jar tf target/yonatan-csasznik-yoed-halberstam-niv-levin.war` must list `index.jsp`.
 - **TEST-004**: `rtk grep -n "pageTitle|aboutLink|nameInput|submitButton|resultMessage|validationMessage" src/main/webapp/index.jsp` must show all six stable selectors.
-- **TEST-005**: `git diff -- pom.xml src/main/webapp/index.jsp README.md contribution.md docs/plans/03-jsp-maven-war-app.md docs/plans/04-tomcat-container-deployment.md docs/plans/05-jenkins-container-ci-cd.md docs/plans/09-monitoring-and-jenkins-schedule.md docs/plans/10-public-vm-bonus.md docs/changelog/03-jsp-maven-war-app.changelog.md` must contain only intentional Plan 03 source and documentation changes.
+- **TEST-005**: `git diff -- pom.xml src/main/webapp/index.jsp README.md contribution.md docs/plans/03-jsp-maven-war-app.md docs/plans/04-tomcat-container-deployment.md docs/plans/05-jenkins-container-ci-cd.md docs/plans/09-monitoring-and-jenkins-schedule.md docs/plans/10-aws-ec2-public-vm-bonus.md docs/changelog/03-jsp-maven-war-app.changelog.md` must contain only intentional Plan 03 source and documentation changes.
 - **TEST-006**: `git status --short --branch` must show no generated `target/` files or `*.war` files.
 
 ## 7. Risks & Assumptions

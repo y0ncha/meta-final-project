@@ -94,7 +94,7 @@ Plan 06 satisfies the browser automation deliverable from `final-project.pdf` us
 - Added `scripts/generate-playwright-jenkins-report` to generate a static Jenkins-safe Playwright evidence page at `output/playwright/jenkins-report/index.html`.
 - Updated `Jenkinsfile` so the Jenkins `Playwright Report` publishes the static report instead of the native Playwright HTML app.
 - Kept the native Playwright report archived at `output/playwright/playwright-report/index.html` because Jenkins HTML Publisher can render it as a blank page when JavaScript is blocked.
-- Added `tests/scripts/test-generate-playwright-jenkins-report.sh` to assert the generated report has short artifact references, no inline scripts, and a link back to the native HTML artifact.
+- Added `tests/scripts/test-generate-playwright-jenkins-report.sh` to assert the generated report has short Jenkins-safe artifact references, no inline scripts, and no misleading link back to the native HTML artifact.
 
 ## 2026-06-11 Assert And Verify Follow-Up
 

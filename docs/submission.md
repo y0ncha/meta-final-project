@@ -146,7 +146,7 @@ Bonus evidence is claimable only when all public-target rows below are real and 
 | Gatling load 5m | `APP_BASE_URL=http://<PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` | Load-test log, HTML report, PDF, and terminal or Jenkins-console screenshot. | Pending user-run public evidence |
 | Gatling stress 5m | `APP_BASE_URL=http://<PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` | Stress-test log, HTML report, PDF, and terminal or Jenkins-console screenshot. | Pending user-run public evidence |
 
-Track the selected path, public URL, firewall or router decisions, and public evidence paths in Plan 10 (`docs/plans/10-public-vm-bonus.md`) or in a future evidence note if the plan is executed.
+Track the selected path, public URL, firewall or router decisions, and public evidence paths in Plan 10 (`docs/plans/10-aws-ec2-public-vm-bonus.md`) or in a future evidence note if the plan is executed.
 
 ## Final Review Before Sending
 

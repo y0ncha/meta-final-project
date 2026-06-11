@@ -97,7 +97,6 @@ result_badge=$(status_badge "$result")
 
 log_ref=$(artifact_ref "$OUTPUT_DIR/playwright-run.log" "Run log")
 junit_ref=$(artifact_ref "$OUTPUT_DIR/junit.xml" "JUnit")
-native_ref=$(artifact_ref "$OUTPUT_DIR/playwright-report/index.html" "Native HTML")
 valid_ref=$(artifact_ref "$OUTPUT_DIR/screenshots/valid-submit.png" "Valid submit")
 empty_ref=$(artifact_ref "$OUTPUT_DIR/screenshots/empty-submit.png" "Empty submit")
 
@@ -274,7 +273,7 @@ cat > "$REPORT_FILE" <<EOF
   <div class="page">
     <header class="report-header">
       <h1>MeTA Playwright Evidence Report</h1>
-      <p class="muted">Static Jenkins-safe browser automation evidence. The native Playwright HTML report is kept as an archived artifact reference because Jenkins may block its JavaScript rendering.</p>
+      <p class="muted">Static Jenkins-safe browser automation evidence. The native Playwright HTML report is archived under build artifacts but is not linked here because Jenkins may block its JavaScript rendering.</p>
       <dl class="meta-grid">
         <div><dt>Job</dt><dd>$build_label_html</dd></div>
         <div><dt>Build</dt><dd>$build_number_html</dd></div>
@@ -285,7 +284,6 @@ cat > "$REPORT_FILE" <<EOF
       <div class="refs">
         $log_ref
         $junit_ref
-        $native_ref
         $valid_ref
         $empty_ref
       </div>

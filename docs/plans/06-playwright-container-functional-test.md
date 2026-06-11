@@ -25,7 +25,7 @@ Follow-up update on 2026-06-10: Jenkins now publishes Playwright JUnit and HTML 
 
 Follow-up update on 2026-06-10: `scripts/run-playwright-container` now uses direct `docker run` for local execution and `PLAYWRIGHT_DOCKER_PIPELINE=1` as the command body inside Jenkins Docker Pipeline. The Playwright functional test remains isolated from HAR capture; those validations use separate disposable containers.
 
-Follow-up update on 2026-06-11: Jenkins now publishes a static Playwright evidence report from `output/playwright/jenkins-report/index.html` instead of publishing the native Playwright HTML app directly. The native report remains archived under `output/playwright/playwright-report/index.html`, but Jenkins HTML Publisher can render it as a blank page because the native report depends on JavaScript that Jenkins may block.
+Follow-up update on 2026-06-11: Jenkins now publishes a static Playwright evidence report from `output/playwright/jenkins-report/index.html` instead of publishing the native Playwright HTML app directly. The native report remains archived under `output/playwright/playwright-report/index.html`, but it is not linked from the Jenkins-safe report because Jenkins HTML Publisher can render it as a blank page when JavaScript is blocked.
 
 Follow-up update on 2026-06-11: The Playwright functional test now uses both hard `expect(...)` assertions and verify-style `expect.soft(...)` assertions. Hard assertions guard flow prerequisites and final outcomes; soft assertions report independent validation failures without stopping the rest of the five-validation flow immediately.
 
@@ -102,7 +102,7 @@ Follow-up update on 2026-06-11: The Playwright functional test now uses both har
 | TASK-025 | Update `docs/jenkins.md` section `Pipeline Stages` item `Playwright Functional Test` so it states that `./scripts/run-playwright-container` now runs the Playwright functional test and writes ignored evidence under `output/playwright/`. | ✅ | 2026-06-10 |
 | TASK-026 | Update `docs/jenkins.md` section `Security Notes` so it states Jenkins mounts the Docker socket for disposable test containers and Playwright runs in the official Playwright image. | ✅ | 2026-06-10 |
 | TASK-027 | Update `docs/jenkins.md` section `Evidence To Capture` to include the Plan 06 Playwright run log, JUnit XML, HTML report, and two screenshots. | ✅ | 2026-06-10 |
-| TASK-027A | Update Jenkins post-build behavior so `output/playwright/junit.xml` is published with Jenkins JUnit and `output/playwright/playwright-report/index.html` is published with HTML Publisher when present. | ✅ | 2026-06-10 |
+| TASK-027A | Update Jenkins post-build behavior so `output/playwright/junit.xml` is published with Jenkins JUnit and Playwright HTML evidence is available from archived artifacts. | ✅ | 2026-06-10 |
 
 ### Implementation Phase 4
 
@@ -139,7 +139,7 @@ Follow-up update on 2026-06-11: The Playwright functional test now uses both har
 |------|-------------|-----------|------|
 | TASK-041 | Document that Playwright functional validation and HAR capture use separate fresh one-shot containers. | ✅ | 2026-06-10 |
 | TASK-042 | Add a regression test for the static Jenkins-safe Playwright report. | ✅ | 2026-06-11 |
-| TASK-043 | Add `scripts/generate-playwright-jenkins-report` to summarize JUnit results and link evidence without inline JavaScript. | ✅ | 2026-06-11 |
+| TASK-043 | Add `scripts/generate-playwright-jenkins-report` to summarize JUnit results and link Jenkins-safe evidence without inline JavaScript. | ✅ | 2026-06-11 |
 | TASK-044 | Update `scripts/run-playwright-container` to generate the static report after a successful Playwright run. | ✅ | 2026-06-11 |
 | TASK-045 | Update Jenkins post-build publishing to publish `output/playwright/jenkins-report/index.html` as `Playwright Report`. | ✅ | 2026-06-11 |
 

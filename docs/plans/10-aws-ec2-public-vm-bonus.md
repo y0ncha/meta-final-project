@@ -1,5 +1,5 @@
 ---
-goal: AWS EC2 Bootcamp Public VM Bonus Evidence
+goal: AWS EC2 Public VM Bonus Evidence
 version: 3.0
 date_created: 2026-06-11
 last_updated: 2026-06-11
@@ -16,7 +16,7 @@ tags:
   - devops-final-project
 ---
 
-# Introduction
+# AWS EC2 Public VM Bonus Evidence
 
 ![Status: Planned](https://img.shields.io/badge/status-Planned-blue)
 
@@ -40,15 +40,14 @@ This plan captures the optional public-IP bonus by deploying the existing contai
 - **REQ-014**: Record the AWS region, instance type, AMI, public IPv4 or public DNS, security group rules, SSH access mode, public app URL, monitor target, Jenkins target configuration, and evidence status in `docs/public-app-bonus.md`.
 - **REQ-015**: Keep public bonus evidence separate from local base evidence using `output/public-app/` for screenshots, copied logs, and notes.
 - **REQ-016**: Do not claim the public-IP bonus unless all required public-target evidence exists and uses the same public application URL.
-- **REQ-017**: Create or update `docs/changelog/10-public-vm-bonus.changelog.md` when this plan is implemented, abandoned, or superseded.
-- **REQ-018**: Before executing the monitoring portion, update `rules/compliance.md`, `docs/monitoring.md`, and any affected docs to reflect the instructor's latest clarification that Jenkins should not be used as the official 5-minute availability monitor.
+- **REQ-017**: Before executing the monitoring portion, update `rules/compliance.md`, `docs/monitoring.md`, and any affected docs to reflect the instructor's latest clarification that Jenkins should not be used as the official 5-minute availability monitor.
 - **SEC-001**: Do not commit AWS console credentials, AWS access keys, SSH private keys, Jenkins secrets, UptimeRobot credentials, SiteMonitorLite credentials, cookies, API keys, or sensitive screenshots.
 - **SEC-002**: Do not expose Jenkins `tcp/8081` publicly to the internet.
 - **SEC-003**: Restrict SSH `tcp/22` to the operator public IP wherever the bootcamp account allows source-IP restriction.
 - **SEC-004**: Delete, stop, or otherwise clean up the EC2 VM after evidence capture if the bootcamp account has time, budget, or lab-lifecycle limits.
 - **CON-001**: Read `AGENTS.md`, `contribution.md`, and `rules/compliance.md` before implementation.
-- **CON-002**: Preserve filename `docs/plans/10-public-vm-bonus.md` for numbered plan continuity.
-- **CON-003**: Use branch `feature/10-public-vm-bonus` for this plan unless the user explicitly requests another branch.
+- **CON-002**: Preserve filename `docs/plans/10-aws-ec2-public-vm-bonus.md` for numbered plan continuity.
+- **CON-003**: Use branch `feature/10-aws-ec2-public-vm-bonus` for this plan unless the user explicitly requests another branch.
 - **CON-004**: Do not run Gatling directly as the agent. If Gatling validation is needed, ask the user to run the required Gatling or Jenkins command and provide output or artifacts.
 - **CON-005**: Do not replace the containerized project track with host Tomcat, host Jenkins, `/usr/local/tomcat8`, or `/Users/yonatan/.jenkins`.
 - **CON-006**: Do not use Vercel, Netlify, Render, or another PaaS path as the primary solution because those paths weaken the Tomcat, Jenkins, WAR, and public-IP evidence story.
@@ -67,8 +66,8 @@ This plan captures the optional public-IP bonus by deploying the existing contai
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-001 | Run `rtk git status` and confirm branch `feature/10-public-vm-bonus`. |  |  |
-| TASK-002 | Read `AGENTS.md`, `contribution.md`, `rules/compliance.md`, `docs/plans/10-public-vm-bonus.md`, and `docs/changelog/` before editing implementation files. |  |  |
+| TASK-001 | Run `rtk git status` and confirm branch `feature/10-aws-ec2-public-vm-bonus`. |  |  |
+| TASK-002 | Read `AGENTS.md`, `contribution.md`, `rules/compliance.md`, `docs/plans/10-aws-ec2-public-vm-bonus.md`, and `docs/changelog/` before editing implementation files. |  |  |
 | TASK-003 | Log in to the AWS bootcamp account and identify the allowed AWS region, allowed EC2 instance families, allowed AMIs, lab duration, and whether public IPv4 assignment is enabled. |  |  |
 | TASK-004 | Confirm whether the account allows creating security groups with inbound `tcp/8080` from `0.0.0.0/0`. |  |  |
 | TASK-005 | Confirm whether the account allows restricting inbound `tcp/22` to the operator public IP. |  |  |
@@ -166,10 +165,9 @@ This plan captures the optional public-IP bonus by deploying the existing contai
 |------|-------------|-----------|------|
 | TASK-049 | Update `docs/submission.md` to keep local base evidence and public bonus evidence separate. |  |  |
 | TASK-050 | Update `docs/public-app-bonus.md` with final evidence paths, commands, screenshots, public URL, selected path, and remaining risks. |  |  |
-| TASK-051 | Create or update `docs/changelog/10-public-vm-bonus.changelog.md` with what changed, why it changed, validation commands or artifacts, selected path, and remaining risks. |  |  |
-| TASK-052 | Run `git diff --check`. |  |  |
-| TASK-053 | Run `python3 .agents/skills/compliance-validator/scripts/validate_compliance.py --target . --rules rules/compliance.md` and confirm zero failures after policy docs are updated for the latest instructor clarification. |  |  |
-| TASK-054 | Run `rtk git status` and confirm Plan 10 changes are scoped. |  |  |
+| TASK-051 | Run `git diff --check`. |  |  |
+| TASK-052 | Run `python3 .agents/skills/compliance-validator/scripts/validate_compliance.py --target . --rules rules/compliance.md` and confirm zero failures after policy docs are updated for the latest instructor clarification. |  |  |
+| TASK-053 | Run `rtk git status` and confirm Plan 10 changes are scoped. |  |  |
 
 ## 3. Alternatives
 
@@ -199,20 +197,19 @@ This plan captures the optional public-IP bonus by deploying the existing contai
 
 ## 5. Files
 
-- **FILE-001**: `docs/plans/10-public-vm-bonus.md` - this executable AWS EC2 public VM implementation plan.
+- **FILE-001**: `docs/plans/10-aws-ec2-public-vm-bonus.md` - this executable AWS EC2 public VM implementation plan.
 - **FILE-002**: `docs/public-app-bonus.md` - selected path, AWS setup details, public URL, evidence paths, validation results, and bonus claim status.
 - **FILE-003**: `rules/compliance.md` - policy update required to reflect the latest instructor monitoring clarification.
 - **FILE-004**: `docs/monitoring.md`, `docs/jenkins.md`, and `docs/submission.md` - documentation updates required for public EC2 evidence and official external monitoring.
-- **FILE-005**: `docs/changelog/10-public-vm-bonus.changelog.md` - closeout changelog for the public VM bonus work.
-- **FILE-006**: `output/public-app/` - ignored local evidence staging directory for screenshots, copied Jenkins logs, public URL notes, and manual artifacts.
-- **FILE-007**: `scripts/run-playwright-container` - existing Playwright runner used with public `APP_BASE_URL`.
-- **FILE-008**: `scripts/run-gatling-container`, `scripts/run-gatling-max-limit`, `scripts/run-gatling-load-5m`, and `scripts/run-gatling-stress-5m` - existing Gatling runners invoked by Jenkins for public-target evidence.
-- **FILE-009**: `Jenkinsfile` - existing CI/CD Pipeline; edit only if public `APP_BASE_URL` cannot be injected through Jenkins configuration or command environment.
-- **FILE-010**: `docker-compose.yml` - existing container orchestration; edit only if the EC2 VM requires a documented cloud-safe adjustment.
+- **FILE-005**: `output/public-app/` - ignored local evidence staging directory for screenshots, copied Jenkins logs, public URL notes, and manual artifacts.
+- **FILE-006**: `scripts/run-playwright-container` - existing Playwright runner used with public `APP_BASE_URL`.
+- **FILE-007**: `scripts/run-gatling-container`, `scripts/run-gatling-max-limit`, `scripts/run-gatling-load-5m`, and `scripts/run-gatling-stress-5m` - existing Gatling runners invoked by Jenkins for public-target evidence.
+- **FILE-008**: `Jenkinsfile` - existing CI/CD Pipeline; edit only if public `APP_BASE_URL` cannot be injected through Jenkins configuration or command environment.
+- **FILE-009**: `docker-compose.yml` - existing container orchestration; edit only if the EC2 VM requires a documented cloud-safe adjustment.
 
 ## 6. Testing
 
-- **TEST-001**: `rtk git status` must show branch `feature/10-public-vm-bonus`; Plan 10 changes must be scoped.
+- **TEST-001**: `rtk git status` must show branch `feature/10-aws-ec2-public-vm-bonus`; Plan 10 changes must be scoped.
 - **TEST-002**: AWS EC2 console must show one running VM in the selected region with a public IPv4 or public DNS.
 - **TEST-003**: EC2 security group must expose inbound `tcp/8080` publicly and must not expose inbound `tcp/8081` publicly.
 - **TEST-004**: EC2 security group must restrict inbound `tcp/22` to the operator IP wherever the bootcamp account permits it.

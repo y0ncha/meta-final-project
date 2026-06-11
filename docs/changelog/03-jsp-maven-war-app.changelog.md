@@ -10,7 +10,7 @@ Implemented the JSP application as a Maven WAR project for the MTA DevOps final 
 - `src/main/webapp/index.jsp`: Added the JSP application page with one link, one button, one text input, server-side form handling, HTML escaping, and stable IDs for later Playwright validation.
 - `README.md`: Updated the local Tomcat application URL to `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`.
 - `rules/compliance.md`: Documents the group-member context path `/yonatan-csasznik-yoed-halberstam-niv-levin/`.
-- `docs/plans/04-tomcat-container-deployment.md`, `docs/plans/05-jenkins-container-ci-cd.md`, `docs/plans/09-monitoring-and-jenkins-schedule.md`, and `docs/plans/10-public-vm-bonus.md`: Updated downstream deployment, CI, monitoring, and public VM references to use `/yonatan-csasznik-yoed-halberstam-niv-levin/`.
+- `docs/plans/04-tomcat-container-deployment.md`, `docs/plans/05-jenkins-container-ci-cd.md`, `docs/plans/09-monitoring-and-jenkins-schedule.md`, and `docs/plans/10-aws-ec2-public-vm-bonus.md`: Updated downstream deployment, CI, monitoring, and public VM references to use `/yonatan-csasznik-yoed-halberstam-niv-levin/`.
 - `docs/changelog/03-jsp-maven-war-app.changelog.md`: Added this implementation and validation record.
 
 ## Tool Versions Observed
