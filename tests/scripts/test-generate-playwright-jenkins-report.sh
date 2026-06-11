@@ -19,10 +19,10 @@ cat > "$TEST_ROOT/output/playwright/junit.xml" <<'XML'
 </testsuites>
 XML
 
-printf '%s\n' 'playwright log' > "$TEST_ROOT/output/playwright/06-playwright-run.log"
+printf '%s\n' 'playwright log' > "$TEST_ROOT/output/playwright/playwright-run.log"
 printf '%s\n' '<!doctype html><title>native</title><script type="module"></script>' > "$TEST_ROOT/output/playwright/playwright-report/index.html"
-printf '%s\n' 'png' > "$TEST_ROOT/output/playwright/screenshots/06-valid-submit.png"
-printf '%s\n' 'png' > "$TEST_ROOT/output/playwright/screenshots/06-empty-submit.png"
+printf '%s\n' 'png' > "$TEST_ROOT/output/playwright/screenshots/valid-submit.png"
+printf '%s\n' 'png' > "$TEST_ROOT/output/playwright/screenshots/empty-submit.png"
 
 JOB_NAME="meta-ci-cd" \
 BUILD_NUMBER="164" \

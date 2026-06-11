@@ -95,11 +95,11 @@ generated_at_html=$(html_escape "$generated_at")
 duration_html=$(html_escape "$duration")
 result_badge=$(status_badge "$result")
 
-log_ref=$(artifact_ref "$OUTPUT_DIR/06-playwright-run.log" "Run log")
+log_ref=$(artifact_ref "$OUTPUT_DIR/playwright-run.log" "Run log")
 junit_ref=$(artifact_ref "$OUTPUT_DIR/junit.xml" "JUnit")
 native_ref=$(artifact_ref "$OUTPUT_DIR/playwright-report/index.html" "Native HTML")
-valid_ref=$(artifact_ref "$OUTPUT_DIR/screenshots/06-valid-submit.png" "Valid submit")
-empty_ref=$(artifact_ref "$OUTPUT_DIR/screenshots/06-empty-submit.png" "Empty submit")
+valid_ref=$(artifact_ref "$OUTPUT_DIR/screenshots/valid-submit.png" "Valid submit")
+empty_ref=$(artifact_ref "$OUTPUT_DIR/screenshots/empty-submit.png" "Empty submit")
 
 cat > "$CSS_FILE" <<'EOF'
 :root {

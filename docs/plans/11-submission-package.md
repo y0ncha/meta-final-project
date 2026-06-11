@@ -3,6 +3,8 @@
 ## Goal
 Assemble the final email package with all 12 required assignment items and real evidence.
 
+Canonical local application URL for final evidence: `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`.
+
 ## Deliverables
 - `docs/submission.md`.
 - Final screenshots and files grouped by requirement.

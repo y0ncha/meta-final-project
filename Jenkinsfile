@@ -18,9 +18,9 @@ pipeline {
   }
 
   environment {
-    APP_BASE_URL = 'http://tomcat:8080/MeTA/'
-    DEPLOY_CHECK_URL = 'http://tomcat:8080/MeTA/'
-    TOMCAT_CONTEXT = 'MeTA'
+    APP_BASE_URL = 'http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/'
+    DEPLOY_CHECK_URL = 'http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/'
+    TOMCAT_CONTEXT = 'yonatan-csasznik-yoed-halberstam-niv-levin'
     PLAYWRIGHT_IMAGE = 'mcr.microsoft.com/playwright:v1.60.0-noble'
     GATLING_IMAGE = 'denvazh/gatling:3.2.1'
     GATLING_PLATFORM = 'linux/amd64'
@@ -51,7 +51,7 @@ pipeline {
     stage('Build WAR') {
       steps {
         sh 'mvn -B clean package'
-        archiveArtifacts artifacts: 'target/MeTA.war', fingerprint: true
+        archiveArtifacts artifacts: 'target/yonatan-csasznik-yoed-halberstam-niv-levin.war', fingerprint: true
       }
     }
 

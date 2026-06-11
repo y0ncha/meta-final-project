@@ -2,7 +2,7 @@ const { chromium, expect } = require('@playwright/test');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const appBaseUrl = process.env.APP_BASE_URL || 'http://localhost:8080/MeTA/';
+const appBaseUrl = process.env.APP_BASE_URL || 'http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/';
 const harPath = process.env.HAR_PATH || 'output/har/meta-functional-flow.har';
 
 async function main() {
@@ -28,6 +28,9 @@ async function main() {
     await page.locator('#nameInput').fill('Yonatan');
     await page.locator('#submitButton').click();
     await expect(page.locator('#resultMessage')).toHaveText('Hello, Yonatan. MeTA Corporate reviewed your form, opened a committee, and somehow approved it.');
+    await page.goto(appBaseUrl, { waitUntil: 'networkidle' });
+    await page.locator('#submitButton').click();
+    await expect(page.locator('#validationMessage')).toHaveText('Please enter a name before MeTA Corporate schedules a meeting about the empty box.');
   } finally {
     if (context) {
       await context.close();

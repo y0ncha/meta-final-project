@@ -5,7 +5,7 @@ The authoritative assignment source is `final-project.pdf`. This file is the act
 ## Approved Project Overrides
 
 - The instructor explicitly approved using containers instead of host-installed project tools. Use the containerized track as the default implementation path.
-- Run Apache Tomcat 8.5.x in Docker as the JSP production runtime. It must still deploy the app under Tomcat `webapps` and serve the app at `http://localhost:8080/MeTA/` for local evidence.
+- Run Apache Tomcat 8.5.x in Docker as the JSP production runtime. It must still deploy the app under Tomcat `webapps` and serve the app at `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` for local evidence.
 - Run Jenkins in Docker as the CI/CD orchestrator. Jenkins must use a persistent volume and must not claim port `8080`; expose Jenkins at `http://localhost:8081/`.
 - Run Gatling in Docker for max-limit, 5-minute load, and 5-minute stress testing.
 - Run the Playwright test runner in Docker for repeatable browser automation from Jenkins or local scripts.
@@ -21,9 +21,8 @@ The authoritative assignment source is `final-project.pdf`. This file is the act
 - This project uses Playwright as the "Selenium IDE or similar" browser-test tool unless the lecturer later requires Selenium IDE specifically.
 - Keep the Playwright test file, passed-run evidence, screenshots, and validation explanation strong enough to defend this substitution.
 - The PDF asks for the Tomcat deployment folder/context to include the group members' names.
-- This project uses Maven coordinate `mta.devops:meta:1.0.0`, WAR name `meta`, and Tomcat context path `meta`.
-- Serve the local application at `http://localhost:8080/MeTA/` unless the lecturer later requires group-member names in the URL.
-- If the lecturer requires names in the context path, update the Maven `finalName`, deployment paths, monitoring target, Playwright base URL, Gatling base URL, HAR target, screenshots, and submission notes before final evidence capture.
+- This project satisfies that wording with WAR name and Tomcat context path `yonatan-csasznik-yoed-halberstam-niv-levin`.
+- Serve the local application at `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` for final local evidence.
 
 ## Tool Version Policy
 

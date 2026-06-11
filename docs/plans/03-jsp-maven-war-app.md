@@ -18,20 +18,20 @@ tags:
 
 ![Status: Completed](https://img.shields.io/badge/status-Completed-brightgreen)
 
-This plan creates the required MTA DevOps final-project JSP application as a Maven WAR project. The implementation creates a deterministic Tomcat context named `MeTA`, a single JSP page with one link, one button, and one text input, and local Maven build validation that produces `target/MeTA.war`. Deployment into the Tomcat Docker container is intentionally handled by Plan 04.
+This plan creates the required MTA DevOps final-project JSP application as a Maven WAR project. The implementation creates a deterministic Tomcat context named `yonatan-csasznik-yoed-halberstam-niv-levin`, a single JSP page with one link, one button, and one text input, and local Maven build validation that produces `target/yonatan-csasznik-yoed-halberstam-niv-levin.war`. Deployment into the Tomcat Docker container is intentionally handled by Plan 04.
 
 ## 1. Requirements & Constraints
 
 - **REQ-001**: Create a Maven WAR project at the repository root with `pom.xml` as the build descriptor.
-- **REQ-002**: Configure Maven group ID `mta.devops`, artifact ID `meta`, version `1.0.0`, packaging `war`, and final WAR name `meta`.
+- **REQ-002**: Configure Maven group ID `mta.devops`, artifact ID `meta`, version `1.0.0`, packaging `war`, and final WAR name `yonatan-csasznik-yoed-halberstam-niv-levin`.
 - **REQ-003**: Create JSP source file `src/main/webapp/index.jsp` as the primary application page and final-submission JSP artifact.
 - **REQ-004**: The JSP page must contain exactly one primary text input with `id="nameInput"` and `name="nameInput"`.
 - **REQ-005**: The JSP page must contain at least one clickable link with `id="aboutLink"` and visible text `About this app`.
 - **REQ-006**: The JSP page must contain at least one button with `id="submitButton"` and visible text `Submit`.
 - **REQ-007**: The JSP page must render a deterministic heading with `id="pageTitle"` and visible text `MeTA`.
 - **REQ-008**: The JSP page must implement deterministic visible behavior for five future Playwright validations: heading loads, link reveals an about section, text input accepts a value, submit with a non-empty value shows a success result, and submit with an empty value shows a validation message.
-- **REQ-009**: The generated WAR file must be `target/MeTA.war`.
-- **REQ-010**: The intended local Tomcat URL after Plan 04 deployment must be `http://localhost:8080/MeTA/`.
+- **REQ-009**: The generated WAR file must be `target/yonatan-csasznik-yoed-halberstam-niv-levin.war`.
+- **REQ-010**: The intended local Tomcat URL after Plan 04 deployment must be `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`.
 - **REQ-011**: The JSP must require no backend database, no external SaaS call, no Java servlet class, and no runtime secrets.
 - **REQ-012**: The JSP must be simple enough to defend live and modify quickly during the 15-20 minute project defense.
 - **CON-001**: Read `contribution.md` from the repository root before implementation and stop if any task conflicts with it.
@@ -70,7 +70,7 @@ This plan creates the required MTA DevOps final-project JSP application as a Mav
 | TASK-006 | Create `pom.xml` at the repository root if it does not exist. If it already exists, update it in place without deleting unrelated project configuration. | ✅ | 2026-06-10 |
 | TASK-007 | In `pom.xml`, set `<modelVersion>4.0.0</modelVersion>`, `<groupId>mta.devops</groupId>`, `<artifactId>meta</artifactId>`, `<version>1.0.0</version>`, `<packaging>war</packaging>`, and `<name>MTA DevOps Final Project JSP App</name>`. | ✅ | 2026-06-10 |
 | TASK-008 | In `pom.xml`, set project properties `<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>` and `<maven.compiler.release>17</maven.compiler.release>` for compatibility with the Plan 02 Tomcat image `tomcat:8.5.100-jdk17-temurin`. | ✅ | 2026-06-10 |
-| TASK-009 | In `pom.xml`, configure `<build><finalName>MeTA</finalName></build>` so `mvn clean package` creates `target/MeTA.war`. | ✅ | 2026-06-10 |
+| TASK-009 | In `pom.xml`, configure `<build><finalName>yonatan-csasznik-yoed-halberstam-niv-levin</finalName></build>` so `mvn clean package` creates `target/yonatan-csasznik-yoed-halberstam-niv-levin.war`. | ✅ | 2026-06-10 |
 | TASK-010 | In `pom.xml`, configure `maven-war-plugin` version `3.4.0` with `<failOnMissingWebXml>false</failOnMissingWebXml>` so the project does not require `src/main/webapp/WEB-INF/web.xml`. | ✅ | 2026-06-10 |
 
 ### Implementation Phase 3
@@ -97,11 +97,11 @@ This plan creates the required MTA DevOps final-project JSP application as a Mav
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
 | TASK-021 | Run `mvn clean package` from the repository root and confirm it exits with status `0`. | ✅ | 2026-06-10 |
-| TASK-022 | Run `test -f target/MeTA.war` from the repository root and confirm it exits with status `0`. | ✅ | 2026-06-10 |
-| TASK-023 | Run `jar tf target/MeTA.war` and confirm the output contains `index.jsp` and does not require `WEB-INF/web.xml`. | ✅ | 2026-06-10 |
+| TASK-022 | Run `test -f target/yonatan-csasznik-yoed-halberstam-niv-levin.war` from the repository root and confirm it exits with status `0`. | ✅ | 2026-06-10 |
+| TASK-023 | Run `jar tf target/yonatan-csasznik-yoed-halberstam-niv-levin.war` and confirm the output contains `index.jsp` and does not require `WEB-INF/web.xml`. | ✅ | 2026-06-10 |
 | TASK-024 | Run `rtk grep -n "pageTitle|aboutLink|nameInput|submitButton|resultMessage|validationMessage" src/main/webapp/index.jsp` and confirm every required stable selector appears in the JSP source. | ✅ | 2026-06-10 |
 | TASK-025 | Create `docs/changelog/03-jsp-maven-war-app.changelog.md` after implementation and validation are complete. | ✅ | 2026-06-10 |
-| TASK-026 | In `docs/changelog/03-jsp-maven-war-app.changelog.md`, document files changed, Maven and Java versions observed, the command `mvn clean package`, the generated WAR path `target/MeTA.war`, the intended Plan 04 URL `http://localhost:8080/MeTA/`, and the `MeTA` context-path override in `rules/compliance.md`. | ✅ | 2026-06-10 |
+| TASK-026 | In `docs/changelog/03-jsp-maven-war-app.changelog.md`, document files changed, Maven and Java versions observed, the command `mvn clean package`, the generated WAR path `target/yonatan-csasznik-yoed-halberstam-niv-levin.war`, the intended Plan 04 URL `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`, and the `MeTA` context-path override in `rules/compliance.md`. | ✅ | 2026-06-10 |
 | TASK-027 | Run `git diff -- pom.xml src/main/webapp/index.jsp README.md contribution.md docs/plans/03-jsp-maven-war-app.md docs/plans/04-tomcat-container-deployment.md docs/plans/05-jenkins-container-ci-cd.md docs/plans/09-monitoring-and-jenkins-schedule.md docs/plans/10-public-vm-bonus.md docs/changelog/03-jsp-maven-war-app.changelog.md` and verify no secrets, no generated `target/` files, and no unrelated changes are present. | ✅ | 2026-06-10 |
 | TASK-028 | Run `git status --short --branch` and confirm only intentional Plan 03 files are modified or untracked. | ✅ | 2026-06-10 |
 
@@ -112,7 +112,7 @@ This plan creates the required MTA DevOps final-project JSP application as a Mav
 - **ALT-003**: Use Gradle instead of Maven. Rejected because the requested plan is explicitly a Maven WAR app and Maven `3.9.15` is installed locally.
 - **ALT-004**: Add `WEB-INF/web.xml` by default. Rejected because `maven-war-plugin` can build a WAR without `web.xml`, and an unnecessary descriptor increases maintenance surface.
 - **ALT-005**: Use client-side JavaScript for form behavior. Rejected because server-rendered JSP form handling gives clearer proof that Tomcat is executing the JSP.
-- **ALT-006**: Name the WAR with an unresolved group-name placeholder. Rejected because the plan must be machine-executable with no unresolved placeholders; `meta` is the deterministic initial context name until a fuller group-member name list is provided.
+- **ALT-006**: Name the WAR with an unresolved group-name placeholder. Rejected because the plan must be machine-executable with no unresolved placeholders; the final context name is the explicit group-member slug.
 
 ## 4. Dependencies
 
@@ -120,36 +120,36 @@ This plan creates the required MTA DevOps final-project JSP application as a Mav
 - **DEP-002**: Local Java must be available for Maven; current observed version before this plan rewrite was `Java 21.0.9`.
 - **DEP-003**: Maven must be able to resolve `org.apache.maven.plugins:maven-war-plugin:3.4.0` from the local cache or Maven Central when `mvn clean package` runs.
 - **DEP-004**: Plan 02 Docker Compose foundation must remain the deployment target for later Tomcat validation, specifically service `tomcat` and volume `tomcat_webapps`.
-- **DEP-005**: Plan 04 must copy or mount `target/MeTA.war` into Tomcat `webapps` and verify `http://localhost:8080/MeTA/`.
+- **DEP-005**: Plan 04 must copy or mount `target/yonatan-csasznik-yoed-halberstam-niv-levin.war` into Tomcat `webapps` and verify `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`.
 
 ## 5. Files
 
 - **FILE-001**: `pom.xml` will define the Maven WAR project, Maven coordinates, Java compatibility, WAR plugin configuration, and final WAR name.
 - **FILE-002**: `src/main/webapp/index.jsp` will contain the complete JSP UI and server-side form behavior.
 - **FILE-003**: `docs/changelog/03-jsp-maven-war-app.changelog.md` will record implementation summary, current-machine tool versions, validation commands, and WAR output evidence after execution.
-- **FILE-004**: `rules/compliance.md` defines the accepted `meta` context-path override and remains the project compliance source.
-- **FILE-005**: `README.md` will document `http://localhost:8080/MeTA/` as the local Tomcat application URL.
-- **FILE-006**: `docs/plans/04-tomcat-container-deployment.md`, `docs/plans/05-jenkins-container-ci-cd.md`, `docs/plans/09-monitoring-and-jenkins-schedule.md`, and `docs/plans/10-public-vm-bonus.md` will use `/MeTA/` for downstream deployment, CI, monitoring, and public VM references.
+- **FILE-004**: `rules/compliance.md` defines the group-member context path and remains the project compliance source.
+- **FILE-005**: `README.md` will document `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` as the local Tomcat application URL.
+- **FILE-006**: `docs/plans/04-tomcat-container-deployment.md`, `docs/plans/05-jenkins-container-ci-cd.md`, `docs/plans/09-monitoring-and-jenkins-schedule.md`, and `docs/plans/10-public-vm-bonus.md` will use `/yonatan-csasznik-yoed-halberstam-niv-levin/` for downstream deployment, CI, monitoring, and public VM references.
 - **FILE-007**: `.gitignore` will be read to confirm `target/` and `*.war` remain ignored; it will be modified only if generated Maven output is not ignored.
 - **FILE-008**: `src/main/webapp/WEB-INF/web.xml` will not be created unless Maven validation proves the WAR cannot build without it.
 
 ## 6. Testing
 
 - **TEST-001**: `mvn clean package` must exit with status `0`.
-- **TEST-002**: `test -f target/MeTA.war` must exit with status `0`.
-- **TEST-003**: `jar tf target/MeTA.war` must list `index.jsp`.
+- **TEST-002**: `test -f target/yonatan-csasznik-yoed-halberstam-niv-levin.war` must exit with status `0`.
+- **TEST-003**: `jar tf target/yonatan-csasznik-yoed-halberstam-niv-levin.war` must list `index.jsp`.
 - **TEST-004**: `rtk grep -n "pageTitle|aboutLink|nameInput|submitButton|resultMessage|validationMessage" src/main/webapp/index.jsp` must show all six stable selectors.
 - **TEST-005**: `git diff -- pom.xml src/main/webapp/index.jsp README.md contribution.md docs/plans/03-jsp-maven-war-app.md docs/plans/04-tomcat-container-deployment.md docs/plans/05-jenkins-container-ci-cd.md docs/plans/09-monitoring-and-jenkins-schedule.md docs/plans/10-public-vm-bonus.md docs/changelog/03-jsp-maven-war-app.changelog.md` must contain only intentional Plan 03 source and documentation changes.
 - **TEST-006**: `git status --short --branch` must show no generated `target/` files or `*.war` files.
 
 ## 7. Risks & Assumptions
 
-- **RISK-001**: `meta` may not satisfy the assignment wording that the Tomcat context should include group member names; update `pom.xml` final name, README references, Plan 04 deployment path, and later evidence paths before final capture if the lecturer requires names in the URL.
+- **RISK-001**: The former short context-name compliance risk is resolved by using group-member names in the WAR and Tomcat context path.
 - **RISK-002**: `mvn clean package` may need network access if `maven-war-plugin:3.4.0` is not already cached locally.
 - **RISK-003**: JSP scriptlets are acceptable for this small coursework app but should not become a pattern for larger production applications.
-- **RISK-004**: This plan does not prove Tomcat deployment; Plan 04 must deploy the WAR and capture the `localhost:8080/MeTA/` evidence.
+- **RISK-004**: This plan does not prove Tomcat deployment; Plan 04 must deploy the WAR and capture the `localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` evidence.
 - **RISK-005**: The project compliance rules intentionally use Playwright instead of Selenium IDE; this plan creates selectors for Playwright but does not eliminate the assignment override risk documented in `rules/compliance.md`.
-- **ASSUMPTION-001**: The requested Maven coordinate is interpreted as `mta.devops:meta:1.0.0`, so the initial WAR/context name is `meta`.
+- **ASSUMPTION-001**: The Maven coordinate remains `mta.devops:meta:1.0.0`; Maven `finalName` controls the WAR and Tomcat context name separately.
 - **ASSUMPTION-002**: The app should remain dependency-light and not use databases, sessions, authentication, external APIs, or frontend package managers.
 - **ASSUMPTION-003**: Plan 06 will implement the five functional validations using the stable element IDs defined in this plan.
 

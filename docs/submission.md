@@ -7,7 +7,7 @@ This file maps the assignment requirements from `docs/final-project.txt` to the 
 - Recipient: `mosh.mta2@gmail.com`
 - Subject: `Final Exercise from: <yournames>`
 - Deadline from assignment: `2026-06-15` at midnight
-- Base local app URL for evidence: `http://localhost:8080/MeTA/`
+- Base local app URL for evidence: `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`
 - Jenkins URL for local evidence: `http://localhost:8081/`
 - Public GitHub repository: `https://github.com/y0ncha/meta-final-project`
 
@@ -43,7 +43,7 @@ These questions were sent to clarify assignment interpretation before final evid
    - Jenkins scheduled monitoring build after `meta-monitoring` points at the public GitHub repo.
 2. Capture manual screenshots where browser chrome or third-party UI must be visible:
    - GitHub repository page showing the JSP/app.
-   - Tomcat app with `http://localhost:8080/MeTA/` visible in the address bar.
+   - Tomcat app with `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` visible in the address bar.
    - Monitor tool showing the monitored target and a passed/up state.
    - Gatling terminal/CMD summaries for max-limit, load, and stress.
 3. Export each Gatling `index.html` report to PDF:
@@ -65,7 +65,7 @@ These are the required services, features, and pipeline capabilities that must w
 |---|---|---|---|
 | JSP web application | A simple JSP application with at least one link, one button, and one text input. | Source file, GitHub screenshot, Tomcat screenshot, Playwright validations. | Ready |
 | Git/GitHub source control | Application and automation code are stored in Git and the public GitHub repository. | Public repository link and GitHub screenshot showing the JSP/app. | Needs final public accessibility check and screenshot |
-| Tomcat production deployment | Jenkins deploys the WAR into the Tomcat container and the app is reachable at `http://localhost:8080/MeTA/`. | Jenkins build log, `./scripts/deploy-war` output, Tomcat screenshot with address bar visible. | Partial; final address-bar screenshot still needed |
+| Tomcat production deployment | Jenkins deploys the WAR into the Tomcat container and the app is reachable at `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`. | Jenkins build log, `./scripts/deploy-war` output, Tomcat screenshot with address bar visible. | Partial; final address-bar screenshot still needed |
 | Jenkins CI/CD pipeline | Jenkins builds, deploys, verifies, and triggers the required automation flows from source control. | `meta-container-ci-cd` SCM/manual build log, Jenkins job configuration, archived/published reports. | Partial; needs final SCM-backed evidence after all stages exist |
 | Monitoring | A separate Jenkins Freestyle job checks the application every 5 minutes and official monitor evidence shows the target is up. | Monitor passed screenshot plus `meta-monitoring` scheduled build log. | Missing official monitor screenshot and final scheduled Jenkins evidence |
 | Browser functional automation | Browser automation validates 5 application behaviors and is triggerable from Jenkins. | Playwright test file, passed run log/report, screenshots, validation explanation. | Ready with Playwright override risk |
@@ -83,13 +83,13 @@ These are the 12 items that `docs/final-project.txt` says to send by email.
 |---|---|---|---|---|
 | a | The JSP file used | `src/main/webapp/index.jsp` | `src/main/webapp/index.jsp` | Ready |
 | b | Screenshot of GitHub with the application/JSP in it | Manual screenshot of GitHub showing the repo and JSP/app file | Public repo URL is documented as `https://github.com/y0ncha/meta-final-project`; screenshot still must be captured | Missing screenshot |
-| c | Screenshot of the app in Tomcat with `localhost:8080/...` visible | Manual browser screenshot with address bar visible at `http://localhost:8080/MeTA/` | `output/screenshots/04-tomcat-meta-local.png` is supplemental only because it does not show browser chrome | Needs final screenshot |
+| c | Screenshot of the app in Tomcat with `localhost:8080/...` visible | Manual browser screenshot with address bar visible at `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` | `output/screenshots/tomcat-meta-local.png` is supplemental only because it does not show browser chrome | Needs final screenshot |
 | d | Link to public GitHub repo | `https://github.com/y0ncha/meta-final-project` | Git remote is expected to be that repository | Needs final accessibility check |
 | e | Monitor tool name, monitored target, and passed monitor screenshot | UptimeRobot or approved monitor name, target URL, interval, and passed/up screenshot | Jenkins Freestyle job `meta-monitoring` runs `./scripts/run-monitoring-check` on schedule `H/5 * * * *`; official monitor screenshot is not present | Missing |
 | f | Selenium IDE file `.side` | Playwright substitute: `tests/playwright/meta-functional.spec.js` | Playwright override documented in `rules/compliance.md` and `docs/playwright.md` | Ready with override risk |
-| g | Selenium/automation passed-run screenshot plus validation explanation | Playwright test file, run log, screenshots, report, and written validation explanation | `output/playwright/06-playwright-run.log`, `output/playwright/junit.xml`, `output/playwright/playwright-report/index.html`, `output/playwright/screenshots/06-valid-submit.png`, `output/playwright/screenshots/06-empty-submit.png`, `docs/playwright.md` | Ready |
+| g | Selenium/automation passed-run screenshot plus validation explanation | Playwright test file, run log, screenshots, report, and written validation explanation | `output/playwright/playwright-run.log`, `output/playwright/junit.xml`, `output/playwright/playwright-report/index.html`, `output/playwright/screenshots/valid-submit.png`, `output/playwright/screenshots/empty-submit.png`, `docs/playwright.md` | Ready |
 | h | Written HAR scenario | Scenario text in email or attached document | `docs/har-scenario.md` | Ready |
-| i | HAR file | `output/har/meta-functional-flow.har` | `output/har/meta-functional-flow.har` and `output/har/07-har-capture.log` | Ready |
+| i | HAR file | `output/har/meta-functional-flow.har` | `output/har/meta-functional-flow.har` and `output/har/har-capture.log` | Ready |
 | j | Written max-limit result and explanation | Max-limit number, how it was found, and why it is the limit | `docs/gatling.md`, `output/gatling/max-limit/max-limit-run.log`, `output/gatling/max-limit/index.html` | Partial; current evidence supports a tested lower bound, not a true maximum |
 | k | Three screenshots of Gatling CMD summaries: max limit, load, stress | Terminal/CMD screenshots for all three Gatling runs | `output/gatling/screenshots/max-limit-terminal.png`, `output/gatling/screenshots/load-5m-terminal.png`, and `output/gatling/screenshots/stress-5m-terminal.png` are intentionally not captured yet | Deferred; must capture before final email |
 | l | Three Gatling result PDFs with graph explanations | Max-limit, load, and stress PDF reports plus written graph explanations | `output/gatling/max-limit/max-limit-report.pdf`, `output/gatling/load-5m/load-5m-report.pdf`, `output/gatling/stress-5m/stress-5m-report.pdf`, `docs/gatling.md` | Ready |
@@ -103,13 +103,13 @@ Attach these when present and freshly validated:
 - `docs/playwright.md`
 - `docs/har-scenario.md`
 - `output/har/meta-functional-flow.har`
-- `output/playwright/06-playwright-run.log`
+- `output/playwright/playwright-run.log`
 - `output/playwright/junit.xml`
 - `output/playwright/playwright-report/index.html`
-- `output/playwright/screenshots/06-valid-submit.png`
-- `output/playwright/screenshots/06-empty-submit.png`
+- `output/playwright/screenshots/valid-submit.png`
+- `output/playwright/screenshots/empty-submit.png`
 - Final GitHub screenshot showing the JSP/app.
-- Final Tomcat screenshot with `http://localhost:8080/MeTA/` visible.
+- Final Tomcat screenshot with `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` visible.
 - Final monitor passed screenshot.
 - Final Gatling max-limit terminal screenshot.
 - Final Gatling load-test terminal screenshot.
@@ -127,10 +127,10 @@ The public-IP bonus is separate from the base local submission package. Do not r
 
 The primary free path is home router port-forwarding:
 
-- Local Tomcat remains `http://localhost:8080/MeTA/`.
+- Local Tomcat remains `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`.
 - Router forwards public `tcp/8080` to the laptop `tcp/8080`.
 - Jenkins remains local/private at `http://localhost:8081/`.
-- UptimeRobot, Playwright, and Gatling target `http://<PUBLIC_IP>:8080/MeTA/`.
+- UptimeRobot, Playwright, and Gatling target `http://<PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`.
 
 Use a public VM only as fallback if home public IP exposure is blocked by CGNAT, router restrictions, ISP restrictions, or unstable laptop availability.
 
@@ -138,13 +138,13 @@ Bonus evidence is claimable only when all public-target rows below are real and 
 
 | Bonus item | Public target | Required evidence | Status |
 |---|---|---|---|
-| Public Tomcat URL | `http://<PUBLIC_IP>:8080/MeTA/` | Browser screenshot from outside the hosting network with address bar visible. | Pending public IP and port-forward or VM validation |
-| Availability monitor | `http://<PUBLIC_IP>:8080/MeTA/` | UptimeRobot or approved monitor screenshot showing up/pass state and public URL. | Pending public monitor evidence |
-| Jenkins monitoring | `APP_BASE_URL=http://<PUBLIC_IP>:8080/MeTA/` | `meta-monitoring` build log and archived `output/monitoring/latest-check.txt`. | Pending public-target Jenkins evidence |
-| Browser automation | `APP_BASE_URL=http://<PUBLIC_IP>:8080/MeTA/` | Playwright passed-run log/report/screenshots from the public target. | Pending public-target Playwright evidence |
-| Gatling max-limit | `APP_BASE_URL=http://<PUBLIC_IP>:8080/MeTA/` | Max-limit log, HTML report, PDF, and terminal or Jenkins-console screenshot. | Pending user-run public evidence |
-| Gatling load 5m | `APP_BASE_URL=http://<PUBLIC_IP>:8080/MeTA/` | Load-test log, HTML report, PDF, and terminal or Jenkins-console screenshot. | Pending user-run public evidence |
-| Gatling stress 5m | `APP_BASE_URL=http://<PUBLIC_IP>:8080/MeTA/` | Stress-test log, HTML report, PDF, and terminal or Jenkins-console screenshot. | Pending user-run public evidence |
+| Public Tomcat URL | `http://<PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` | Browser screenshot from outside the hosting network with address bar visible. | Pending public IP and port-forward or VM validation |
+| Availability monitor | `http://<PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` | UptimeRobot or approved monitor screenshot showing up/pass state and public URL. | Pending public monitor evidence |
+| Jenkins monitoring | `APP_BASE_URL=http://<PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` | `meta-monitoring` build log and archived `output/monitoring/latest-check.txt`. | Pending public-target Jenkins evidence |
+| Browser automation | `APP_BASE_URL=http://<PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` | Playwright passed-run log/report/screenshots from the public target. | Pending public-target Playwright evidence |
+| Gatling max-limit | `APP_BASE_URL=http://<PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` | Max-limit log, HTML report, PDF, and terminal or Jenkins-console screenshot. | Pending user-run public evidence |
+| Gatling load 5m | `APP_BASE_URL=http://<PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` | Load-test log, HTML report, PDF, and terminal or Jenkins-console screenshot. | Pending user-run public evidence |
+| Gatling stress 5m | `APP_BASE_URL=http://<PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` | Stress-test log, HTML report, PDF, and terminal or Jenkins-console screenshot. | Pending user-run public evidence |
 
 Track the selected path, public URL, firewall or router decisions, and public evidence paths in Plan 10 (`docs/plans/10-public-vm-bonus.md`) or in a future evidence note if the plan is executed.
 

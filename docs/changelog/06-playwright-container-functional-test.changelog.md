@@ -37,11 +37,11 @@ Plan 06 satisfies the browser automation deliverable from `final-project.pdf` us
 - `docker compose exec -T jenkins docker version`
 - `docker compose exec -T jenkins sh -lc 'command -v docker && command -v node || true && command -v npm || true && command -v chromium || true'`
 - `./scripts/deploy-war`
-- `curl -fsS http://localhost:8080/MeTA/ >/dev/null`
-- `docker compose exec -T jenkins curl -fsS http://tomcat:8080/MeTA/ >/dev/null`
+- `curl -fsS http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ >/dev/null`
+- `docker compose exec -T jenkins curl -fsS http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ >/dev/null`
 - `./scripts/run-playwright-container`
 - `docker compose exec -T jenkins sh -lc 'cd /workspace/final-project && ./scripts/run-playwright-container'`
-- `test -s output/playwright/06-playwright-run.log && test -s output/playwright/junit.xml && test -s output/playwright/playwright-report/index.html && test -s output/playwright/screenshots/06-valid-submit.png && test -s output/playwright/screenshots/06-empty-submit.png`
+- `test -s output/playwright/playwright-run.log && test -s output/playwright/junit.xml && test -s output/playwright/playwright-report/index.html && test -s output/playwright/screenshots/valid-submit.png && test -s output/playwright/screenshots/empty-submit.png`
 - `python3 .agents/skills/compliance-validator/scripts/validate_compliance.py --target . --rules rules/compliance.md`
 - `docker compose config`
 
@@ -50,11 +50,11 @@ Plan 06 satisfies the browser automation deliverable from `final-project.pdf` us
 - Local Playwright run passed: `1 passed`.
 - Jenkins-triggered official Playwright container run passed: `1 passed`.
 - Required ignored evidence files were generated:
-  - `output/playwright/06-playwright-run.log`
+  - `output/playwright/playwright-run.log`
   - `output/playwright/junit.xml`
   - `output/playwright/playwright-report/index.html`
-  - `output/playwright/screenshots/06-valid-submit.png`
-  - `output/playwright/screenshots/06-empty-submit.png`
+  - `output/playwright/screenshots/valid-submit.png`
+  - `output/playwright/screenshots/empty-submit.png`
 - Compliance validator result: `pass=70`, `warn=0`, `manual=9`, `fail=0`.
 - Manual compliance review confirmed the Docker socket mount is limited to Jenkins disposable test-container orchestration and no public-IP bonus evidence is claimed.
 
@@ -96,9 +96,17 @@ Plan 06 satisfies the browser automation deliverable from `final-project.pdf` us
 - Kept the native Playwright report archived at `output/playwright/playwright-report/index.html` because Jenkins HTML Publisher can render it as a blank page when JavaScript is blocked.
 - Added `tests/scripts/test-generate-playwright-jenkins-report.sh` to assert the generated report has short artifact references, no inline scripts, and a link back to the native HTML artifact.
 
+## 2026-06-11 Assert And Verify Follow-Up
+
+- Updated `tests/playwright/meta-functional.spec.js` to use `expect.soft(...)` for independent checks, matching Selenium IDE `verify` behavior: continue the run, record the failure, and fail the test at the end if any soft verification failed.
+- Kept hard `expect(...)` assertions for flow prerequisites and final outcomes: page load, required controls, text input value, valid submit result, and empty-submit validation feedback.
+- Changed link navigation to verify-style soft assertions and reloaded the app root before the form validation step so a link failure can be reported without blocking later input and submit evidence.
+- Updated `docs/playwright.md` to explain why each validation uses hard assert or soft verify semantics.
+- Updated `docs/plans/06-playwright-container-functional-test.md` so the completed plan reflects the current assert/verify strategy.
+
 ## Remaining Risks And Follow-Up
 
 - `final-project.pdf` names Selenium IDE `.side`; Playwright remains an explicit accepted override and should be explained during defense if asked.
-- Browser screenshots under `output/playwright/` do not replace the final submission screenshot that must show `http://localhost:8080/MeTA/` in the browser address bar.
+- Browser screenshots under `output/playwright/` do not replace the final submission screenshot that must show `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` in the browser address bar.
 - Plans 07 through 11 remain required for HAR, Gatling, monitoring, and final submission packaging.
 - Jenkins now has broad Docker host control through `/var/run/docker.sock`; this is an accepted coursework simplicity tradeoff, not a production recommendation.

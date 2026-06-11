@@ -462,13 +462,13 @@ cat > "$REPORT_FILE" <<EOF
           <tbody>
 EOF
 
-build_war_status=$(artifact_status "target/MeTA.war")
+build_war_status=$(artifact_status "target/yonatan-csasznik-yoed-halberstam-niv-levin.war")
 playwright_status=$(bundle_status "required" \
-  "output/playwright/06-playwright-run.log" \
+  "output/playwright/playwright-run.log" \
   "output/playwright/junit.xml" \
   "output/playwright/jenkins-report/index.html" \
-  "output/playwright/screenshots/06-valid-submit.png" \
-  "output/playwright/screenshots/06-empty-submit.png")
+  "output/playwright/screenshots/valid-submit.png" \
+  "output/playwright/screenshots/empty-submit.png")
 gatling_max_status=$(bundle_status "opt-in" \
   "output/gatling/max-limit/max-limit-run.log" \
   "output/gatling/max-limit/index.html" \
@@ -483,9 +483,9 @@ gatling_stress_status=$(bundle_status "required" \
   "output/gatling/stress-5m/stress-5m-report.pdf")
 
 write_stage_row "Pre Actions" "Jenkins console log" "Console log" "Checks out the configured GitHub branch, records the commit, cleans old evidence, and checks Docker access."
-write_stage_row "Build WAR" "Archived target/MeTA.war" "$build_war_status" "Builds the Maven WAR for Tomcat deployment."
-write_stage_row "Deploy Tomcat" "Jenkins console log" "Console log" "Deploys MeTA.war into the Tomcat webapps volume."
-write_stage_row "Verify Tomcat" "Jenkins console log" "Console log" "Checks http://tomcat:8080/MeTA/ after deployment from the Docker network."
+write_stage_row "Build WAR" "Archived target/yonatan-csasznik-yoed-halberstam-niv-levin.war" "$build_war_status" "Builds the Maven WAR for Tomcat deployment."
+write_stage_row "Deploy Tomcat" "Jenkins console log" "Console log" "Deploys yonatan-csasznik-yoed-halberstam-niv-levin.war into the Tomcat webapps volume."
+write_stage_row "Verify Tomcat" "Jenkins console log" "Console log" "Checks http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ after deployment from the Docker network."
 write_stage_row "Playwright Functional Test" "HTML, JUnit XML, screenshots, log" "$playwright_status" "Validates the Playwright container workspace, commit identity, and Tomcat reachability before running the test."
 write_stage_row "Gatling Max Limit" "HTML, PDF, raw report, log" "$gatling_max_status" "Validates the Gatling container workspace before execution. Requires RUN_GATLING_MAX_LIMIT=true."
 write_stage_row "Gatling Load Test" "HTML, PDF, raw report, log" "$gatling_load_status" "Validates the Gatling container workspace before running the required five-minute load test."
@@ -504,13 +504,13 @@ cat >> "$REPORT_FILE" <<EOF
           <tbody>
 EOF
 
-write_single_ref_row "Build" "WAR package" "target/MeTA.war" "WAR"
-write_single_ref_row "Playwright" "Run log" "output/playwright/06-playwright-run.log" "Log"
+write_single_ref_row "Build" "WAR package" "target/yonatan-csasznik-yoed-halberstam-niv-levin.war" "WAR"
+write_single_ref_row "Playwright" "Run log" "output/playwright/playwright-run.log" "Log"
 write_single_ref_row "Playwright" "JUnit results" "output/playwright/junit.xml" "JUnit"
 write_single_ref_row "Playwright" "Jenkins-safe HTML report" "output/playwright/jenkins-report/index.html" "HTML"
 write_single_ref_row "Playwright" "Native HTML artifact" "output/playwright/playwright-report/index.html" "Native"
-write_single_ref_row "Playwright" "Valid-submit screenshot" "output/playwright/screenshots/06-valid-submit.png" "Screenshot"
-write_single_ref_row "Playwright" "Empty-submit screenshot" "output/playwright/screenshots/06-empty-submit.png" "Screenshot"
+write_single_ref_row "Playwright" "Valid-submit screenshot" "output/playwright/screenshots/valid-submit.png" "Screenshot"
+write_single_ref_row "Playwright" "Empty-submit screenshot" "output/playwright/screenshots/empty-submit.png" "Screenshot"
 write_bundle_row "Gatling" "Max-limit evidence" "opt-in" "Requires RUN_GATLING_MAX_LIMIT=true." "output/gatling/max-limit/max-limit-run.log" "output/gatling/max-limit/index.html" "output/gatling/max-limit/max-limit-report.pdf"
 write_bundle_row "Gatling" "Load test evidence" "required" "" "output/gatling/load-5m/load-5m-run.log" "output/gatling/load-5m/index.html" "output/gatling/load-5m/load-5m-report.pdf"
 write_bundle_row "Gatling" "Stress test evidence" "required" "" "output/gatling/stress-5m/stress-5m-run.log" "output/gatling/stress-5m/index.html" "output/gatling/stress-5m/stress-5m-report.pdf"

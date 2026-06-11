@@ -30,7 +30,7 @@ Follow-up update on 2026-06-11: the consolidated Pipeline HTML report now writes
 ## 1. Requirements & Constraints
 
 - **REQ-001**: Run Gatling through Docker only; do not require host `gatling`, host Scala, host sbt, or host Java for Gatling execution.
-- **REQ-002**: Keep the target application URL configurable with `APP_BASE_URL`; default Gatling container execution to `http://tomcat:8080/MeTA/` on Docker network `meta`.
+- **REQ-002**: Keep the target application URL configurable with `APP_BASE_URL`; default Gatling container execution to `http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` on Docker network `meta`.
 - **REQ-003**: Use Docker image `denvazh/gatling:3.2.1` by default through environment variable `GATLING_IMAGE="${GATLING_IMAGE:-denvazh/gatling:3.2.1}"`, because Docker Hub does not provide public image `gatlingcorp/gatling:3.15.0`.
 - **REQ-003A**: Use Docker platform `linux/amd64` by default through environment variable `GATLING_PLATFORM="${GATLING_PLATFORM:-linux/amd64}"`, because `denvazh/gatling:3.2.1` is an amd64 image and the current Mac Docker host is arm64.
 - **REQ-004**: Run Gatling containers on Docker network `meta` through direct local `docker run` or Jenkins Docker Pipeline.
@@ -39,7 +39,7 @@ Follow-up update on 2026-06-11: the consolidated Pipeline HTML report now writes
 - **REQ-007**: Add wrapper script `scripts/run-gatling-load-5m` for the 5-minute load test and stable output directory `output/gatling/load-5m/`.
 - **REQ-008**: Add wrapper script `scripts/run-gatling-stress-5m` for the 5-minute stress test and stable output directory `output/gatling/stress-5m/`.
 - **REQ-009**: Create Gatling simulation source file `src/gatling/user-files/simulations/MetaSimulation.scala`.
-- **REQ-010**: `MetaSimulation.scala` must execute an HTTP scenario against `/MeTA/`, request the app root, submit form data equivalent to `nameInput=Yonatan`, and validate successful HTTP responses.
+- **REQ-010**: `MetaSimulation.scala` must execute an HTTP scenario against `/yonatan-csasznik-yoed-halberstam-niv-levin/`, request the app root, submit form data equivalent to `nameInput=Yonatan`, and validate successful HTTP responses.
 - **REQ-011**: `MetaSimulation.scala` must select injection profiles from environment variable `GATLING_RUN_TYPE` with exact accepted values `max-limit`, `load-5m`, and `stress-5m`.
 - **REQ-012**: The 5-minute load profile must run for exactly `300` seconds.
 - **REQ-013**: The 5-minute stress profile must run for exactly `300` seconds.
@@ -68,7 +68,7 @@ Follow-up update on 2026-06-11: the consolidated Pipeline HTML report now writes
 - **CON-001**: Read and obey `contribution.md` and `rules/compliance.md` before implementation; stop if any implementation step conflicts with the compliance rules.
 - **CON-002**: Keep this work on branch `feature/08-gatling-container-tests` unless the user explicitly requests another branch.
 - **CON-003**: Do not use host Tomcat, host Jenkins, `/usr/local/tomcat8`, `/Users/yonatan/.jenkins`, or any host Gatling installation.
-- **CON-004**: Do not change Maven coordinate `mta.devops:meta:1.0.0`, Maven final name `MeTA`, Tomcat context path `/MeTA/`, Jenkins port `8081`, or Tomcat port `8080`.
+- **CON-004**: Do not change Maven coordinate `mta.devops:meta:1.0.0`, Maven final name `yonatan-csasznik-yoed-halberstam-niv-levin`, Tomcat context path `/yonatan-csasznik-yoed-halberstam-niv-levin/`, Jenkins port `8081`, or Tomcat port `8080`.
 - **CON-005**: Do not add Gatling, Playwright, or HAR runner services in `docker-compose.yml`; scripts and Jenkins Docker Pipeline must start disposable validation containers directly.
 - **CON-006**: Do not install, upgrade, reinstall, or replace host tools while executing this plan.
 - **GUD-001**: Prefer source-controlled scripts in `scripts/` over Jenkins UI-only shell commands so the defense workflow is repeatable.
@@ -249,11 +249,11 @@ Follow-up update on 2026-06-11: the consolidated Pipeline HTML report now writes
 - **DEP-002**: `contribution.md` defines branch, implementation-plan, validation, and changelog workflow.
 - **DEP-003**: Docker Engine must be running and able to start one-shot containers.
 - **DEP-004**: Docker network `meta` must exist through `docker-compose.yml`.
-- **DEP-005**: Docker Compose service `tomcat` must serve the deployed JSP app at internal URL `http://tomcat:8080/MeTA/`.
+- **DEP-005**: Docker Compose service `tomcat` must serve the deployed JSP app at internal URL `http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`.
 - **DEP-006**: Docker Compose service `jenkins` must mount `/var/run/docker.sock` so Jenkins can start disposable Gatling containers.
 - **DEP-007**: Docker image `denvazh/gatling:3.2.1` must be available locally or pullable from the configured Docker registry.
 - **DEP-008**: Docker image `mcr.microsoft.com/playwright:v1.60.0-noble` must be available locally or pullable for automated PDF export.
-- **DEP-009**: `scripts/deploy-war` must exist, remain executable, and deploy `target/MeTA.war` before Gatling runs.
+- **DEP-009**: `scripts/deploy-war` must exist, remain executable, and deploy `target/yonatan-csasznik-yoed-halberstam-niv-levin.war` before Gatling runs.
 - **DEP-010**: `Jenkinsfile` must remain the source-controlled Pipeline job script for `meta-container-ci-cd`.
 - **DEP-011**: Jenkins plugin `htmlpublisher` must remain installed in the custom Jenkins image so Gatling reports appear in build pages.
 - **DEP-012**: Generated evidence under `output/` must remain ignored by `.gitignore`.
@@ -292,7 +292,7 @@ Follow-up update on 2026-06-11: the consolidated Pipeline HTML report now writes
 - **TEST-003A**: `sh tests/scripts/test-generate-pipeline-report.sh` must pass and prove the generated report uses external CSS, current Jenkins artifact URLs, status badges, opt-in max-limit wording, and evidence-backed stage states for missing/present artifacts.
 - **TEST-004**: `docker compose config --quiet` must pass.
 - **TEST-004A**: `docker compose up -d tomcat jenkins` must start both services.
-- **TEST-005**: `./scripts/deploy-war` must pass and print `Deployed URL: http://localhost:8080/MeTA/`.
+- **TEST-005**: `./scripts/deploy-war` must pass and print `Deployed URL: http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`.
 - **TEST-006**: `./scripts/run-gatling-max-limit` must pass or fail only with a documented threshold failure; it must create `output/gatling/max-limit/max-limit-run.log`.
 - **TEST-007**: `./scripts/run-gatling-load-5m` must pass and create `output/gatling/load-5m/index.html`.
 - **TEST-008**: `./scripts/run-gatling-stress-5m` must pass and create `output/gatling/stress-5m/index.html`.
@@ -322,7 +322,7 @@ Follow-up update on 2026-06-11: the consolidated Pipeline HTML report now writes
 - **RISK-006**: Automated PDF export may fail if the Gatling HTML report depends on browser features blocked by local file URLs; document the blocker and use browser print as a fallback only after preserving the failed command evidence.
 - **RISK-007**: The assignment asks for CMD screenshots; Jenkins-console screenshots are acceptable only if they clearly show the run summary and command context. If there is any grading doubt, capture host terminal screenshots for all three runs.
 - **RISK-008**: Jenkins runner services depend on Docker socket access plus the existing Jenkins container volume mounts. This keeps browser/Gatling dependencies outside the Jenkins image, but it is not a production security pattern.
-- **ASSUMPTION-001**: The app remains deployed at context path `/MeTA/`.
+- **ASSUMPTION-001**: The app remains deployed at context path `/yonatan-csasznik-yoed-halberstam-niv-levin/`.
 - **ASSUMPTION-002**: Docker Compose network name remains `meta`.
 - **ASSUMPTION-003**: Jenkins job `meta-container-ci-cd` continues to use the repository `Jenkinsfile`.
 - **ASSUMPTION-004**: Generated evidence remains ignored under `output/` and is attached to the final submission package outside Git.

@@ -9,7 +9,7 @@ flowchart LR
   Dev["Developer"] -->|push code| GitHub["GitHub"]
   GitHub -->|SCM poll| CICD["Jenkins job: meta-container-ci-cd"]
   CICD -->|build WAR| Maven["Maven"]
-  Maven -->|MeTA.war| Tomcat["Tomcat (localhost:8080/MeTA/)"]
+  Maven -->|yonatan-csasznik-yoed-halberstam-niv-levin.war| Tomcat["Tomcat (localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/)"]
   CICD -->|deploy + verify| Tomcat
   CICD -->|run browser test| Playwright["Playwright container"]
   Playwright -->|test app| Tomcat
@@ -47,7 +47,7 @@ flowchart TD
 
 ## Runtime Notes
 
-- Tomcat serves the app at `http://localhost:8080/MeTA/`.
+- Tomcat serves the app at `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`.
 - Jenkins is available at `http://localhost:8081/`.
 - Jenkins uses Docker only to start disposable Playwright and Gatling test containers.
 - The scheduled monitoring job must not rebuild, redeploy, or run Playwright/Gatling.

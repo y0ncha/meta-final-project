@@ -24,16 +24,16 @@ This plan captures the optional public-IP bonus by exposing the MeTA Tomcat appl
 ## 1. Requirements & Constraints
 
 - **REQ-001**: Expose the application, not Jenkins, through a real public IP.
-- **REQ-002**: Use public application URL format `http://<PUBLIC_IP>:8080/MeTA/` unless a DNS name is explicitly configured.
+- **REQ-002**: Use public application URL format `http://<PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` unless a DNS name is explicitly configured.
 - **REQ-003**: Run UptimeRobot, Jenkins monitoring, Playwright, Gatling max-limit, Gatling 5-minute load, and Gatling 5-minute stress against the public application URL.
-- **REQ-004**: Keep local base evidence for `http://localhost:8080/MeTA/`; public bonus evidence does not replace the required local Tomcat screenshot.
+- **REQ-004**: Keep local base evidence for `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`; public bonus evidence does not replace the required local Tomcat screenshot.
 - **REQ-005**: Keep Jenkins private or access-restricted. Do not expose Jenkins `8081` to `0.0.0.0/0`.
 - **REQ-006**: Use Path A home port-forwarding as the primary free implementation path.
 - **REQ-007**: Use Path B public VM only if Path A is blocked or too unstable for evidence capture.
 - **REQ-008**: For Path A, keep Tomcat and Jenkins running on the project laptop through the existing Docker Compose stack.
 - **REQ-009**: For Path A, configure router port forwarding `public tcp/8080 -> laptop tcp/8080`.
-- **REQ-010**: For Path A, keep Jenkins at `http://localhost:8081/` and configure jobs to target `APP_BASE_URL=http://<HOME_PUBLIC_IP>:8080/MeTA/`.
-- **REQ-011**: For Path A, configure UptimeRobot URL `http://<HOME_PUBLIC_IP>:8080/MeTA/` with interval `5 minutes`.
+- **REQ-010**: For Path A, keep Jenkins at `http://localhost:8081/` and configure jobs to target `APP_BASE_URL=http://<HOME_PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`.
+- **REQ-011**: For Path A, configure UptimeRobot URL `http://<HOME_PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` with interval `5 minutes`.
 - **REQ-012**: For Path B, deploy the same Docker Compose stack on a Linux VM only after Path A fails validation.
 - **REQ-013**: For Path B, expose VM Tomcat on `tcp/8080` and restrict VM Jenkins `tcp/8081` to the operator IP or SSH tunnel.
 - **REQ-014**: Record the selected path, public IP, public URL, monitor target, Jenkins target configuration, and evidence status in `docs/public-app-bonus.md`.
@@ -89,10 +89,10 @@ This plan captures the optional public-IP bonus by exposing the MeTA Tomcat appl
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
 | TASK-011 | Start or confirm local Docker Compose services `tomcat` and `jenkins` with `docker compose up -d tomcat jenkins`. |  |  |
-| TASK-012 | Deploy the WAR locally with `./scripts/deploy-war` and confirm `http://localhost:8080/MeTA/` responds. |  |  |
+| TASK-012 | Deploy the WAR locally with `./scripts/deploy-war` and confirm `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` responds. |  |  |
 | TASK-013 | Configure router port-forward rule `external tcp/8080 -> laptop_lan_ip tcp/8080`. |  |  |
 | TASK-014 | Configure laptop firewall to allow inbound `tcp/8080` for the evidence window if the operating system blocks inbound traffic. |  |  |
-| TASK-015 | From a non-home network, verify `http://<HOME_PUBLIC_IP>:8080/MeTA/` loads in a browser. |  |  |
+| TASK-015 | From a non-home network, verify `http://<HOME_PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` loads in a browser. |  |  |
 | TASK-016 | Record the public URL, router rule, and verification result in `docs/public-app-bonus.md`. |  |  |
 
 ### Implementation Phase 4
@@ -104,11 +104,11 @@ This plan captures the optional public-IP bonus by exposing the MeTA Tomcat appl
 | TASK-017 | Execute this phase only if `selected_path=public-vm-fallback` in `docs/public-app-bonus.md`. |  |  |
 | TASK-018 | Provision one Linux VM using Ubuntu LTS or another Docker-supported Linux image. |  |  |
 | TASK-019 | Configure VM firewall rule `tcp/22` from the operator public IP only. |  |  |
-| TASK-020 | Configure VM firewall rule `tcp/8080` for public Tomcat access to `http://<VM_PUBLIC_IP>:8080/MeTA/`. |  |  |
+| TASK-020 | Configure VM firewall rule `tcp/8080` for public Tomcat access to `http://<VM_PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`. |  |  |
 | TASK-021 | Keep VM Jenkins `tcp/8081` closed, restricted to the operator public IP, or accessed through SSH tunnel `ssh -L 8081:localhost:8081 <vm-user>@<VM_PUBLIC_IP>`. |  |  |
 | TASK-022 | Install Docker Engine, Docker Compose plugin, Git, and curl on the VM. |  |  |
 | TASK-023 | Clone `https://github.com/y0ncha/meta-final-project.git`, checkout the selected branch or commit, run `docker compose up -d tomcat jenkins`, and run `./scripts/deploy-war`. |  |  |
-| TASK-024 | From outside the VM, verify `http://<VM_PUBLIC_IP>:8080/MeTA/` loads in a browser. |  |  |
+| TASK-024 | From outside the VM, verify `http://<VM_PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` loads in a browser. |  |  |
 | TASK-025 | Record VM provider, region, image, size, public IP, firewall rules, selected commit, and verification result in `docs/public-app-bonus.md`. |  |  |
 
 ### Implementation Phase 5
@@ -117,7 +117,7 @@ This plan captures the optional public-IP bonus by exposing the MeTA Tomcat appl
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-026 | Define canonical public target variable `PUBLIC_APP_BASE_URL=http://<PUBLIC_IP>:8080/MeTA/` in `docs/public-app-bonus.md`. |  |  |
+| TASK-026 | Define canonical public target variable `PUBLIC_APP_BASE_URL=http://<PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` in `docs/public-app-bonus.md`. |  |  |
 | TASK-027 | Configure UptimeRobot monitor with URL `PUBLIC_APP_BASE_URL`, interval `5 minutes`, and monitor type `HTTP(s)`. |  |  |
 | TASK-028 | Capture UptimeRobot passed/up screenshot showing monitor name, public target URL, and pass/up state. |  |  |
 | TASK-029 | Configure Jenkins Freestyle job `meta-monitoring` command `APP_BASE_URL=<PUBLIC_APP_BASE_URL> ./scripts/run-monitoring-check` and archive pattern `output/monitoring/**/*`. |  |  |
@@ -191,8 +191,8 @@ This plan captures the optional public-IP bonus by exposing the MeTA Tomcat appl
 - **TEST-001**: `rtk git status` must show branch `feature/10-public-vm-bonus`; Plan 10 changes must be scoped, and user-approved Plan 09 polling edits may remain present but untouched.
 - **TEST-002**: For Path A, external public IPv4 and router WAN IPv4 must match or ISP must confirm direct public IPv4 routing.
 - **TEST-003**: For Path A, router port-forward rule `public tcp/8080 -> laptop tcp/8080` must exist.
-- **TEST-004**: For Path A, `curl -fsS http://localhost:8080/MeTA/ >/dev/null` must pass on the laptop before public validation.
-- **TEST-005**: For Path A, `http://<HOME_PUBLIC_IP>:8080/MeTA/` must load from a non-home network.
+- **TEST-004**: For Path A, `curl -fsS http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ >/dev/null` must pass on the laptop before public validation.
+- **TEST-005**: For Path A, `http://<HOME_PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` must load from a non-home network.
 - **TEST-006**: For Path B, VM `docker --version` and `docker compose version` must print installed versions.
 - **TEST-007**: For Path B, VM `docker compose up -d tomcat jenkins` must start services `tomcat` and `jenkins`.
 - **TEST-008**: For Path B, VM `./scripts/deploy-war` must pass and the public app URL must load from outside the VM.
@@ -219,8 +219,8 @@ This plan captures the optional public-IP bonus by exposing the MeTA Tomcat appl
 - **RISK-007**: UptimeRobot may need several minutes to show a clean passed state after monitor creation.
 - **RISK-008**: Exposing Jenkins publicly creates avoidable security risk; keep Jenkins private, restricted, or tunneled.
 - **RISK-009**: The final submission deadline is 2026-06-15 at midnight, so public exposure troubleshooting time is limited.
-- **ASSUMPTION-001**: The app context path remains `/MeTA/`.
-- **ASSUMPTION-002**: Local Tomcat remains reachable at `http://localhost:8080/MeTA/`.
+- **ASSUMPTION-001**: The app context path remains `/yonatan-csasznik-yoed-halberstam-niv-levin/`.
+- **ASSUMPTION-002**: Local Tomcat remains reachable at `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`.
 - **ASSUMPTION-003**: Jenkins can run or trigger Playwright and Gatling with `APP_BASE_URL` set to the public application URL.
 - **ASSUMPTION-004**: UptimeRobot remains acceptable as the official availability monitor.
 - **ASSUMPTION-005**: The instructor accepts screenshots and Jenkins artifacts that clearly show the public target URL as public-IP bonus evidence.

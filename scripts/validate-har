@@ -25,6 +25,12 @@ if (!har || !har.log || !Array.isArray(har.log.entries)) {
 }
 
 const entries = har.log.entries;
+const formEncodedPosts = entries.filter((entry) => {
+  const method = entry && entry.request && entry.request.method;
+  const postData = entry && entry.request && entry.request.postData;
+  return method === 'POST' && postData && typeof postData.text === 'string';
+});
+
 const metaRequests = entries.filter((entry) => {
   const requestUrl = entry && entry.request && entry.request.url;
   if (typeof requestUrl !== 'string') {
@@ -32,14 +38,24 @@ const metaRequests = entries.filter((entry) => {
   }
 
   try {
-    return new URL(requestUrl).pathname.startsWith('/MeTA/');
+    return new URL(requestUrl).pathname.startsWith('/yonatan-csasznik-yoed-halberstam-niv-levin/');
   } catch (_) {
     return false;
   }
 });
 
 if (metaRequests.length === 0) {
-  fail('HAR file does not contain any request URL whose path starts with /MeTA/', 66);
+  fail('HAR file does not contain any request URL whose path starts with /yonatan-csasznik-yoed-halberstam-niv-levin/', 66);
+}
+
+const hasValidSubmitPost = formEncodedPosts.some((entry) => entry.request.postData.text.includes('nameInput=Yonatan'));
+if (!hasValidSubmitPost) {
+  fail('HAR file does not contain the valid submit POST with nameInput=Yonatan', 68);
+}
+
+const hasEmptySubmitPost = formEncodedPosts.some((entry) => entry.request.postData.text === 'nameInput=');
+if (!hasEmptySubmitPost) {
+  fail('HAR file does not contain the empty-submit POST with nameInput=', 69);
 }
 
 const hasContentEvidence = entries.some((entry) => {
@@ -55,4 +71,4 @@ if (!hasContentEvidence) {
   fail('HAR file does not contain response content evidence', 67);
 }
 
-console.log(`Validated HAR: ${harPath} entries=${entries.length} MeTARequests=${metaRequests.length}`);
+console.log(`Validated HAR: ${harPath} entries=${entries.length} groupContextRequests=${metaRequests.length}`);

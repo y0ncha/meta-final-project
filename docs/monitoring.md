@@ -8,7 +8,7 @@
 - Schedule: `H/5 * * * *`
 - Build step: Execute shell
 - Build command: `./scripts/run-monitoring-check`
-- Local target from Jenkins: `http://tomcat:8080/MeTA/`
+- Local target from Jenkins: `http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`
 - Evidence path: `output/monitoring/latest-check.txt`
 - Post-build action: Archive artifacts with pattern `output/monitoring/**/*`
 
@@ -32,7 +32,7 @@ On success it writes:
 
 ```text
 status=up
-target=http://tomcat:8080/MeTA/
+target=http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/
 checked_at=<UTC timestamp>
 job=meta-monitoring
 build=<build number>
@@ -49,7 +49,7 @@ Use UptimeRobot as the preferred official monitor evidence. SiteMonitorLite is a
 - 5-minute interval or equivalent configured cadence.
 - Passed or up status.
 
-For local-only evidence, the Jenkins Freestyle job checks `http://tomcat:8080/MeTA/` from inside the Docker network. For public-IP bonus evidence, the official monitor target must be the real public Tomcat URL and the bonus must not be claimed unless that public evidence exists.
+For local-only evidence, the Jenkins Freestyle job checks `http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` from inside the Docker network. For public-IP bonus evidence, the official monitor target must be the real public Tomcat URL and the bonus must not be claimed unless that public evidence exists.
 
 ## Defense Checklist
 

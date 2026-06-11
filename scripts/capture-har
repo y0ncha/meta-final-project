@@ -9,9 +9,9 @@ PROJECT_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
 cd "$PROJECT_ROOT"
 
 PLAYWRIGHT_IMAGE="${PLAYWRIGHT_IMAGE:-mcr.microsoft.com/playwright:v1.60.0-noble}"
-APP_BASE_URL="${APP_BASE_URL:-http://tomcat:8080/MeTA/}"
+APP_BASE_URL="${APP_BASE_URL:-http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/}"
 HAR_PATH="${HAR_PATH:-output/har/meta-functional-flow.har}"
-LOG_FILE="${LOG_FILE:-output/har/07-har-capture.log}"
+LOG_FILE="${LOG_FILE:-output/har/har-capture.log}"
 HAR_CONTAINER_NAME="${HAR_CONTAINER_NAME:-meta-har-${BUILD_NUMBER:-local}}"
 HAR_DOCKER_NETWORK="${HAR_DOCKER_NETWORK:-meta}"
 HAR_DOCKER_PIPELINE="${HAR_DOCKER_PIPELINE:-0}"

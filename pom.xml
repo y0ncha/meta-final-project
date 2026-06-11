@@ -17,7 +17,7 @@
   </properties>
 
   <build>
-    <finalName>MeTA</finalName>
+    <finalName>yonatan-csasznik-yoed-halberstam-niv-levin</finalName>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

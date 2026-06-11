@@ -134,7 +134,7 @@ This plan defines and records the completed implementation steps for Plan 02: cr
 - **RISK-003**: Jenkins first-run setup may require manual unlock/admin configuration after the container starts; this does not block Plan 02 reachability validation.
 - **RISK-004**: Mounting the repository into Jenkins gives the Jenkins container access to the working tree; do not place secrets in the repository.
 - **ASSUMPTION-001**: Plan 02 implements only the Docker Compose foundation and does not deploy a JSP WAR file.
-- **ASSUMPTION-002**: The JSP/Maven app plan sets the Tomcat context path to `/MeTA/`.
+- **ASSUMPTION-002**: The JSP/Maven app plan sets the Tomcat context path to `/yonatan-csasznik-yoed-halberstam-niv-levin/`.
 - **ASSUMPTION-003**: Docker Desktop or an equivalent Docker Engine is available on the project machine.
 
 ## 8. Related Specifications / Further Reading

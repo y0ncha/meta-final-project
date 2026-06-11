@@ -5,8 +5,8 @@
 - Gatling image: `denvazh/gatling:3.2.1`
 - Gatling image platform: `linux/amd64`
 - Docker network: `meta`
-- Default Gatling target from Docker: `http://tomcat:8080/MeTA/`
-- Host evidence URL: `http://localhost:8080/MeTA/`
+- Default Gatling target from Docker: `http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`
+- Host evidence URL: `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`
 - Simulation source: `src/gatling/user-files/simulations/MetaSimulation.scala`
 - Shared runner: `scripts/run-gatling-container`
 - Local container runner: direct disposable `docker run`
@@ -30,7 +30,7 @@ Run these commands from the repository root after Tomcat is deployed:
 The target can be overridden when a real environment changes:
 
 ```sh
-APP_BASE_URL=http://tomcat:8080/MeTA/ ./scripts/run-gatling-load-5m
+APP_BASE_URL=http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ ./scripts/run-gatling-load-5m
 ```
 
 ## Max-Limit Method
