@@ -7,7 +7,7 @@ The assignment source is `final-project.pdf`; `docs/final-project.txt` is the se
 ## Project Links
 
 - Public GitHub repository: `https://github.com/y0ncha/meta-final-project`
-- Local Tomcat application: `http://localhost:8080/meta/`
+- Local Tomcat application: `http://localhost:8080/MeTA/`
 - Local Jenkins: `http://localhost:8081/`
 - Jenkins CI/CD job: `meta-container-ci-cd`
 - Jenkins monitoring job: `meta-monitoring`
@@ -16,9 +16,9 @@ The assignment source is `final-project.pdf`; `docs/final-project.txt` is the se
 
 | Assignment area | Project implementation |
 |---|---|
-| JSP web app | Maven JSP app in `src/main/webapp/index.jsp`, packaged as `target/meta.war`. |
+| JSP web app | Maven JSP app in `src/main/webapp/index.jsp`, packaged as `target/MeTA.war`. |
 | Git and GitHub | Repository remote points to `https://github.com/y0ncha/meta-final-project.git`. |
-| Tomcat deployment | Dockerized Tomcat serves the app at `/meta/`; deployment uses `scripts/deploy-war`. |
+| Tomcat deployment | Dockerized Tomcat serves the app at `/MeTA/`; deployment uses `scripts/deploy-war`. |
 | Jenkins CI/CD | `Jenkinsfile` builds, deploys, verifies Tomcat, runs Playwright, runs Gatling, and publishes reports. |
 | Monitoring | Separate Jenkins Freestyle job `meta-monitoring` runs every 5 minutes via `scripts/run-monitoring-check`. |
 | Browser automation | Playwright test in `tests/playwright/meta-functional.spec.js` covers five application validations. |

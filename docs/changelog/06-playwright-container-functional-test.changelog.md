@@ -37,8 +37,8 @@ Plan 06 satisfies the browser automation deliverable from `final-project.pdf` us
 - `docker compose exec -T jenkins docker version`
 - `docker compose exec -T jenkins sh -lc 'command -v docker && command -v node || true && command -v npm || true && command -v chromium || true'`
 - `./scripts/deploy-war`
-- `curl -fsS http://localhost:8080/meta/ >/dev/null`
-- `docker compose exec -T jenkins curl -fsS http://tomcat:8080/meta/ >/dev/null`
+- `curl -fsS http://localhost:8080/MeTA/ >/dev/null`
+- `docker compose exec -T jenkins curl -fsS http://tomcat:8080/MeTA/ >/dev/null`
 - `./scripts/run-playwright-container`
 - `docker compose exec -T jenkins sh -lc 'cd /workspace/final-project && ./scripts/run-playwright-container'`
 - `test -s output/playwright/06-playwright-run.log && test -s output/playwright/junit.xml && test -s output/playwright/playwright-report/index.html && test -s output/playwright/screenshots/06-valid-submit.png && test -s output/playwright/screenshots/06-empty-submit.png`
@@ -99,6 +99,6 @@ Plan 06 satisfies the browser automation deliverable from `final-project.pdf` us
 ## Remaining Risks And Follow-Up
 
 - `final-project.pdf` names Selenium IDE `.side`; Playwright remains an explicit accepted override and should be explained during defense if asked.
-- Browser screenshots under `output/playwright/` do not replace the final submission screenshot that must show `http://localhost:8080/meta/` in the browser address bar.
+- Browser screenshots under `output/playwright/` do not replace the final submission screenshot that must show `http://localhost:8080/MeTA/` in the browser address bar.
 - Plans 07 through 11 remain required for HAR, Gatling, monitoring, and final submission packaging.
 - Jenkins now has broad Docker host control through `/var/run/docker.sock`; this is an accepted coursework simplicity tradeoff, not a production recommendation.

@@ -110,7 +110,7 @@
 <body>
   <main>
     <h1 id="pageTitle">MeTA</h1>
-    <p>MeTA is a JSP application for validating the containerized DevOps workflow: source control, Tomcat deployment, browser checks, HAR capture, and Gatling evidence.</p>
+    <p>We opened a ticket for DevOps two weeks ago, but their SLA is 3 weeks. Hopefully AI won't replace half of the company by then.</p>
     <p><a id="aboutLink" href="#about">About this app</a></p>
 
     <form id="nameForm" method="post" action="index.jsp">
@@ -120,14 +120,14 @@
     </form>
 
     <% if (submitted && !trimmedName.isEmpty()) { %>
-      <p id="resultMessage" class="message">Hello, <%= escapedName %>. Your JSP form submission worked.</p>
+      <p id="resultMessage" class="message">Hello, <%= escapedName %>. MeTA Corporate reviewed your form, opened a committee, and somehow approved it.</p>
     <% } else if (submitted) { %>
-      <p id="validationMessage" class="validation">Please enter a name before submitting.</p>
+      <p id="validationMessage" class="validation">Please enter a name before MeTA Corporate schedules a meeting about the empty box.</p>
     <% } %>
 
     <section id="about">
       <h2>About</h2>
-      <p>This page is a JSP application packaged as a Maven WAR for Tomcat.</p>
+      <p>Built as a Maven WAR for Tomcat, because MeTA Corporate believes every simple form deserves a deployment pipeline and at least one meeting.</p>
     </section>
   </main>
 </body>

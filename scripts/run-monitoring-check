@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -eu
 
-: "${APP_BASE_URL:=http://tomcat:8080/meta/}"
+: "${APP_BASE_URL:=http://tomcat:8080/MeTA/}"
 : "${JOB_NAME:=meta-monitoring}"
 : "${BUILD_NUMBER:=local}"
 

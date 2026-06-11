@@ -29,11 +29,11 @@ Follow-up update on 2026-06-11: Jenkins now publishes a static Playwright eviden
 
 ## 1. Requirements & Constraints
 
-- **REQ-001**: Implement browser automation for the JSP app served at `http://localhost:8080/meta/` from the host and `http://tomcat:8080/meta/` from Docker network `meta`.
+- **REQ-001**: Implement browser automation for the JSP app served at `http://localhost:8080/MeTA/` from the host and `http://tomcat:8080/MeTA/` from Docker network `meta`.
 - **REQ-002**: Use Playwright as the accepted project substitute for the PDF's Selenium IDE requirement; do not create or rely on a Selenium `.side` file in this plan.
 - **REQ-003**: Add exactly five documented validation steps in `tests/playwright/meta-functional.spec.js`: page shell visibility, link navigation to the about section, text input entry, valid submit success message, and empty submit validation message.
 - **REQ-004**: Use selectors already present in `src/main/webapp/index.jsp`: `#pageTitle`, `#aboutLink`, `#nameInput`, `#submitButton`, `#resultMessage`, `#validationMessage`, and `#about`.
-- **REQ-005**: Keep the application base URL configurable through environment variable `APP_BASE_URL`; default Playwright runner execution to `http://tomcat:8080/meta/` because both local and Jenkins runs execute inside Docker network `meta`.
+- **REQ-005**: Keep the application base URL configurable through environment variable `APP_BASE_URL`; default Playwright runner execution to `http://tomcat:8080/MeTA/` because both local and Jenkins runs execute inside Docker network `meta`.
 - **REQ-006**: Save generated Playwright evidence under `output/playwright/`, including a passed-run log, an HTML report, JUnit XML, and at least two deterministic screenshots from the functional flow.
 - **REQ-007**: Keep generated evidence ignored by Git according to `.gitignore`; commit only source files, scripts, documentation, and plan/changelog files.
 - **REQ-008**: Preserve the existing `Jenkinsfile` stage named `Playwright Functional Test`; make that stage pass by adding `scripts/run-playwright-container`.
@@ -61,14 +61,14 @@ Follow-up update on 2026-06-11: Jenkins now publishes a static Playwright eviden
 |------|-------------|-----------|------|
 | TASK-001 | Create `package.json` with `private: true`, script `"test:playwright": "playwright test"`, and dev dependency `"@playwright/test": "1.60.0"`. | ✅ | 2026-06-10 |
 | TASK-002 | Create `package-lock.json` by running package resolution inside Docker, not on the host: `docker run --rm -v "$PWD:/work" -w /work node:22-bookworm npm install --package-lock-only`. | ✅ | 2026-06-10 |
-| TASK-003 | Create `playwright.config.js` with `testDir: './tests/playwright'`, `timeout: 30000`, one Chromium project, `baseURL: process.env.APP_BASE_URL || 'http://localhost:8080/meta/'`, `outputDir: 'output/playwright/test-results'`, reporter list `[['list'], ['html', { outputFolder: 'output/playwright/playwright-report', open: 'never' }], ['junit', { outputFile: 'output/playwright/junit.xml' }]]`, `trace: 'retain-on-failure'`, `screenshot: 'only-on-failure'`, `video: 'off'`, and optional `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` launch option handling. | ✅ | 2026-06-10 |
+| TASK-003 | Create `playwright.config.js` with `testDir: './tests/playwright'`, `timeout: 30000`, one Chromium project, `baseURL: process.env.APP_BASE_URL || 'http://localhost:8080/MeTA/'`, `outputDir: 'output/playwright/test-results'`, reporter list `[['list'], ['html', { outputFolder: 'output/playwright/playwright-report', open: 'never' }], ['junit', { outputFile: 'output/playwright/junit.xml' }]]`, `trace: 'retain-on-failure'`, `screenshot: 'only-on-failure'`, `video: 'off'`, and optional `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` launch option handling. | ✅ | 2026-06-10 |
 | TASK-004 | Create directory `tests/playwright/` and file `tests/playwright/meta-functional.spec.js`. | ✅ | 2026-06-10 |
 | TASK-005 | In `tests/playwright/meta-functional.spec.js`, add one test named `JSP app supports the required functional flow` with five `test.step` blocks. | ✅ | 2026-06-10 |
-| TASK-006 | In step 1 of `tests/playwright/meta-functional.spec.js`, load the configured app root with `page.goto('./')`, assert `#pageTitle` has exact text `DevOps Final Project`, assert `#submitButton` is visible, and assert `#nameInput` is visible. | ✅ | 2026-06-10 |
+| TASK-006 | In step 1 of `tests/playwright/meta-functional.spec.js`, load the configured app root with `page.goto('./')`, assert `#pageTitle` has exact text `MeTA`, assert `#submitButton` is visible, and assert `#nameInput` is visible. | ✅ | 2026-06-10 |
 | TASK-007 | In step 2 of `tests/playwright/meta-functional.spec.js`, click `#aboutLink`, assert the URL contains `#about`, and assert locator `#about` contains heading text `About`. | ✅ | 2026-06-10 |
 | TASK-008 | In step 3 of `tests/playwright/meta-functional.spec.js`, fill `#nameInput` with `Yonatan`, then assert `#nameInput` has value `Yonatan`. | ✅ | 2026-06-10 |
-| TASK-009 | In step 4 of `tests/playwright/meta-functional.spec.js`, click `#submitButton`, assert `#resultMessage` has exact text `Hello, Yonatan. Your JSP form submission worked.`, and write screenshot `output/playwright/screenshots/06-valid-submit.png`. | ✅ | 2026-06-10 |
-| TASK-010 | In step 5 of `tests/playwright/meta-functional.spec.js`, reload the configured app root with `page.goto('./')`, click `#submitButton` with an empty input, assert `#validationMessage` has exact text `Please enter a name before submitting.`, and write screenshot `output/playwright/screenshots/06-empty-submit.png`. | ✅ | 2026-06-10 |
+| TASK-009 | In step 4 of `tests/playwright/meta-functional.spec.js`, click `#submitButton`, assert `#resultMessage` has exact text `Hello, Yonatan. MeTA Corporate reviewed your form, opened a committee, and somehow approved it.`, and write screenshot `output/playwright/screenshots/06-valid-submit.png`. | ✅ | 2026-06-10 |
+| TASK-010 | In step 5 of `tests/playwright/meta-functional.spec.js`, reload the configured app root with `page.goto('./')`, click `#submitButton` with an empty input, assert `#validationMessage` has exact text `Please enter a name before MeTA Corporate schedules a meeting about the empty box.`, and write screenshot `output/playwright/screenshots/06-empty-submit.png`. | ✅ | 2026-06-10 |
 
 ### Implementation Phase 2
 
@@ -77,7 +77,7 @@ Follow-up update on 2026-06-11: Jenkins now publishes a static Playwright eviden
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
 | TASK-011 | Create executable script `scripts/run-playwright-container` with shebang `#!/usr/bin/env sh` and `set -eu`. | ✅ | 2026-06-10 |
-| TASK-012 | In `scripts/run-playwright-container`, define `PROJECT_ROOT`, `PLAYWRIGHT_IMAGE="${PLAYWRIGHT_IMAGE:-mcr.microsoft.com/playwright:v1.60.0-noble}"`, `PLAYWRIGHT_NETWORK="${PLAYWRIGHT_NETWORK:-meta}"`, `HOST_APP_BASE_URL="${APP_BASE_URL:-http://tomcat:8080/meta/}"`, `JENKINS_CONTAINER="${JENKINS_CONTAINER:-meta-jenkins}"`, `PLAYWRIGHT_CONTAINER_NAME="${PLAYWRIGHT_CONTAINER_NAME:-meta-playwright-${BUILD_NUMBER:-local}}"`, `OUTPUT_DIR="output/playwright"`, and `LOG_FILE="$OUTPUT_DIR/06-playwright-run.log"`. | ✅ | 2026-06-10 |
+| TASK-012 | In `scripts/run-playwright-container`, define `PROJECT_ROOT`, `PLAYWRIGHT_IMAGE="${PLAYWRIGHT_IMAGE:-mcr.microsoft.com/playwright:v1.60.0-noble}"`, `PLAYWRIGHT_NETWORK="${PLAYWRIGHT_NETWORK:-meta}"`, `HOST_APP_BASE_URL="${APP_BASE_URL:-http://tomcat:8080/MeTA/}"`, `JENKINS_CONTAINER="${JENKINS_CONTAINER:-meta-jenkins}"`, `PLAYWRIGHT_CONTAINER_NAME="${PLAYWRIGHT_CONTAINER_NAME:-meta-playwright-${BUILD_NUMBER:-local}}"`, `OUTPUT_DIR="output/playwright"`, and `LOG_FILE="$OUTPUT_DIR/06-playwright-run.log"`. | ✅ | 2026-06-10 |
 | TASK-013 | In `scripts/run-playwright-container`, create `output/playwright/`, `output/playwright/screenshots/`, `output/playwright/test-results/`, and `output/playwright/playwright-report/` before running tests. | ✅ | 2026-06-10 |
 | TASK-014 | In `scripts/run-playwright-container`, when `PLAYWRIGHT_DOCKER_PIPELINE=1`, export `APP_BASE_URL` and `CI=true`, then run `/bin/bash -lc 'npm ci && npx playwright test'`; capture all output to `output/playwright/06-playwright-run.log` while preserving the test exit code. | ✅ | 2026-06-10 |
 | TASK-015 | In `scripts/run-playwright-container`, when not inside Jenkins, require Docker and run `docker run --rm --name "$PLAYWRIGHT_CONTAINER_NAME" --network "$PLAYWRIGHT_NETWORK" -v "$PROJECT_ROOT:/work" -w /work -e APP_BASE_URL="$HOST_APP_BASE_URL" -e CI=true "$PLAYWRIGHT_IMAGE" /bin/bash -lc 'npm ci && npx playwright test'`; capture all output to `output/playwright/06-playwright-run.log` while preserving the test exit code. | ✅ | 2026-06-10 |
@@ -93,7 +93,7 @@ Follow-up update on 2026-06-11: Jenkins now publishes a static Playwright eviden
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
 | TASK-020 | Create `docs/playwright.md` with sections `Runtime`, `Functional Validations`, `Local Execution`, `Jenkins Execution`, `Evidence Files`, and `Known Assignment Override`. | ✅ | 2026-06-10 |
-| TASK-021 | In `docs/playwright.md` section `Runtime`, document local default `APP_BASE_URL=http://tomcat:8080/meta/` for the Playwright container and Jenkins default `APP_BASE_URL=http://tomcat:8080/meta/` inside the Docker network. | ✅ | 2026-06-10 |
+| TASK-021 | In `docs/playwright.md` section `Runtime`, document local default `APP_BASE_URL=http://tomcat:8080/MeTA/` for the Playwright container and Jenkins default `APP_BASE_URL=http://tomcat:8080/MeTA/` inside the Docker network. | ✅ | 2026-06-10 |
 | TASK-022 | In `docs/playwright.md` section `Functional Validations`, list the exact five validation names and the assertion target for each validation. | ✅ | 2026-06-10 |
 | TASK-023 | In `docs/playwright.md` section `Evidence Files`, list `output/playwright/06-playwright-run.log`, `output/playwright/junit.xml`, `output/playwright/playwright-report/index.html`, `output/playwright/screenshots/06-valid-submit.png`, and `output/playwright/screenshots/06-empty-submit.png`. | ✅ | 2026-06-10 |
 | TASK-024 | In `docs/playwright.md` section `Known Assignment Override`, state that `final-project.pdf` names Selenium IDE `.side`, but this project uses Playwright under the accepted override in `rules/compliance.md`. | ✅ | 2026-06-10 |
@@ -111,9 +111,9 @@ Follow-up update on 2026-06-11: Jenkins now publishes a static Playwright eviden
 | TASK-028 | Run `sh -n scripts/run-playwright-container` and fix any shell syntax errors before running Docker commands. | ✅ | 2026-06-10 |
 | TASK-029 | Run `docker compose build jenkins` and verify the Jenkins image builds with Docker CLI support, `maven`, and `curl`, without direct Jenkins-image `nodejs`, `npm`, or `chromium`. | ✅ | 2026-06-10 |
 | TASK-030 | Run `docker compose up -d tomcat jenkins` and verify both services are up with `docker compose ps`. | ✅ | 2026-06-10 |
-| TASK-031 | Run `./scripts/deploy-war` and verify it prints `Deployed URL: http://localhost:8080/meta/`. | ✅ | 2026-06-10 |
+| TASK-031 | Run `./scripts/deploy-war` and verify it prints `Deployed URL: http://localhost:8080/MeTA/`. | ✅ | 2026-06-10 |
 | TASK-032 | Run local containerized Playwright with `./scripts/run-playwright-container`; verify the command exits `0`. | ✅ | 2026-06-10 |
-| TASK-033 | Run Jenkins-container execution with `docker compose exec -T jenkins sh -lc 'cd /workspace/final-project && APP_BASE_URL=http://tomcat:8080/meta/ ./scripts/run-playwright-container'`; verify the command exits `0`. | ✅ | 2026-06-10 |
+| TASK-033 | Run Jenkins-container execution with `docker compose exec -T jenkins sh -lc 'cd /workspace/final-project && APP_BASE_URL=http://tomcat:8080/MeTA/ ./scripts/run-playwright-container'`; verify the command exits `0`. | ✅ | 2026-06-10 |
 | TASK-034 | Verify evidence files exist with `test -s output/playwright/06-playwright-run.log`, `test -s output/playwright/junit.xml`, `test -s output/playwright/playwright-report/index.html`, `test -s output/playwright/screenshots/06-valid-submit.png`, and `test -s output/playwright/screenshots/06-empty-submit.png`. | ✅ | 2026-06-10 |
 | TASK-035 | Run `python3 .agents/skills/compliance-validator/scripts/validate_compliance.py --target . --rules rules/compliance.md` and manually inspect all `manual` items before marking the plan complete. | ✅ | 2026-06-10 |
 | TASK-036 | Create `docs/changelog/06-playwright-container-functional-test.changelog.md` with what changed, why it changed, exact validation commands, generated evidence paths, and remaining risks. | ✅ | 2026-06-10 |
@@ -153,7 +153,7 @@ Follow-up update on 2026-06-11: Jenkins now publishes a static Playwright eviden
 
 - **DEP-001**: `final-project.pdf` remains the authoritative assignment source; `rules/compliance.md` is the active operational checklist derived from it.
 - **DEP-002**: Docker Compose project `meta` must provide network `meta` and Tomcat service DNS name `tomcat`.
-- **DEP-003**: `scripts/deploy-war` must deploy `target/meta.war` to the Tomcat container before Playwright tests run.
+- **DEP-003**: `scripts/deploy-war` must deploy `target/MeTA.war` to the Tomcat container before Playwright tests run.
 - **DEP-004**: `Jenkinsfile` must retain stage `Playwright Functional Test` that calls `./scripts/run-playwright-container` for non-timer builds.
 - **DEP-005**: Jenkins image `meta-jenkins:2.528.1-lts-jdk21` must include Docker CLI support, Docker Compose, `maven`, and `curl` after the Jenkins tooling follow-up.
 - **DEP-006**: Local Playwright container execution depends on Docker being able to pull `mcr.microsoft.com/playwright:v1.60.0-noble`.
@@ -185,9 +185,9 @@ Follow-up update on 2026-06-11: Jenkins now publishes a static Playwright eviden
 - **TEST-001**: `sh -n scripts/run-playwright-container` must pass.
 - **TEST-002**: `docker compose build jenkins` must pass.
 - **TEST-003**: `docker compose up -d tomcat jenkins` must start both services.
-- **TEST-004**: `./scripts/deploy-war` must deploy the app and print `Deployed URL: http://localhost:8080/meta/`.
+- **TEST-004**: `./scripts/deploy-war` must deploy the app and print `Deployed URL: http://localhost:8080/MeTA/`.
 - **TEST-005**: `./scripts/run-playwright-container` must pass from the host and generate `output/playwright/06-playwright-run.log`.
-- **TEST-006**: `docker compose exec -T jenkins sh -lc 'cd /workspace/final-project && APP_BASE_URL=http://tomcat:8080/meta/ ./scripts/run-playwright-container'` must pass from inside Jenkins.
+- **TEST-006**: `docker compose exec -T jenkins sh -lc 'cd /workspace/final-project && APP_BASE_URL=http://tomcat:8080/MeTA/ ./scripts/run-playwright-container'` must pass from inside Jenkins.
 - **TEST-007**: `test -s output/playwright/junit.xml` must pass.
 - **TEST-008**: `test -s output/playwright/playwright-report/index.html` must pass.
 - **TEST-008A**: `sh tests/scripts/test-generate-playwright-jenkins-report.sh` must pass.
@@ -205,7 +205,7 @@ Follow-up update on 2026-06-11: Jenkins now publishes a static Playwright eviden
 - **RISK-003**: Docker image pull for `mcr.microsoft.com/playwright:v1.60.0-noble` can fail if the machine is offline or the registry is unavailable; rerun when network access is available and document the blocker if it persists.
 - **RISK-004**: The Playwright test depends on stable JSP IDs; changing IDs in `src/main/webapp/index.jsp` requires updating the test and `docs/playwright.md`.
 - **RISK-005**: Browser screenshots under `output/playwright/` are useful evidence but do not replace the final manual Tomcat screenshot with the address bar visible.
-- **ASSUMPTION-001**: The Tomcat app remains deployed at context path `/meta/`.
+- **ASSUMPTION-001**: The Tomcat app remains deployed at context path `/MeTA/`.
 - **ASSUMPTION-002**: Docker Compose project name remains `meta`, preserving Docker network name `meta`.
 - **ASSUMPTION-003**: Jenkins non-timer builds continue to run the `Playwright Functional Test` stage after `scripts/run-playwright-container` exists.
 - **ASSUMPTION-004**: Generated evidence remains ignored by `.gitignore` and is attached manually or archived by Jenkins rather than committed.

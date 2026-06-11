@@ -17,21 +17,21 @@ tags:
 
 ![Status: Completed](https://img.shields.io/badge/status-Completed-brightgreen)
 
-This plan implements the HAR deliverable required by `final-project.pdf` and `rules/compliance.md`. The result must provide a written scenario description in `docs/har-scenario.md`, a real HAR file captured from the JSP application flow, a repeatable Dockerized Playwright capture command, and validation that the HAR contains requests for the deployed application at `http://localhost:8080/meta/` or `http://tomcat:8080/meta/`.
+This plan implements the HAR deliverable required by `final-project.pdf` and `rules/compliance.md`. The result must provide a written scenario description in `docs/har-scenario.md`, a real HAR file captured from the JSP application flow, a repeatable Dockerized Playwright capture command, and validation that the HAR contains requests for the deployed application at `http://localhost:8080/MeTA/` or `http://tomcat:8080/MeTA/`.
 
 Follow-up update on 2026-06-10: `scripts/capture-har` now uses direct `docker run` for local execution and `HAR_DOCKER_PIPELINE=1` as a command body for any future Jenkins Docker Pipeline use. HAR capture remains isolated from the Playwright functional-test container to avoid browser-cache or filesystem-state leakage between validation stages.
 
 ## 1. Requirements & Constraints
 
-- **REQ-001**: Capture a real HAR file for the JSP application served at `http://localhost:8080/meta/` from the host and `http://tomcat:8080/meta/` from Docker network `meta`.
+- **REQ-001**: Capture a real HAR file for the JSP application served at `http://localhost:8080/MeTA/` from the host and `http://tomcat:8080/MeTA/` from Docker network `meta`.
 - **REQ-002**: Document the exact HAR scenario in `docs/har-scenario.md` using the assignment-facing flow: open the app, click the about link, type text into the name input, click the submit button, and observe the success result.
 - **REQ-003**: Align the HAR scenario with existing JSP selectors in `src/main/webapp/index.jsp`: `#aboutLink`, `#nameInput`, `#submitButton`, and `#resultMessage`.
 - **REQ-004**: Align the HAR scenario with the existing Playwright functional flow in `tests/playwright/meta-functional.spec.js`.
 - **REQ-005**: Save the captured HAR file at `output/har/meta-functional-flow.har`.
 - **REQ-006**: Capture full HAR content with embedded response bodies by using Playwright HAR recording option `content: 'embed'` and `mode: 'full'`.
-- **REQ-007**: Keep the target URL configurable through environment variable `APP_BASE_URL`; default automated Docker capture to `http://tomcat:8080/meta/` because the capture runner joins Docker network `meta`.
+- **REQ-007**: Keep the target URL configurable through environment variable `APP_BASE_URL`; default automated Docker capture to `http://tomcat:8080/MeTA/` because the capture runner joins Docker network `meta`.
 - **REQ-008**: Keep the generated HAR file ignored by Git under `output/`; commit only source files, scripts, documentation, and plan/changelog files.
-- **REQ-009**: Validate that `output/har/meta-functional-flow.har` is valid JSON with top-level object `log`, array `log.entries`, and at least one request URL whose pathname starts with `/meta/`.
+- **REQ-009**: Validate that `output/har/meta-functional-flow.har` is valid JSON with top-level object `log`, array `log.entries`, and at least one request URL whose pathname starts with `/MeTA/`.
 - **REQ-010**: Validate that the HAR scenario document and captured HAR file describe the same user flow and same target application.
 - **SEC-001**: Treat HAR files as potentially sensitive because they may contain URLs, request headers, response headers, cookies, cache metadata, and embedded response content.
 - **SEC-002**: Do not commit generated HAR files, browser traces, credentials, API tokens, cookies, private keys, `.env`, Jenkins secrets, or other sensitive runtime evidence.
@@ -53,16 +53,16 @@ Follow-up update on 2026-06-10: `scripts/capture-har` now uses direct `docker ru
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
 | TASK-001 | Create executable script `scripts/capture-har` with shebang `#!/usr/bin/env sh` and `set -eu`. | ✅ | 2026-06-10 |
-| TASK-002 | In `scripts/capture-har`, define `PROJECT_ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"`, `PLAYWRIGHT_IMAGE="${PLAYWRIGHT_IMAGE:-mcr.microsoft.com/playwright:v1.60.0-noble}"`, `PLAYWRIGHT_NETWORK="${PLAYWRIGHT_NETWORK:-meta}"`, `APP_BASE_URL="${APP_BASE_URL:-http://tomcat:8080/meta/}"`, `HAR_PATH="${HAR_PATH:-output/har/meta-functional-flow.har}"`, `LOG_FILE="${LOG_FILE:-output/har/07-har-capture.log}"`, and `HAR_CONTAINER_NAME="${HAR_CONTAINER_NAME:-meta-har-${BUILD_NUMBER:-local}}"`. | ✅ | 2026-06-10 |
+| TASK-002 | In `scripts/capture-har`, define `PROJECT_ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"`, `PLAYWRIGHT_IMAGE="${PLAYWRIGHT_IMAGE:-mcr.microsoft.com/playwright:v1.60.0-noble}"`, `PLAYWRIGHT_NETWORK="${PLAYWRIGHT_NETWORK:-meta}"`, `APP_BASE_URL="${APP_BASE_URL:-http://tomcat:8080/MeTA/}"`, `HAR_PATH="${HAR_PATH:-output/har/meta-functional-flow.har}"`, `LOG_FILE="${LOG_FILE:-output/har/07-har-capture.log}"`, and `HAR_CONTAINER_NAME="${HAR_CONTAINER_NAME:-meta-har-${BUILD_NUMBER:-local}}"`. | ✅ | 2026-06-10 |
 | TASK-003 | In `scripts/capture-har`, create directory `output/har/` before running the capture. | ✅ | 2026-06-10 |
 | TASK-004 | In `scripts/capture-har`, require Docker with `command -v docker >/dev/null 2>&1`; print `Docker is required to capture HAR in the Playwright container.` to stderr and exit `127` when Docker is missing. | ✅ | 2026-06-10 |
 | TASK-005 | In `scripts/capture-har`, run `docker run --rm --name "$HAR_CONTAINER_NAME" --network "$PLAYWRIGHT_NETWORK" -v "$PROJECT_ROOT:/work" -w /work -e APP_BASE_URL="$APP_BASE_URL" -e HAR_PATH="$HAR_PATH" -e CI=true "$PLAYWRIGHT_IMAGE" /bin/bash -lc 'npm ci && node tests/playwright/capture-har.js'` and write combined stdout/stderr to `$LOG_FILE` while preserving the container exit code. | ✅ | 2026-06-10 |
 | TASK-006 | In `scripts/capture-har`, after a successful capture, print the exact evidence paths `output/har/07-har-capture.log` and `output/har/meta-functional-flow.har`. | ✅ | 2026-06-10 |
 | TASK-007 | Mark `scripts/capture-har` executable with `chmod +x scripts/capture-har`. | ✅ | 2026-06-10 |
 | TASK-008 | Create `tests/playwright/capture-har.js` that imports `chromium` and `expect` from `@playwright/test`, imports `fs` from `node:fs`, imports `path` from `node:path`, and exits nonzero on any failed assertion or browser error. | ✅ | 2026-06-10 |
-| TASK-009 | In `tests/playwright/capture-har.js`, define `appBaseUrl = process.env.APP_BASE_URL || 'http://localhost:8080/meta/'` and `harPath = process.env.HAR_PATH || 'output/har/meta-functional-flow.har'`; create `path.dirname(harPath)` recursively before browser launch. | ✅ | 2026-06-10 |
+| TASK-009 | In `tests/playwright/capture-har.js`, define `appBaseUrl = process.env.APP_BASE_URL || 'http://localhost:8080/MeTA/'` and `harPath = process.env.HAR_PATH || 'output/har/meta-functional-flow.har'`; create `path.dirname(harPath)` recursively before browser launch. | ✅ | 2026-06-10 |
 | TASK-010 | In `tests/playwright/capture-har.js`, launch Chromium, create a browser context with `recordHar: { path: harPath, content: 'embed', mode: 'full' }`, create one page, and run the scenario against `appBaseUrl`. | ✅ | 2026-06-10 |
-| TASK-011 | In `tests/playwright/capture-har.js`, implement the scenario exactly: `page.goto(appBaseUrl, { waitUntil: 'networkidle' })`, `page.locator('#aboutLink').click()`, assert the URL ends with `#about`, fill `#nameInput` with `Yonatan`, click `#submitButton`, assert `#resultMessage` has text `Hello, Yonatan. Your JSP form submission worked.`, close the context, and close the browser. | ✅ | 2026-06-10 |
+| TASK-011 | In `tests/playwright/capture-har.js`, implement the scenario exactly: `page.goto(appBaseUrl, { waitUntil: 'networkidle' })`, `page.locator('#aboutLink').click()`, assert the URL ends with `#about`, fill `#nameInput` with `Yonatan`, click `#submitButton`, assert `#resultMessage` has text `Hello, Yonatan. MeTA Corporate reviewed your form, opened a committee, and somehow approved it.`, close the context, and close the browser. | ✅ | 2026-06-10 |
 | TASK-012 | In `tests/playwright/capture-har.js`, after closing the context, verify `fs.statSync(harPath).size > 0`; throw an error containing `HAR file was not created or is empty` when the file is missing or empty. | ✅ | 2026-06-10 |
 
 ### Implementation Phase 2
@@ -74,14 +74,14 @@ Follow-up update on 2026-06-10: `scripts/capture-har` now uses direct `docker ru
 | TASK-013 | Create executable script `scripts/validate-har` with shebang `#!/usr/bin/env node`. | ✅ | 2026-06-10 |
 | TASK-014 | In `scripts/validate-har`, read the HAR path from `process.argv[2] || 'output/har/meta-functional-flow.har'` and fail with exit code `64` when no readable file exists at that path. | ✅ | 2026-06-10 |
 | TASK-015 | In `scripts/validate-har`, parse the HAR as JSON and fail with exit code `65` when parsing fails or when `har.log.entries` is not an array. | ✅ | 2026-06-10 |
-| TASK-016 | In `scripts/validate-har`, require at least one entry whose `request.url` parses as a URL and whose `pathname` starts with `/meta/`; fail with exit code `66` when no matching request exists. | ✅ | 2026-06-10 |
+| TASK-016 | In `scripts/validate-har`, require at least one entry whose `request.url` parses as a URL and whose `pathname` starts with `/MeTA/`; fail with exit code `66` when no matching request exists. | ✅ | 2026-06-10 |
 | TASK-017 | In `scripts/validate-har`, require at least one entry whose `response.content` object exists and has either a non-empty `text` string or a numeric `size`; fail with exit code `67` when content evidence is missing. | ✅ | 2026-06-10 |
 | TASK-018 | In `scripts/validate-har`, print a single success line in the exact format `Validated HAR: <path> entries=<count> metaRequests=<count>`. | ✅ | 2026-06-10 |
 | TASK-019 | Mark `scripts/validate-har` executable with `chmod +x scripts/validate-har`. | ✅ | 2026-06-10 |
 | TASK-020 | Create `docs/har-scenario.md` with sections `Target`, `Scenario Steps`, `Capture Command`, `Evidence Files`, `Validation`, `Submission Notes`, and `Sensitivity Review`. | ✅ | 2026-06-10 |
-| TASK-021 | In `docs/har-scenario.md` section `Target`, document host URL `http://localhost:8080/meta/` and Docker-network URL `http://tomcat:8080/meta/`. | ✅ | 2026-06-10 |
-| TASK-022 | In `docs/har-scenario.md` section `Scenario Steps`, list exactly five numbered steps: open the app, click `About this app`, type `Yonatan` in the `Name` input, click `Submit`, and observe `Hello, Yonatan. Your JSP form submission worked.` | ✅ | 2026-06-10 |
-| TASK-023 | In `docs/har-scenario.md` section `Capture Command`, document command `./scripts/capture-har` and override example `APP_BASE_URL=http://host.docker.internal:8080/meta/ PLAYWRIGHT_NETWORK=bridge ./scripts/capture-har` only if the capture container cannot reach Docker network service name `tomcat`. | ✅ | 2026-06-10 |
+| TASK-021 | In `docs/har-scenario.md` section `Target`, document host URL `http://localhost:8080/MeTA/` and Docker-network URL `http://tomcat:8080/MeTA/`. | ✅ | 2026-06-10 |
+| TASK-022 | In `docs/har-scenario.md` section `Scenario Steps`, list exactly five numbered steps: open the app, click `About this app`, type `Yonatan` in the `Name` input, click `Submit`, and observe `Hello, Yonatan. MeTA Corporate reviewed your form, opened a committee, and somehow approved it.` | ✅ | 2026-06-10 |
+| TASK-023 | In `docs/har-scenario.md` section `Capture Command`, document command `./scripts/capture-har` and override example `APP_BASE_URL=http://host.docker.internal:8080/MeTA/ PLAYWRIGHT_NETWORK=bridge ./scripts/capture-har` only if the capture container cannot reach Docker network service name `tomcat`. | ✅ | 2026-06-10 |
 | TASK-024 | In `docs/har-scenario.md` section `Evidence Files`, list `output/har/meta-functional-flow.har` and `output/har/07-har-capture.log`. | ✅ | 2026-06-10 |
 | TASK-025 | In `docs/har-scenario.md` section `Sensitivity Review`, state that the HAR must be reviewed before external sharing because it may include headers, cookies, and embedded response content. | ✅ | 2026-06-10 |
 
@@ -95,7 +95,7 @@ Follow-up update on 2026-06-10: `scripts/capture-har` now uses direct `docker ru
 | TASK-027 | Run `node --check tests/playwright/capture-har.js` and fix any JavaScript syntax errors. | ✅ | 2026-06-10 |
 | TASK-028 | Run `node --check scripts/validate-har` and fix any JavaScript syntax errors. | ✅ | 2026-06-10 |
 | TASK-029 | Run `docker compose up -d tomcat` and verify the Tomcat container is running with `docker compose ps tomcat`. | ✅ | 2026-06-10 |
-| TASK-030 | Run `./scripts/deploy-war` and verify it prints `Deployed URL: http://localhost:8080/meta/`. | ✅ | 2026-06-10 |
+| TASK-030 | Run `./scripts/deploy-war` and verify it prints `Deployed URL: http://localhost:8080/MeTA/`. | ✅ | 2026-06-10 |
 | TASK-031 | Run `./scripts/capture-har` and verify it exits `0`. | ✅ | 2026-06-10 |
 | TASK-032 | Run `./scripts/validate-har output/har/meta-functional-flow.har` and verify it prints `Validated HAR: output/har/meta-functional-flow.har entries=<count> metaRequests=<count>`. | ✅ | 2026-06-10 |
 | TASK-033 | Run `test -s output/har/meta-functional-flow.har` and verify it exits `0`. | ✅ | 2026-06-10 |
@@ -130,7 +130,7 @@ Follow-up update on 2026-06-10: `scripts/capture-har` now uses direct `docker ru
 - **DEP-001**: `final-project.pdf` remains the authoritative assignment source; `rules/compliance.md` is the active operational checklist derived from it.
 - **DEP-002**: `contribution.md` defines branch, plan rewrite, validation, and changelog workflow.
 - **DEP-003**: Docker Compose service `tomcat` must serve the app on Docker network `meta` with service DNS name `tomcat`.
-- **DEP-004**: `scripts/deploy-war` must deploy `target/meta.war` to Tomcat before HAR capture runs.
+- **DEP-004**: `scripts/deploy-war` must deploy `target/MeTA.war` to Tomcat before HAR capture runs.
 - **DEP-005**: `package.json` and `package-lock.json` from Plan 06 must remain valid so `npm ci` succeeds inside `mcr.microsoft.com/playwright:v1.60.0-noble`.
 - **DEP-006**: Browser selectors in `src/main/webapp/index.jsp` must remain stable: `#aboutLink`, `#nameInput`, `#submitButton`, and `#resultMessage`.
 - **DEP-007**: Docker must be able to pull or reuse local image `mcr.microsoft.com/playwright:v1.60.0-noble`.
@@ -152,7 +152,7 @@ Follow-up update on 2026-06-10: `scripts/capture-har` now uses direct `docker ru
 - **TEST-002**: `node --check tests/playwright/capture-har.js` must pass.
 - **TEST-003**: `node --check scripts/validate-har` must pass.
 - **TEST-004**: `docker compose up -d tomcat` must start the Tomcat service.
-- **TEST-005**: `./scripts/deploy-war` must deploy the app and print `Deployed URL: http://localhost:8080/meta/`.
+- **TEST-005**: `./scripts/deploy-war` must deploy the app and print `Deployed URL: http://localhost:8080/MeTA/`.
 - **TEST-006**: `./scripts/capture-har` must pass and create `output/har/meta-functional-flow.har`.
 - **TEST-007**: `./scripts/validate-har output/har/meta-functional-flow.har` must pass.
 - **TEST-008**: `test -s output/har/meta-functional-flow.har` must pass.
@@ -166,9 +166,9 @@ Follow-up update on 2026-06-10: `scripts/capture-har` now uses direct `docker ru
 - **RISK-001**: HAR files can contain sensitive request and response data; the generated HAR must be reviewed before it is attached to the final email.
 - **RISK-002**: Docker image pull for `mcr.microsoft.com/playwright:v1.60.0-noble` can fail if the machine is offline or the registry is unavailable; rerun when network access is available and document the blocker if it persists.
 - **RISK-003**: Browser HAR capture depends on stable JSP IDs; changing IDs in `src/main/webapp/index.jsp` requires updating `tests/playwright/capture-har.js`, `docs/har-scenario.md`, and this plan.
-- **RISK-004**: The default Docker-network URL `http://tomcat:8080/meta/` will fail if the disposable capture container does not join network `meta`; validate with `docker compose config --quiet` and rerun after `docker compose up -d tomcat jenkins`.
-- **RISK-005**: A HAR captured against `http://tomcat:8080/meta/` proves the same app flow inside Docker but does not show a browser address bar; final submission still needs the separate Tomcat screenshot with `http://localhost:8080/meta/` visible.
-- **ASSUMPTION-001**: The Tomcat app remains deployed at context path `/meta/`.
+- **RISK-004**: The default Docker-network URL `http://tomcat:8080/MeTA/` will fail if the disposable capture container does not join network `meta`; validate with `docker compose config --quiet` and rerun after `docker compose up -d tomcat jenkins`.
+- **RISK-005**: A HAR captured against `http://tomcat:8080/MeTA/` proves the same app flow inside Docker but does not show a browser address bar; final submission still needs the separate Tomcat screenshot with `http://localhost:8080/MeTA/` visible.
+- **ASSUMPTION-001**: The Tomcat app remains deployed at context path `/MeTA/`.
 - **ASSUMPTION-002**: Docker Compose project name remains `meta`, preserving Docker network name `meta`.
 - **ASSUMPTION-003**: Plan 06 remains implemented, so `package.json`, `package-lock.json`, and the official Playwright container path are available.
 - **ASSUMPTION-004**: Generated evidence remains ignored by `.gitignore` and is attached manually or archived separately rather than committed.

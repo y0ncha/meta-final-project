@@ -11,16 +11,16 @@ PROJECT_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd -P)
 cd "$PROJECT_ROOT"
 
 TOMCAT_SERVICE="${TOMCAT_SERVICE:-tomcat}"
-TOMCAT_CONTEXT="${TOMCAT_CONTEXT:-meta}"
+TOMCAT_CONTEXT="${TOMCAT_CONTEXT:-MeTA}"
 TOMCAT_WEBAPPS_DIR="${TOMCAT_WEBAPPS_DIR:-/usr/local/tomcat/webapps}"
 TOMCAT_HOST_PORT="${TOMCAT_HOST_PORT:-8080}"
 DEPLOY_TIMEOUT_SECONDS="${DEPLOY_TIMEOUT_SECONDS:-60}"
-WAR_SOURCE="${WAR_SOURCE:-target/meta.war}"
+WAR_SOURCE="${WAR_SOURCE:-target/MeTA.war}"
 SKIP_BUILD="${SKIP_BUILD:-0}"
 TOMCAT_SHARED_WEBAPPS_DIR="${TOMCAT_SHARED_WEBAPPS_DIR:-}"
 
-if [ "$TOMCAT_CONTEXT" != "meta" ]; then
-  printf '%s\n' "TOMCAT_CONTEXT must remain meta for this coursework plan" >&2
+if [ "$TOMCAT_CONTEXT" != "MeTA" ]; then
+  printf '%s\n' "TOMCAT_CONTEXT must remain MeTA for this coursework plan" >&2
   exit 2
 fi
 
@@ -82,11 +82,15 @@ fi
 test -f "$WAR_SOURCE"
 
 if [ -n "$TOMCAT_SHARED_WEBAPPS_DIR" ]; then
-  rm -rf "$TOMCAT_SHARED_WEBAPPS_DIR/$TOMCAT_CONTEXT" "$TOMCAT_SHARED_WEBAPPS_DIR/$TOMCAT_CONTEXT.war"
+  rm -rf \
+    "$TOMCAT_SHARED_WEBAPPS_DIR/$TOMCAT_CONTEXT" \
+    "$TOMCAT_SHARED_WEBAPPS_DIR/$TOMCAT_CONTEXT.war" \
+    "$TOMCAT_SHARED_WEBAPPS_DIR/meta" \
+    "$TOMCAT_SHARED_WEBAPPS_DIR/meta.war"
   cp "$WAR_SOURCE" "$TOMCAT_SHARED_WEBAPPS_DIR/$TOMCAT_CONTEXT.war"
 else
   docker compose up -d "$TOMCAT_SERVICE"
-  docker compose exec -T "$TOMCAT_SERVICE" sh -c 'rm -rf "$1/$2" "$1/$2.war"' sh "$TOMCAT_WEBAPPS_DIR" "$TOMCAT_CONTEXT"
+  docker compose exec -T "$TOMCAT_SERVICE" sh -c 'rm -rf "$1/$2" "$1/$2.war" "$1/meta" "$1/meta.war"' sh "$TOMCAT_WEBAPPS_DIR" "$TOMCAT_CONTEXT"
   docker compose cp "$WAR_SOURCE" "$TOMCAT_SERVICE:$TOMCAT_WEBAPPS_DIR/$TOMCAT_CONTEXT.war"
 fi
 

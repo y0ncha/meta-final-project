@@ -28,7 +28,7 @@ This plan implements the instructor-confirmed monitoring split. The Jenkins CI/C
 - **REQ-006**: Configure `meta-monitoring` build step `Execute shell` with command `./scripts/run-monitoring-check`.
 - **REQ-007**: Configure `meta-monitoring` post-build action to archive artifact pattern `output/monitoring/**/*`.
 - **REQ-008**: Remove the old monitoring Pipeline file; Freestyle jobs do not execute Jenkinsfiles.
-- **REQ-009**: Add `scripts/run-monitoring-check` with default `APP_BASE_URL=http://tomcat:8080/meta/`, default `JOB_NAME=meta-monitoring`, and default `BUILD_NUMBER=local`.
+- **REQ-009**: Add `scripts/run-monitoring-check` with default `APP_BASE_URL=http://tomcat:8080/MeTA/`, default `JOB_NAME=meta-monitoring`, and default `BUILD_NUMBER=local`.
 - **REQ-010**: Ensure `scripts/run-monitoring-check` runs only a bounded HTTP monitoring check with `curl --connect-timeout 5 --max-time 15 -fsS "$APP_BASE_URL" >/dev/null`.
 - **REQ-011**: Ensure `scripts/run-monitoring-check` writes monitoring evidence to `output/monitoring/latest-check.txt`.
 - **REQ-012**: Keep UptimeRobot as the preferred official external monitor evidence.
@@ -60,7 +60,7 @@ This plan implements the instructor-confirmed monitoring split. The Jenkins CI/C
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-005 | Implement `scripts/run-monitoring-check` with `set -eu`, default `APP_BASE_URL=http://tomcat:8080/meta/`, default `JOB_NAME=meta-monitoring`, and default `BUILD_NUMBER=local`. | ✅ | 2026-06-11 |
+| TASK-005 | Implement `scripts/run-monitoring-check` with `set -eu`, default `APP_BASE_URL=http://tomcat:8080/MeTA/`, default `JOB_NAME=meta-monitoring`, and default `BUILD_NUMBER=local`. | ✅ | 2026-06-11 |
 | TASK-006 | In `scripts/run-monitoring-check`, create `output/monitoring`, run bounded `curl --connect-timeout 5 --max-time 15 -fsS "$APP_BASE_URL" >/dev/null`, and write `output/monitoring/latest-check.txt`. | ✅ | 2026-06-11 |
 | TASK-007 | Ensure `scripts/run-monitoring-check` does not invoke Maven, deployment, Playwright, Gatling, Docker, or Jenkins Pipeline syntax. | ✅ | 2026-06-11 |
 
@@ -90,7 +90,7 @@ This plan implements the instructor-confirmed monitoring split. The Jenkins CI/C
 | TASK-018 | Run new-reference scan for `meta-monitoring`, `scripts/run-monitoring-check`, `Freestyle`, `UptimeRobot`, and `SiteMonitorLite`. | ✅ | 2026-06-11 |
 | TASK-019 | Run `docker compose config --quiet`. | ✅ | 2026-06-11 |
 | TASK-020 | Run local compliance validator against `rules/compliance.md`. | ✅ | 2026-06-11 |
-| TASK-021 | If Tomcat is reachable at `http://localhost:8080/meta/`, run `APP_BASE_URL=http://localhost:8080/meta/ ./scripts/run-monitoring-check`; otherwise document the blocker. | ✅ | 2026-06-11 |
+| TASK-021 | If Tomcat is reachable at `http://localhost:8080/MeTA/`, run `APP_BASE_URL=http://localhost:8080/MeTA/ ./scripts/run-monitoring-check`; otherwise document the blocker. | ✅ | 2026-06-11 |
 | TASK-022 | Add and run `tests/scripts/test-run-monitoring-check.sh` to prove the Freestyle command uses bounded curl timeouts and still writes monitoring evidence. | ✅ | 2026-06-11 |
 
 ## 3. Alternatives
@@ -102,7 +102,7 @@ This plan implements the instructor-confirmed monitoring split. The Jenkins CI/C
 
 ## 4. Dependencies
 
-- **DEP-001**: Docker Compose service `tomcat` must be running on Docker network `meta` for Jenkins-side `http://tomcat:8080/meta/` checks.
+- **DEP-001**: Docker Compose service `tomcat` must be running on Docker network `meta` for Jenkins-side `http://tomcat:8080/MeTA/` checks.
 - **DEP-002**: Jenkins service `jenkins` must be running for the Freestyle job to execute.
 - **DEP-003**: Jenkins job `meta-monitoring` must checkout or otherwise run from a workspace containing `scripts/run-monitoring-check`.
 - **DEP-004**: UptimeRobot account access is required to capture preferred official external monitor evidence.
@@ -129,7 +129,7 @@ This plan implements the instructor-confirmed monitoring split. The Jenkins CI/C
 - **TEST-006**: `rg -n "meta-monitoring|scripts/run-monitoring-check|Freestyle|UptimeRobot|SiteMonitorLite" docs rules scripts` must show the new monitoring setup.
 - **TEST-007**: `docker compose config --quiet` must pass.
 - **TEST-008**: `python3 .agents/skills/compliance-validator/scripts/validate_compliance.py --target . --rules rules/compliance.md` must pass with zero failures.
-- **TEST-009**: If Tomcat is reachable locally, `APP_BASE_URL=http://localhost:8080/meta/ ./scripts/run-monitoring-check` must pass.
+- **TEST-009**: If Tomcat is reachable locally, `APP_BASE_URL=http://localhost:8080/MeTA/ ./scripts/run-monitoring-check` must pass.
 - **TEST-010**: No Gatling command may be run directly for this plan.
 - **TEST-011**: `sh tests/scripts/test-run-monitoring-check.sh` must pass and prove `scripts/run-monitoring-check` calls curl with `--connect-timeout 5` and `--max-time 15`.
 
@@ -137,7 +137,7 @@ This plan implements the instructor-confirmed monitoring split. The Jenkins CI/C
 
 - **RISK-001**: Jenkins Freestyle job configuration lives in Jenkins UI/config, not in Git; documentation must be clear enough to reproduce it during defense.
 - **RISK-002**: Final submission still needs a real UptimeRobot or documented SiteMonitorLite passed screenshot.
-- **RISK-003**: Local runtime validation depends on Tomcat being reachable at `http://localhost:8080/meta/`.
+- **RISK-003**: Local runtime validation depends on Tomcat being reachable at `http://localhost:8080/MeTA/`.
 - **ASSUMPTION-001**: The instructor accepts a separate Freestyle Jenkins job for the Jenkins-triggered monitoring requirement.
 - **ASSUMPTION-002**: UptimeRobot remains the preferred official monitor evidence source.
 - **ASSUMPTION-003**: SiteMonitorLite is used only if the project documents why it replaced UptimeRobot.

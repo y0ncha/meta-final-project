@@ -3,7 +3,7 @@ import io.gatling.http.Predef._
 import scala.concurrent.duration._
 
 class MetaSimulation extends Simulation {
-  private val appBaseUrl = sys.env.getOrElse("APP_BASE_URL", "http://tomcat:8080/meta/").stripSuffix("/")
+  private val appBaseUrl = sys.env.getOrElse("APP_BASE_URL", "http://tomcat:8080/MeTA/").stripSuffix("/")
   private val appRootUrl = appBaseUrl + "/"
   private val appSubmitUrl = appBaseUrl + "/index.jsp"
   private val runType = sys.env.getOrElse("GATLING_RUN_TYPE", "load-5m")
@@ -34,16 +34,16 @@ class MetaSimulation extends Simulation {
 
   private val scn = scenario("Meta JSP flow")
     .exec(
-      http("GET /meta/")
+      http("GET /MeTA/")
         .get(appRootUrl)
         .check(status.is(200), substring("MeTA"))
     )
     .pause(1.second)
     .exec(
-      http("POST /meta/index.jsp submit name")
+      http("POST /MeTA/index.jsp submit name")
         .post(appSubmitUrl)
         .formParam("nameInput", "Yonatan")
-        .check(status.is(200), substring("Hello, Yonatan. Your JSP form submission worked."))
+        .check(status.is(200), substring("Hello, Yonatan. MeTA Corporate reviewed your form, opened a committee, and somehow approved it."))
     )
 
   runType match {
