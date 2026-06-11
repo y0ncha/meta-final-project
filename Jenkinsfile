@@ -5,7 +5,7 @@ pipeline {
     skipDefaultCheckout(true)
     timestamps()
     disableConcurrentBuilds()
-    timeout(time: 30, unit: 'MINUTES')
+    timeout(time: 60, unit: 'MINUTES')
     buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '10'))
   }
 
@@ -32,6 +32,7 @@ pipeline {
     GATLING_MAX_LEVEL_COUNT = '10'
     GATLING_MAX_LEVEL_SECONDS = '30'
     GATLING_MAX_RAMP_SECONDS = '10'
+    GATLING_MAX_DISCOVERY_ATTEMPTS = '3'
   }
 
   stages {
@@ -104,13 +105,13 @@ NODE'''
       }
       steps {
         script {
-          def gatlingArgs = "--platform ${env.GATLING_PLATFORM} --entrypoint= --network meta --volumes-from meta-jenkins -w ${env.WORKSPACE} -e WORKSPACE=${env.WORKSPACE} -e APP_BASE_URL=${env.APP_BASE_URL} -e GATLING_RUN_TYPE=max-limit -e GATLING_LOAD_USERS_PER_SEC=${env.GATLING_LOAD_USERS_PER_SEC} -e GATLING_STRESS_START_USERS_PER_SEC=${env.GATLING_STRESS_START_USERS_PER_SEC} -e GATLING_STRESS_TARGET_USERS_PER_SEC=${env.GATLING_STRESS_TARGET_USERS_PER_SEC} -e GATLING_MAX_START_USERS_PER_SEC=${env.GATLING_MAX_START_USERS_PER_SEC} -e GATLING_MAX_STEP_USERS_PER_SEC=${env.GATLING_MAX_STEP_USERS_PER_SEC} -e GATLING_MAX_LEVEL_COUNT=${env.GATLING_MAX_LEVEL_COUNT} -e GATLING_MAX_LEVEL_SECONDS=${env.GATLING_MAX_LEVEL_SECONDS} -e GATLING_MAX_RAMP_SECONDS=${env.GATLING_MAX_RAMP_SECONDS}"
+          def gatlingArgs = "--platform ${env.GATLING_PLATFORM} --entrypoint= --network meta --volumes-from meta-jenkins -w ${env.WORKSPACE} -e WORKSPACE=${env.WORKSPACE} -e APP_BASE_URL=${env.APP_BASE_URL} -e GATLING_RUN_TYPE=max-limit -e GATLING_LOAD_USERS_PER_SEC=${env.GATLING_LOAD_USERS_PER_SEC} -e GATLING_STRESS_START_USERS_PER_SEC=${env.GATLING_STRESS_START_USERS_PER_SEC} -e GATLING_STRESS_TARGET_USERS_PER_SEC=${env.GATLING_STRESS_TARGET_USERS_PER_SEC} -e GATLING_MAX_START_USERS_PER_SEC=${env.GATLING_MAX_START_USERS_PER_SEC} -e GATLING_MAX_STEP_USERS_PER_SEC=${env.GATLING_MAX_STEP_USERS_PER_SEC} -e GATLING_MAX_LEVEL_COUNT=${env.GATLING_MAX_LEVEL_COUNT} -e GATLING_MAX_LEVEL_SECONDS=${env.GATLING_MAX_LEVEL_SECONDS} -e GATLING_MAX_RAMP_SECONDS=${env.GATLING_MAX_RAMP_SECONDS} -e GATLING_MAX_DISCOVERY_ATTEMPTS=${env.GATLING_MAX_DISCOVERY_ATTEMPTS}"
           docker.image(env.GATLING_IMAGE).inside(gatlingArgs) {
             sh 'pwd'
             sh 'test "$PWD" = "$WORKSPACE"'
             sh 'test -d src/gatling/user-files/simulations'
-            sh 'test -x scripts/run-gatling-container'
-            sh 'GATLING_DOCKER_PIPELINE=1 GATLING_RUN_TYPE=max-limit ./scripts/run-gatling-container'
+            sh 'test -x scripts/run-gatling-max-limit'
+            sh 'GATLING_DOCKER_PIPELINE=1 GATLING_RUN_TYPE=max-limit ./scripts/run-gatling-max-limit'
           }
         }
       }

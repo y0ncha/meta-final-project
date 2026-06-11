@@ -29,7 +29,7 @@ This follow-up refactors the completed Jenkins container CI/CD plan so Jenkins r
 - **REQ-005**: Keep Jenkins plugins `docker-workflow`, `htmlpublisher`, and `gatling` installed by `ops/jenkins/Dockerfile`.
 - **REQ-006**: Keep pre-test validation under the stage that owns the relevant check: `Pre Actions` runs `docker --version`, `docker compose version`, and `docker info`; `Playwright Functional Test` validates the Playwright container workspace, checked-out commit identity, and Tomcat reachability; each Gatling stage validates its container workspace and runner script before execution.
 - **REQ-007**: Run Playwright from `Jenkinsfile` with `docker.image(env.PLAYWRIGHT_IMAGE).inside(...)`.
-- **REQ-008**: Run Gatling max-limit from `Jenkinsfile` with `docker.image(env.GATLING_IMAGE).inside(...)` only when `RUN_GATLING_MAX_LIMIT=true`.
+- **REQ-008**: Run bounded full Gatling max-limit discovery from `Jenkinsfile` with `docker.image(env.GATLING_IMAGE).inside(...)` only when `RUN_GATLING_MAX_LIMIT=true`.
 - **REQ-009**: Run Gatling load and stress from `Jenkinsfile` with `docker.image(env.GATLING_IMAGE).inside(...)`.
 - **REQ-010**: Run Gatling PDF export from `Jenkinsfile` with `docker.image(env.PLAYWRIGHT_IMAGE).inside(...)` when Gatling HTML reports exist.
 - **REQ-011**: Pass Docker Pipeline args that preserve Jenkins-in-Docker SCM workspace behavior: `--network meta`, `--volumes-from meta-jenkins`, working directory `env.WORKSPACE`, and explicit environment values including `APP_BASE_URL=http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`.
@@ -95,7 +95,7 @@ This follow-up refactors the completed Jenkins container CI/CD plan so Jenkins r
 | TASK-015 | Add Jenkins environment defaults for `PLAYWRIGHT_IMAGE`, `GATLING_IMAGE`, `GATLING_PLATFORM`, and Gatling load/stress/max settings. | ✅ | 2026-06-10 |
 | TASK-016 | Add Jenkins container-readiness checks under the owning stages: Docker CLI/daemon checks in `Pre Actions`, Playwright workspace/commit/Tomcat checks in `Playwright Functional Test`, and Gatling workspace/runner checks in each Gatling stage. | ✅ | 2026-06-11 |
 | TASK-017 | Update stage `Playwright Functional Test` to call `docker.image(env.PLAYWRIGHT_IMAGE).inside(...) { sh 'PLAYWRIGHT_DOCKER_PIPELINE=1 ./scripts/run-playwright-container' }`. | ✅ | 2026-06-10 |
-| TASK-018 | Update stage `Gatling Max Limit` to call `docker.image(env.GATLING_IMAGE).inside(...) { sh 'GATLING_DOCKER_PIPELINE=1 GATLING_RUN_TYPE=max-limit ./scripts/run-gatling-container' }`. | ✅ | 2026-06-10 |
+| TASK-018 | Update stage `Gatling Max Limit` to call `docker.image(env.GATLING_IMAGE).inside(...) { sh 'GATLING_DOCKER_PIPELINE=1 GATLING_RUN_TYPE=max-limit ./scripts/run-gatling-max-limit' }`. | ✅ | 2026-06-11 |
 | TASK-019 | Update stage `Gatling Load Test` to call `docker.image(env.GATLING_IMAGE).inside(...) { sh 'GATLING_DOCKER_PIPELINE=1 GATLING_RUN_TYPE=load-5m ./scripts/run-gatling-container' }`. | ✅ | 2026-06-10 |
 | TASK-020 | Update stage `Gatling Stress Test` to call `docker.image(env.GATLING_IMAGE).inside(...) { sh 'GATLING_DOCKER_PIPELINE=1 GATLING_RUN_TYPE=stress-5m ./scripts/run-gatling-container' }`. | ✅ | 2026-06-10 |
 | TASK-021 | Update the `post` Gatling PDF export to run `scripts/export-gatling-pdfs` inside a Playwright Docker Pipeline container with `GATLING_PDF_DOCKER_PIPELINE=1`. | ✅ | 2026-06-10 |

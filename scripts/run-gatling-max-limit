@@ -2,4 +2,83 @@
 set -eu
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
-exec env GATLING_RUN_TYPE=max-limit "$SCRIPT_DIR/run-gatling-container"
+RUNNER="$SCRIPT_DIR/run-gatling-container"
+
+positive_int() {
+  name="$1"
+  value="$2"
+  case "$value" in
+    ''|*[!0-9]*)
+      printf '%s\n' "$name must be a positive integer" >&2
+      exit 2
+      ;;
+  esac
+  if [ "$value" -le 0 ]; then
+    printf '%s\n' "$name must be greater than 0" >&2
+    exit 2
+  fi
+}
+
+GATLING_MAX_DISCOVERY_ATTEMPTS="${GATLING_MAX_DISCOVERY_ATTEMPTS:-3}"
+GATLING_MAX_START_USERS_PER_SEC="${GATLING_MAX_START_USERS_PER_SEC:-5}"
+GATLING_MAX_STEP_USERS_PER_SEC="${GATLING_MAX_STEP_USERS_PER_SEC:-5}"
+GATLING_MAX_LEVEL_COUNT="${GATLING_MAX_LEVEL_COUNT:-10}"
+GATLING_MAX_LEVEL_SECONDS="${GATLING_MAX_LEVEL_SECONDS:-30}"
+GATLING_MAX_RAMP_SECONDS="${GATLING_MAX_RAMP_SECONDS:-10}"
+
+positive_int GATLING_MAX_DISCOVERY_ATTEMPTS "$GATLING_MAX_DISCOVERY_ATTEMPTS"
+positive_int GATLING_MAX_START_USERS_PER_SEC "$GATLING_MAX_START_USERS_PER_SEC"
+positive_int GATLING_MAX_STEP_USERS_PER_SEC "$GATLING_MAX_STEP_USERS_PER_SEC"
+positive_int GATLING_MAX_LEVEL_COUNT "$GATLING_MAX_LEVEL_COUNT"
+positive_int GATLING_MAX_LEVEL_SECONDS "$GATLING_MAX_LEVEL_SECONDS"
+positive_int GATLING_MAX_RAMP_SECONDS "$GATLING_MAX_RAMP_SECONDS"
+
+OUTPUT_DIR="output/gatling/max-limit"
+DISCOVERY_LOG="$OUTPUT_DIR/raw/max-limit-discovery.log"
+mkdir -p "$OUTPUT_DIR/raw"
+: > "$DISCOVERY_LOG"
+
+log() {
+  printf '%s\n' "$*" | tee -a "$DISCOVERY_LOG"
+}
+
+attempt=1
+current_start="$GATLING_MAX_START_USERS_PER_SEC"
+
+while [ "$attempt" -le "$GATLING_MAX_DISCOVERY_ATTEMPTS" ]; do
+  highest_level=$((current_start + (GATLING_MAX_STEP_USERS_PER_SEC * (GATLING_MAX_LEVEL_COUNT - 1))))
+
+  log "Max-limit attempt $attempt/$GATLING_MAX_DISCOVERY_ATTEMPTS: ${current_start}-${highest_level} users/sec"
+
+  set +e
+  env \
+    GATLING_RUN_TYPE=max-limit \
+    GATLING_MAX_START_USERS_PER_SEC="$current_start" \
+    GATLING_MAX_STEP_USERS_PER_SEC="$GATLING_MAX_STEP_USERS_PER_SEC" \
+    GATLING_MAX_LEVEL_COUNT="$GATLING_MAX_LEVEL_COUNT" \
+    GATLING_MAX_LEVEL_SECONDS="$GATLING_MAX_LEVEL_SECONDS" \
+    GATLING_MAX_RAMP_SECONDS="$GATLING_MAX_RAMP_SECONDS" \
+    "$RUNNER"
+  status=$?
+  set -e
+
+  if [ "$status" -eq 0 ]; then
+    log "Max-limit attempt $attempt passed through ${highest_level} users/sec."
+    if [ "$attempt" -eq "$GATLING_MAX_DISCOVERY_ATTEMPTS" ]; then
+      log "No failing threshold found. Result is a tested lower bound through ${highest_level} users/sec."
+      exit 0
+    fi
+    current_start=$((highest_level + GATLING_MAX_STEP_USERS_PER_SEC))
+    attempt=$((attempt + 1))
+    continue
+  fi
+
+  if [ -s "$OUTPUT_DIR/index.html" ] && [ -s "$OUTPUT_DIR/max-limit-run.log" ]; then
+    log "Max-limit attempt $attempt crossed a Gatling threshold in the ${current_start}-${highest_level} users/sec range."
+    log "Treating this assertion failure as successful max-limit discovery evidence."
+    exit 0
+  fi
+
+  log "Max-limit attempt $attempt failed before a usable Gatling report was created."
+  exit "$status"
+done

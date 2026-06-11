@@ -54,6 +54,7 @@
 ## Notes
 
 - Follow-up correction on 2026-06-10: The Jenkins trigger design was tightened after re-reading the assignment PDF. Timer-triggered runs now provide only the five-minute availability check, while manual or SCM-triggered runs perform checkout, build, deploy, verification, and optional Playwright/Gatling stages.
+- Follow-up correction on 2026-06-11: The optional `Gatling Max Limit` stage now calls `scripts/run-gatling-max-limit` so `RUN_GATLING_MAX_LIMIT=true` runs bounded full max-limit discovery instead of only the single-attempt primitive.
 - The initial Docker-socket approach for Tomcat deployment was rejected by the approval layer when recreating Jenkins as root with `/var/run/docker.sock` mounted. The implementation was changed to the shared-volume deployment path.
 - Follow-up correction on 2026-06-10: Plan 06 later adds `/var/run/docker.sock` to Jenkins only for disposable browser test containers. Tomcat deployment remains shared-volume based.
 - The user removed the previous Compose containers/network before final validation; `docker compose up -d tomcat jenkins` recreated the required runtime.

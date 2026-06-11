@@ -33,22 +33,39 @@ The target can be overridden when a real environment changes:
 APP_BASE_URL=http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ ./scripts/run-gatling-load-5m
 ```
 
+For max-limit discovery, raise or bound the search with environment variables:
+
+```sh
+GATLING_MAX_DISCOVERY_ATTEMPTS=3 \
+GATLING_MAX_START_USERS_PER_SEC=5 \
+GATLING_MAX_STEP_USERS_PER_SEC=5 \
+GATLING_MAX_LEVEL_COUNT=10 \
+./scripts/run-gatling-max-limit
+```
+
 ## Max-Limit Method
 
-The default max-limit run starts at `5` users per second, increases by `5` users per second for `10` levels, keeps each level for `30` seconds, and uses `10` second ramps between levels.
+The max-limit wrapper runs complete stepped profiles until a Gatling assertion failure is found or the bounded discovery attempts are exhausted. By default it runs up to `3` full attempts:
+
+- Attempt 1 starts at `5` users per second and reaches `50` users per second.
+- Attempt 2 starts at `55` users per second and reaches `100` users per second.
+- Attempt 3 starts at `105` users per second and reaches `150` users per second.
+
+Each attempt increases by `5` users per second for `10` levels, keeps each level for `30` seconds, and uses `10` second ramps between levels. Set `GATLING_MAX_DISCOVERY_ATTEMPTS=1` when you intentionally want only one complete stepped profile.
 
 A tested level is treated as passing only when both conditions hold:
 
 - Failed request percentage is less than `5`.
 - HTTP response time percentile 95 is less than or equal to `2000` milliseconds.
 
-The max limit is the highest tested level that passes before the first tested level that fails. If no tested level fails, the result is a tested lower bound, not the true application maximum.
+The max limit is the highest tested level that passes before the first tested level that fails. If an attempt fails after a report is normalized, the wrapper treats that assertion failure as successful discovery evidence and preserves the failing report under `output/gatling/max-limit/`. If no tested level fails, the result is a tested lower bound, not the true application maximum.
 
 ## Evidence Files
 
 - Max-limit log: `output/gatling/max-limit/max-limit-run.log`
 - Max-limit report: `output/gatling/max-limit/index.html`
 - Max-limit raw reports: `output/gatling/max-limit/raw/`
+- Max-limit discovery log: `output/gatling/max-limit/raw/max-limit-discovery.log`
 - Max-limit PDF: `output/gatling/max-limit/max-limit-report.pdf`
 - Max-limit screenshot: `output/gatling/screenshots/max-limit-terminal.png`
 - Load log: `output/gatling/load-5m/load-5m-run.log`
@@ -68,7 +85,7 @@ Generated evidence remains ignored by Git under `output/`.
 
 `Jenkinsfile` runs Gatling only for non-timer builds:
 
-- `Gatling Max Limit` runs only when the build parameter `RUN_GATLING_MAX_LIMIT=true`.
+- `Gatling Max Limit` runs the full `./scripts/run-gatling-max-limit` discovery wrapper only when the build parameter `RUN_GATLING_MAX_LIMIT=true`.
 - `Gatling Load Test` runs `./scripts/run-gatling-load-5m`.
 - `Gatling Stress Test` runs `./scripts/run-gatling-stress-5m`.
 

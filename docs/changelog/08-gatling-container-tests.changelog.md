@@ -26,6 +26,7 @@
 - Added `docs/gatling.md` with runtime details, commands, evidence paths, max-limit method, and report-backed graph explanations.
 - Updated `docs/submission.md` to show Gatling logs/reports/PDFs as ready while keeping the three Gatling terminal screenshots explicitly deferred.
 - Fixed the Gatling runner normalization flow so logs and PDFs are not deleted when the latest raw report is copied into the stable report directory.
+- Updated the opt-in max-limit path so `RUN_GATLING_MAX_LIMIT=true` runs `scripts/run-gatling-max-limit`, which performs bounded full discovery attempts instead of calling the one-attempt primitive directly.
 
 ## Evidence Produced
 
@@ -79,6 +80,18 @@ Generated evidence remains ignored under `output/`. The older `08-*` generated e
   - Result: `pass=70`, `warn=0`, `manual=9`, `fail=0`.
   - Manual items were reviewed as negative-rule or defense-readiness checks. No hard compliance failure was found for this closeout.
 - `git diff --check`
+
+## 2026-06-11 Full Max-Limit Discovery Follow-Up
+
+- Changed `scripts/run-gatling-max-limit` from a thin single-run wrapper into a bounded discovery wrapper.
+- Default discovery now runs up to three complete stepped profiles: `5-50`, `55-100`, and `105-150` users/sec, using the existing step, level-count, hold, and ramp defaults.
+- A Gatling assertion failure is treated as successful max-limit discovery only when `output/gatling/max-limit/index.html` and `output/gatling/max-limit/max-limit-run.log` were normalized first.
+- Added `output/gatling/max-limit/raw/max-limit-discovery.log` as the summary of attempted ranges.
+- Updated `Jenkinsfile` so the optional `Gatling Max Limit` stage invokes `./scripts/run-gatling-max-limit` with `GATLING_DOCKER_PIPELINE=1`.
+- Increased the pipeline timeout to 60 minutes so an intentional max-limit build can complete discovery plus the required load and stress stages.
+- Added `tests/scripts/test-run-gatling-max-limit.sh` to verify repeated full-profile attempts and stop-on-threshold behavior with a stubbed runner.
+- Validation:
+  - `sh tests/scripts/test-run-gatling-max-limit.sh`
 
 ## 2026-06-11 Pipeline Report Rendering Follow-Up
 
