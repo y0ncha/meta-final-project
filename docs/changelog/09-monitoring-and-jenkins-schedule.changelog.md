@@ -80,3 +80,22 @@
 ### Remaining Risks
 
 - Jenkins UI must still run the updated source-controlled `./scripts/run-monitoring-check` from a fresh SCM checkout for live scheduled evidence.
+
+## 2026-06-11 CI/CD SCM Polling Follow-Up
+
+### What Changed
+
+- Changed `Jenkinsfile` SCM polling from `H/2 * * * *` to `* * * * *`.
+- Updated `docs/jenkins.md` so the documented `meta-container-ci-cd` SCM polling cadence matches the Jenkinsfile.
+
+### Why It Changed
+
+- The CI/CD Pipeline job should check for SCM changes every minute during defense and active validation.
+
+### Validation
+
+- `rg -n "pollSCM|H/2|H/5" Jenkinsfile docs rules ops scripts`: confirmed the Jenkinsfile uses `pollSCM('* * * * *')`; remaining `H/5` references belong to the separate monitoring job.
+
+### Remaining Risks
+
+- The live Jenkins job must reload the updated `Jenkinsfile` from SCM before the UI shows the new polling cadence.

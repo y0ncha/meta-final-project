@@ -53,7 +53,7 @@ Final GitHub-backed setup:
 - Credentials: leave empty for a public repository. If the repository is private, create Jenkins credentials and reference only the credentials ID.
 - Branch specifier: use the branch being defended or reviewed, for example `*/feature/09-monitoring-and-jenkins-schedule`. Switch to `*/main` after the branch is merged into the default branch.
 - Script path: `Jenkinsfile`
-- The source-controlled Jenkinsfile includes `pollSCM('H/2 * * * *')` so a local Jenkins instance can detect pushed GitHub changes without needing an inbound GitHub webhook.
+- The source-controlled Jenkinsfile includes `pollSCM('* * * * *')` so a local Jenkins instance can detect pushed GitHub changes every minute without needing an inbound GitHub webhook.
 - If Jenkins is exposed through a stable public URL, prefer a GitHub webhook that triggers this same Pipeline job on push or merge events. Keep `pollSCM` as the local defense fallback unless the webhook evidence is already captured.
 
 ### Monitoring Job
@@ -112,7 +112,7 @@ The `post` block runs after the visible stages finish. It exports PDFs for the G
 
 ## Schedule
 
-- `meta-container-ci-cd` uses SCM polling schedule `H/2 * * * *` or manual builds.
+- `meta-container-ci-cd` uses SCM polling schedule `* * * * *` or manual builds.
 - `meta-monitoring` uses monitoring schedule `H/5 * * * *`.
 - The monitoring target from inside Jenkins is `http://tomcat:8080/MeTA/`.
 - Do not schedule Gatling every five minutes. The project requires five-minute Gatling test duration, not a five-minute Gatling cadence.

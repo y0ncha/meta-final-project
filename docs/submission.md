@@ -21,6 +21,16 @@ Replace `<yournames>` with the final group member names before sending.
 - Keep public-IP bonus evidence separate from the base local evidence. Do not claim the bonus unless the public target and steps 6-10 were actually validated against it.
 - Review the HAR before sending because HAR files can include cookies, headers, response content, URLs, and cache metadata.
 
+## Instructor Open Questions
+
+These questions were sent to clarify assignment interpretation before final evidence capture:
+
+1. Jenkins Pipeline was not demonstrated directly in class as far as we remember. Since the assignment asks for a single CI/CD pipeline, is it acceptable to use one Jenkins Pipeline job configured by a repository `Jenkinsfile`, or should the implementation follow the connected Freestyle-job approach shown in class?
+2. The instructor mentioned that Jenkins plugins may be used as needed. Is it acceptable to use plugins such as Docker Pipeline to orchestrate container runners for Playwright and Gatling?
+3. For monitoring, the intended tool is UptimeRobot. Since UptimeRobot is a SaaS tool with its own scheduled checks, what exactly should Jenkins do every 5 minutes: run a separate scheduled availability check, trigger or configure UptimeRobot, or simply document UptimeRobot's own 5-minute monitor clearly?
+4. For the public-IP bonus, is port forwarding from a local machine/router acceptable, or is a public cloud VM/public server expected?
+5. Yoed and Niv, the project partners, are currently on reserve duty and cannot attend the scheduled project defense. Is it possible to reschedule the defense so the group can present together?
+
 ## How To Assemble The Email
 
 1. Run or refresh the required evidence before packaging:
@@ -111,6 +121,33 @@ Attach these when present and freshly validated:
 - `output/gatling/load-5m/load-5m-run.log`
 - `output/gatling/stress-5m/stress-5m-run.log`
 
+## Public-IP Bonus Evidence
+
+The public-IP bonus is separate from the base local submission package. Do not replace the required `localhost:8080/...` Tomcat screenshot with public app exposure evidence.
+
+The primary free path is home router port-forwarding:
+
+- Local Tomcat remains `http://localhost:8080/MeTA/`.
+- Router forwards public `tcp/8080` to the laptop `tcp/8080`.
+- Jenkins remains local/private at `http://localhost:8081/`.
+- UptimeRobot, Playwright, and Gatling target `http://<PUBLIC_IP>:8080/MeTA/`.
+
+Use a public VM only as fallback if home public IP exposure is blocked by CGNAT, router restrictions, ISP restrictions, or unstable laptop availability.
+
+Bonus evidence is claimable only when all public-target rows below are real and current:
+
+| Bonus item | Public target | Required evidence | Status |
+|---|---|---|---|
+| Public Tomcat URL | `http://<PUBLIC_IP>:8080/MeTA/` | Browser screenshot from outside the hosting network with address bar visible. | Pending public IP and port-forward or VM validation |
+| Availability monitor | `http://<PUBLIC_IP>:8080/MeTA/` | UptimeRobot or approved monitor screenshot showing up/pass state and public URL. | Pending public monitor evidence |
+| Jenkins monitoring | `APP_BASE_URL=http://<PUBLIC_IP>:8080/MeTA/` | `meta-monitoring` build log and archived `output/monitoring/latest-check.txt`. | Pending public-target Jenkins evidence |
+| Browser automation | `APP_BASE_URL=http://<PUBLIC_IP>:8080/MeTA/` | Playwright passed-run log/report/screenshots from the public target. | Pending public-target Playwright evidence |
+| Gatling max-limit | `APP_BASE_URL=http://<PUBLIC_IP>:8080/MeTA/` | Max-limit log, HTML report, PDF, and terminal or Jenkins-console screenshot. | Pending user-run public evidence |
+| Gatling load 5m | `APP_BASE_URL=http://<PUBLIC_IP>:8080/MeTA/` | Load-test log, HTML report, PDF, and terminal or Jenkins-console screenshot. | Pending user-run public evidence |
+| Gatling stress 5m | `APP_BASE_URL=http://<PUBLIC_IP>:8080/MeTA/` | Stress-test log, HTML report, PDF, and terminal or Jenkins-console screenshot. | Pending user-run public evidence |
+
+Track the selected path, public URL, firewall or router decisions, and public evidence paths in Plan 10 (`docs/plans/10-public-vm-bonus.md`) or in a future evidence note if the plan is executed.
+
 ## Final Review Before Sending
 
 - Confirm `main` is pushed to GitHub and the public repository opens without authentication.
@@ -119,5 +156,6 @@ Attach these when present and freshly validated:
 - Confirm `meta-monitoring` is a Freestyle project, runs `./scripts/run-monitoring-check` every 5 minutes, archives `output/monitoring/**/*`, and does not run Maven, deploy, Playwright, or Gatling commands.
 - Confirm the Playwright override is explained clearly because the assignment text names Selenium IDE specifically.
 - Confirm all Gatling numbers and graph explanations come from real generated reports.
+- If claiming the public-IP bonus, confirm the selected public app exposure path has a real public URL, monitor evidence, Playwright evidence, Gatling max/load/stress evidence, and no pending rows for bullets 6-10.
 - Capture the three Gatling terminal/CMD summary screenshots before sending; Plan 08 intentionally leaves those screenshot files deferred.
 - Confirm the email has exactly the required subject: `Final Exercise from: <yournames>`.
