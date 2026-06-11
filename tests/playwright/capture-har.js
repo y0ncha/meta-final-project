@@ -2,7 +2,7 @@ const { chromium, expect } = require('@playwright/test');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const appBaseUrl = process.env.APP_BASE_URL || 'http://localhost:8080/meta/';
+const appBaseUrl = process.env.APP_BASE_URL || 'http://localhost:8080/MeTA/';
 const harPath = process.env.HAR_PATH || 'output/har/meta-functional-flow.har';
 
 async function main() {
@@ -27,7 +27,7 @@ async function main() {
     await expect(page).toHaveURL(/#about$/);
     await page.locator('#nameInput').fill('Yonatan');
     await page.locator('#submitButton').click();
-    await expect(page.locator('#resultMessage')).toHaveText('Hello, Yonatan. Your JSP form submission worked.');
+    await expect(page.locator('#resultMessage')).toHaveText('Hello, Yonatan. MeTA Corporate reviewed your form, opened a committee, and somehow approved it.');
   } finally {
     if (context) {
       await context.close();

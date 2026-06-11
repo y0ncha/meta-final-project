@@ -14,13 +14,13 @@ pipeline {
   }
 
   triggers {
-    pollSCM('H/2 * * * *')
+    pollSCM('* * * * *')
   }
 
   environment {
-    APP_BASE_URL = 'http://tomcat:8080/meta/'
-    DEPLOY_CHECK_URL = 'http://tomcat:8080/meta/'
-    TOMCAT_CONTEXT = 'meta'
+    APP_BASE_URL = 'http://tomcat:8080/MeTA/'
+    DEPLOY_CHECK_URL = 'http://tomcat:8080/MeTA/'
+    TOMCAT_CONTEXT = 'MeTA'
     PLAYWRIGHT_IMAGE = 'mcr.microsoft.com/playwright:v1.60.0-noble'
     GATLING_IMAGE = 'denvazh/gatling:3.2.1'
     GATLING_PLATFORM = 'linux/amd64'
@@ -51,7 +51,7 @@ pipeline {
     stage('Build WAR') {
       steps {
         sh 'mvn -B clean package'
-        archiveArtifacts artifacts: 'target/meta.war', fingerprint: true
+        archiveArtifacts artifacts: 'target/MeTA.war', fingerprint: true
       }
     }
 

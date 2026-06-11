@@ -462,7 +462,7 @@ cat > "$REPORT_FILE" <<EOF
           <tbody>
 EOF
 
-build_war_status=$(artifact_status "target/meta.war")
+build_war_status=$(artifact_status "target/MeTA.war")
 playwright_status=$(bundle_status "required" \
   "output/playwright/06-playwright-run.log" \
   "output/playwright/junit.xml" \
@@ -483,9 +483,9 @@ gatling_stress_status=$(bundle_status "required" \
   "output/gatling/stress-5m/stress-5m-report.pdf")
 
 write_stage_row "Pre Actions" "Jenkins console log" "Console log" "Checks out the configured GitHub branch, records the commit, cleans old evidence, and checks Docker access."
-write_stage_row "Build WAR" "Archived target/meta.war" "$build_war_status" "Builds the Maven WAR for Tomcat deployment."
-write_stage_row "Deploy Tomcat" "Jenkins console log" "Console log" "Deploys meta.war into the Tomcat webapps volume."
-write_stage_row "Verify Tomcat" "Jenkins console log" "Console log" "Checks http://tomcat:8080/meta/ after deployment from the Docker network."
+write_stage_row "Build WAR" "Archived target/MeTA.war" "$build_war_status" "Builds the Maven WAR for Tomcat deployment."
+write_stage_row "Deploy Tomcat" "Jenkins console log" "Console log" "Deploys MeTA.war into the Tomcat webapps volume."
+write_stage_row "Verify Tomcat" "Jenkins console log" "Console log" "Checks http://tomcat:8080/MeTA/ after deployment from the Docker network."
 write_stage_row "Playwright Functional Test" "HTML, JUnit XML, screenshots, log" "$playwright_status" "Validates the Playwright container workspace, commit identity, and Tomcat reachability before running the test."
 write_stage_row "Gatling Max Limit" "HTML, PDF, raw report, log" "$gatling_max_status" "Validates the Gatling container workspace before execution. Requires RUN_GATLING_MAX_LIMIT=true."
 write_stage_row "Gatling Load Test" "HTML, PDF, raw report, log" "$gatling_load_status" "Validates the Gatling container workspace before running the required five-minute load test."
@@ -504,7 +504,7 @@ cat >> "$REPORT_FILE" <<EOF
           <tbody>
 EOF
 
-write_single_ref_row "Build" "WAR package" "target/meta.war" "WAR"
+write_single_ref_row "Build" "WAR package" "target/MeTA.war" "WAR"
 write_single_ref_row "Playwright" "Run log" "output/playwright/06-playwright-run.log" "Log"
 write_single_ref_row "Playwright" "JUnit results" "output/playwright/junit.xml" "JUnit"
 write_single_ref_row "Playwright" "Jenkins-safe HTML report" "output/playwright/jenkins-report/index.html" "HTML"

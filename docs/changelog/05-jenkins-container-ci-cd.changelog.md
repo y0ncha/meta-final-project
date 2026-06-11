@@ -34,11 +34,11 @@
 - `docker compose exec -T jenkins sh -lc 'command -v mvn && command -v curl && command -v git'`: passed and showed required tools present.
 - `docker compose ps tomcat jenkins`: passed and showed both services running.
 - `curl -fsS http://localhost:8081/login`: passed outside the sandbox and returned the Jenkins sign-in page.
-- `docker compose exec -T jenkins sh -lc 'cd /workspace/final-project && mvn -B clean package'`: passed and produced `target/meta.war`.
-- `test -f target/meta.war`: passed.
-- `docker compose exec -T jenkins sh -lc 'cd /workspace/final-project && SKIP_BUILD=1 TOMCAT_SHARED_WEBAPPS_DIR=/tomcat-webapps DEPLOY_CHECK_URL=http://tomcat:8080/meta/ ./scripts/deploy-war'`: passed.
-- `docker compose exec -T jenkins sh -lc 'curl -fsS http://tomcat:8080/meta/ >/dev/null'`: passed.
-- `curl -f http://localhost:8080/meta/`: passed and returned the JSP application HTML.
+- `docker compose exec -T jenkins sh -lc 'cd /workspace/final-project && mvn -B clean package'`: passed and produced `target/MeTA.war`.
+- `test -f target/MeTA.war`: passed.
+- `docker compose exec -T jenkins sh -lc 'cd /workspace/final-project && SKIP_BUILD=1 TOMCAT_SHARED_WEBAPPS_DIR=/tomcat-webapps DEPLOY_CHECK_URL=http://tomcat:8080/MeTA/ ./scripts/deploy-war'`: passed.
+- `docker compose exec -T jenkins sh -lc 'curl -fsS http://tomcat:8080/MeTA/ >/dev/null'`: passed.
+- `curl -f http://localhost:8080/MeTA/`: passed and returned the JSP application HTML.
 - Jenkins authenticated API configured job `meta-container-ci-cd` from the mounted `Jenkinsfile`.
 - Jenkins manual build `#1`: passed with result `SUCCESS`.
 - Jenkins scheduled timer build `#2`: passed with result `SUCCESS`.
@@ -46,7 +46,7 @@
 
 ## Evidence
 
-- `output/jenkins/05-manual-build-1-console.log`: manual build `#1`, result `SUCCESS`; includes `mvn -B clean package`, `./scripts/deploy-war`, and `curl -fsS http://tomcat:8080/meta/`.
+- `output/jenkins/05-manual-build-1-console.log`: manual build `#1`, result `SUCCESS`; includes `mvn -B clean package`, `./scripts/deploy-war`, and `curl -fsS http://tomcat:8080/MeTA/`.
 - `output/jenkins/05-scheduled-build-2-console.log`: scheduled timer build `#2`, result `SUCCESS`; includes `Started by timer` and the availability check.
 - `output/jenkins/05-meta-container-ci-cd-config.xml`: Jenkins job configuration snapshot, including the cron trigger.
 - `output/jenkins/05-meta-container-ci-cd-builds.json`: Jenkins build API snapshot for the validated job.
@@ -108,7 +108,7 @@ Validation:
 - `docker compose exec -T jenkins docker compose version`: passed with `Docker Compose version v5.1.4`.
 - `docker compose exec -T jenkins docker info`: passed and confirmed Jenkins can reach the Docker daemon.
 - `docker compose exec -T jenkins sh -lc 'for p in docker-workflow htmlpublisher gatling; do if [ -f /var/jenkins_home/plugins/$p.jpi ] || [ -f /var/jenkins_home/plugins/$p.hpi ]; then echo "$p present"; else echo "$p missing"; exit 1; fi; done'`: passed for all three plugins.
-- Docker Pipeline-equivalent Playwright smoke with `--network meta --volumes-from meta-jenkins -w /workspace/final-project`: passed; the container printed `/workspace/final-project`, found `Jenkinsfile`, and reached `http://tomcat:8080/meta/`.
+- Docker Pipeline-equivalent Playwright smoke with `--network meta --volumes-from meta-jenkins -w /workspace/final-project`: passed; the container printed `/workspace/final-project`, found `Jenkinsfile`, and reached `http://tomcat:8080/MeTA/`.
 - Docker Pipeline-equivalent Playwright run: passed with `PLAYWRIGHT_DOCKER_PIPELINE=1 ./scripts/run-playwright-container`; one Chromium test passed and evidence was written under `output/playwright/`.
 - Docker Pipeline-equivalent Gatling load run: passed after one clean rerun with `3000` OK, `0` KO, p95 `17 ms`, and normalized report `output/gatling/load-5m/index.html`.
 - Docker Pipeline-equivalent Gatling stress run: passed with `16500` OK, `0` KO, p95 `11 ms`, and normalized report `output/gatling/stress-5m/index.html`.
@@ -132,7 +132,7 @@ Remaining risks and follow-up:
 
 - Updated `Jenkinsfile` so non-timer `checkout scm` records `CHECKED_OUT_COMMIT`.
 - Updated Docker Pipeline args for Playwright, Gatling, and Gatling PDF export to use working directory `env.WORKSPACE` instead of the legacy `/workspace/final-project` bind mount.
-- Updated `Docker Pipeline Preflight` to prove the disposable container is in the Jenkins SCM workspace, is inside a Git worktree, matches `CHECKED_OUT_COMMIT`, and can still reach `http://tomcat:8080/meta/`.
+- Updated `Docker Pipeline Preflight` to prove the disposable container is in the Jenkins SCM workspace, is inside a Git worktree, matches `CHECKED_OUT_COMMIT`, and can still reach `http://tomcat:8080/MeTA/`.
 - Updated Jenkins, Playwright, Plan 05, and Plan 08 documentation so current Docker Pipeline execution is described as SCM-workspace based. Historical `/workspace/final-project` validation notes remain as past evidence only.
 
 Validation:

@@ -42,7 +42,7 @@
 - `rg -n "meta-monitoring|scripts/run-monitoring-check|Freestyle|UptimeRobot|SiteMonitorLite" docs rules scripts`: passed and showed the new monitoring setup.
 - `docker compose config --quiet`: passed.
 - `python3 .agents/skills/compliance-validator/scripts/validate_compliance.py --target . --rules rules/compliance.md`: passed with zero failures; 9 manual review items remain for negative or defense-readiness rules.
-- Optional local runtime check `APP_BASE_URL=http://localhost:8080/meta/ ./scripts/run-monitoring-check`: blocked because no service was listening on localhost port 8080 during validation.
+- Optional local runtime check `APP_BASE_URL=http://localhost:8080/MeTA/ ./scripts/run-monitoring-check`: blocked because no service was listening on localhost port 8080 during validation.
 
 ### Evidence Paths
 
@@ -57,7 +57,7 @@
 - Final submission still needs a real UptimeRobot or documented SiteMonitorLite passed screenshot.
 - Jenkins UI must be configured with Freestyle job `meta-monitoring`, trigger `H/5 * * * *`, Execute shell command `./scripts/run-monitoring-check`, and archive pattern `output/monitoring/**/*`.
 - The live scheduled monitoring build evidence must be captured from Jenkins after the Freestyle job is configured.
-- Local script runtime evidence still needs to be captured after Tomcat is running at `http://localhost:8080/meta/`.
+- Local script runtime evidence still needs to be captured after Tomcat is running at `http://localhost:8080/MeTA/`.
 
 ## 2026-06-11 Monitoring Timeout Follow-Up
 
@@ -80,3 +80,22 @@
 ### Remaining Risks
 
 - Jenkins UI must still run the updated source-controlled `./scripts/run-monitoring-check` from a fresh SCM checkout for live scheduled evidence.
+
+## 2026-06-11 CI/CD SCM Polling Follow-Up
+
+### What Changed
+
+- Changed `Jenkinsfile` SCM polling from `H/2 * * * *` to `* * * * *`.
+- Updated `docs/jenkins.md` so the documented `meta-container-ci-cd` SCM polling cadence matches the Jenkinsfile.
+
+### Why It Changed
+
+- The CI/CD Pipeline job should check for SCM changes every minute during defense and active validation.
+
+### Validation
+
+- `rg -n "pollSCM|H/2|H/5" Jenkinsfile docs rules ops scripts`: confirmed the Jenkinsfile uses `pollSCM('* * * * *')`; remaining `H/5` references belong to the separate monitoring job.
+
+### Remaining Risks
+
+- The live Jenkins job must reload the updated `Jenkinsfile` from SCM before the UI shows the new polling cadence.

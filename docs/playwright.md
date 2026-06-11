@@ -8,11 +8,11 @@
 - Local container runner: direct disposable `docker run`
 - Jenkins container runner: Jenkins Docker Pipeline using `docker.image(env.PLAYWRIGHT_IMAGE).inside(...)`
 - Default Docker network: `meta`
-- Local default app URL from the Playwright container: `http://tomcat:8080/meta/`
-- Jenkins default app URL from the Playwright container: `http://tomcat:8080/meta/`
+- Local default app URL from the Playwright container: `http://tomcat:8080/MeTA/`
+- Jenkins default app URL from the Playwright container: `http://tomcat:8080/MeTA/`
 - Jenkins runner container: `meta-jenkins`
 - Default disposable Playwright container name: `meta-playwright-${BUILD_NUMBER:-local}`
-- Host browser URL for manual checks: `http://localhost:8080/meta/`
+- Host browser URL for manual checks: `http://localhost:8080/MeTA/`
 
 The runner keeps `APP_BASE_URL` configurable. Override it only when the Tomcat target changes for a real environment, for example a public-IP bonus target. The disposable container name is configurable with `PLAYWRIGHT_CONTAINER_NAME`; by default local runs use `meta-playwright-local` and Jenkins runs use `meta-playwright-<build-number>`.
 
@@ -25,8 +25,8 @@ The test file is `tests/playwright/meta-functional.spec.js`. It contains one bro
 1. Page shell visibility: loads the configured app root, checks `#pageTitle` text equals `MeTA`, and verifies `#submitButton` and `#nameInput` are visible.
 2. Link navigation: clicks `#aboutLink`, checks the URL ends with `#about`, and verifies `#about` contains `About`.
 3. Text input: fills `#nameInput` with `Yonatan` and verifies the input value.
-4. Valid submit: clicks `#submitButton`, verifies `#resultMessage` equals `Hello, Yonatan. Your JSP form submission worked.`, and captures `output/playwright/screenshots/06-valid-submit.png`.
-5. Empty submit: reloads the configured app root, submits an empty form, verifies `#validationMessage` equals `Please enter a name before submitting.`, and captures `output/playwright/screenshots/06-empty-submit.png`.
+4. Valid submit: clicks `#submitButton`, verifies `#resultMessage` equals `Hello, Yonatan. MeTA Corporate reviewed your form, opened a committee, and somehow approved it.`, and captures `output/playwright/screenshots/06-valid-submit.png`.
+5. Empty submit: reloads the configured app root, submits an empty form, verifies `#validationMessage` equals `Please enter a name before MeTA Corporate schedules a meeting about the empty box.`, and captures `output/playwright/screenshots/06-empty-submit.png`.
 
 ## Assertion And Validation Types
 
@@ -37,8 +37,8 @@ Playwright uses `expect(...)` assertions for every automated validation in this 
 | Page shell visibility | `toHaveText('MeTA')`, `toBeVisible()` | Positive assertion | Confirms the deployed JSP page loaded and exposes the required button and text input. |
 | Link navigation | `toHaveURL(/#about$/)`, `toContainText('About')` | Positive assertion | Confirms the required link works and navigates to the about section. |
 | Text input | `toHaveValue('Yonatan')` | Positive assertion | Confirms the required text input accepts user-entered text. |
-| Valid submit | `toHaveText('Hello, Yonatan. Your JSP form submission worked.')` | Positive assertion | Confirms the JSP form accepts valid input and renders the success message. |
-| Empty submit | `toHaveText('Please enter a name before submitting.')` | Negative validation assertion | Confirms the app rejects an empty submission and shows validation feedback instead of a success message. |
+| Valid submit | `toHaveText('Hello, Yonatan. MeTA Corporate reviewed your form, opened a committee, and somehow approved it.')` | Positive assertion | Confirms the JSP form accepts valid input and renders the success message. |
+| Empty submit | `toHaveText('Please enter a name before MeTA Corporate schedules a meeting about the empty box.')` | Negative validation assertion | Confirms the app rejects an empty submission and shows validation feedback instead of a success message. |
 
 ## Local Execution
 
