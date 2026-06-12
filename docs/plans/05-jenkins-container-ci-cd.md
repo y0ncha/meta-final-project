@@ -29,8 +29,8 @@ This follow-up refactors the completed Jenkins container CI/CD plan so Jenkins r
 - **REQ-005**: Keep Jenkins plugins `docker-workflow`, `htmlpublisher`, and `gatling` installed by `ops/jenkins/Dockerfile`.
 - **REQ-006**: Keep pre-test validation under the stage that owns the relevant check: `Pre Actions` runs `docker --version`, `docker compose version`, and `docker info`; `Playwright Functional Test` validates the Playwright container workspace, checked-out commit identity, and Tomcat reachability; each Gatling stage validates its container workspace and runner script before execution.
 - **REQ-007**: Run Playwright from `Jenkinsfile` with `docker.image(env.PLAYWRIGHT_IMAGE).inside(...)`.
-- **REQ-008**: Run bounded full Gatling max-limit discovery from `Jenkinsfile` with `docker.image(env.GATLING_IMAGE).inside(...)` only when `RUN_GATLING_MAX_LIMIT=true`.
-- **REQ-009**: Run Gatling load and stress from `Jenkinsfile` with `docker.image(env.GATLING_IMAGE).inside(...)`.
+- **REQ-008**: Run bounded full Gatling max-limit discovery from `Jenkinsfile` with `docker.image(env.GATLING_IMAGE).inside(...)` only when `RUN_GATLING_TESTS=true`.
+- **REQ-009**: Run Gatling load and stress from `Jenkinsfile` with `docker.image(env.GATLING_IMAGE).inside(...)` only when `RUN_GATLING_TESTS=true`.
 - **REQ-010**: Run Gatling PDF export from `Jenkinsfile` with `docker.image(env.PLAYWRIGHT_IMAGE).inside(...)` when Gatling HTML reports exist.
 - **REQ-011**: Pass Docker Pipeline args that preserve Jenkins-in-Docker SCM workspace behavior: `--network meta`, `--volumes-from meta-jenkins`, working directory `env.WORKSPACE`, and explicit environment values including `APP_BASE_URL=http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`.
 - **REQ-012**: Preserve local manual commands `./scripts/run-playwright-container`, `./scripts/run-gatling-max-limit`, `./scripts/run-gatling-load-5m`, `./scripts/run-gatling-stress-5m`, and `./scripts/export-gatling-pdfs`.

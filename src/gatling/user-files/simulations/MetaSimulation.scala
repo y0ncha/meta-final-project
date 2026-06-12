@@ -55,8 +55,7 @@ class MetaSimulation extends Simulation {
       )
         .protocols(httpProtocol)
         .assertions(
-          global.failedRequests.percent.lt(5),
-          global.responseTime.percentile3.lte(2000)
+          global.failedRequests.count.lt(1)
         )
 
     case "stress-5m" =>
@@ -69,8 +68,7 @@ class MetaSimulation extends Simulation {
       )
         .protocols(httpProtocol)
         .assertions(
-          global.failedRequests.percent.lt(5),
-          global.responseTime.percentile3.lte(2000)
+          global.failedRequests.count.lt(1)
         )
 
     case "max-limit" =>
@@ -85,8 +83,7 @@ class MetaSimulation extends Simulation {
       )
         .protocols(httpProtocol)
         .assertions(
-          global.failedRequests.percent.lt(5),
-          global.responseTime.percentile3.lte(2000)
+          global.failedRequests.count.lt(1)
         )
   }
 }

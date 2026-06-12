@@ -23,11 +23,13 @@ This plan implements the Gatling deliverables required by `final-project.pdf` an
 
 Follow-up update on 2026-06-10: Playwright, HAR, and Gatling validation runners no longer use profiled Compose runner services. Local validation scripts use direct disposable `docker run`; Jenkins starts Playwright and Gatling images through Docker Pipeline. Playwright functional validation and HAR capture intentionally use separate disposable containers so browser cache, filesystem state, and test output cannot leak between validation stages.
 
-Follow-up update on 2026-06-10 after review: local `./scripts/export-gatling-pdfs` remains strict and requires all three Gatling reports, while Jenkins finalization runs it with `GATLING_PDF_REQUIRE_ALL=false` so the normal load/stress pipeline does not fail when optional max-limit discovery is skipped. The plan status is evidence pending, not completed, until the three Gatling terminal or Jenkins-console screenshots and live Jenkins build evidence are captured.
+Follow-up update on 2026-06-10 after review: local `./scripts/export-gatling-pdfs` remains strict and requires all three Gatling reports, while Jenkins finalization runs it with `GATLING_PDF_REQUIRE_ALL=false` so normal CI/CD builds can skip Gatling evidence collection cleanly. The plan status is evidence pending, not completed, until the three Gatling terminal or Jenkins-console screenshots and live Jenkins build evidence are captured.
 
-Follow-up update on 2026-06-11: the consolidated Pipeline HTML report now writes a companion `pipeline-report.css` file because Jenkins HTML Publisher can block inline styles. The report groups artifacts by evidence area, uses visible status badges, points artifact links at the current Jenkins job URL from `BUILD_URL`, labels missing max-limit artifacts as opt-in evidence requiring `RUN_GATLING_MAX_LIMIT=true`, and derives stage evidence state from generated artifacts where possible instead of claiming unavailable artifacts are available.
+Follow-up update on 2026-06-11: the consolidated Pipeline HTML report now writes a companion `pipeline-report.css` file because Jenkins HTML Publisher can block inline styles. The report groups artifacts by evidence area, uses visible status badges, points artifact links at the current Jenkins job URL from `BUILD_URL`, labels missing Gatling artifacts as opt-in evidence requiring `RUN_GATLING_TESTS=true`, and derives stage evidence state from generated artifacts where possible instead of claiming unavailable artifacts are available.
 
 Follow-up update on 2026-06-11: the optional Jenkins `Gatling Max Limit` stage now runs the full `scripts/run-gatling-max-limit` discovery wrapper instead of the one-attempt primitive. The wrapper runs bounded complete stepped profiles until a normalized Gatling assertion-failure report is found or the configured attempt count is exhausted.
+
+Follow-up update on 2026-06-12: Jenkins now exposes one evidence-run toggle, `RUN_GATLING_TESTS`, instead of the max-limit-only `RUN_GATLING_MAX_LIMIT` parameter. `RUN_GATLING_TESTS=false` skips `Gatling Max Limit`, `Gatling Load Test`, and `Gatling Stress Test` for normal CI/CD runs. `RUN_GATLING_TESTS=true` runs all three Gatling stages when their runner scripts exist, so final performance evidence is collected intentionally in one Jenkins build.
 
 ## 1. Requirements & Constraints
 
@@ -47,7 +49,7 @@ Follow-up update on 2026-06-11: the optional Jenkins `Gatling Max Limit` stage n
 - **REQ-013**: The 5-minute stress profile must run for exactly `300` seconds.
 - **REQ-014**: The max-limit profile must use deterministic stepped load levels and must not claim an exact maximum unless the generated Gatling evidence shows a failing threshold after a passing threshold.
 - **REQ-015**: Use deterministic default load values: `GATLING_LOAD_USERS_PER_SEC=5`, `GATLING_STRESS_START_USERS_PER_SEC=5`, `GATLING_STRESS_TARGET_USERS_PER_SEC=50`, `GATLING_MAX_DISCOVERY_ATTEMPTS=3`, `GATLING_MAX_START_USERS_PER_SEC=5`, `GATLING_MAX_STEP_USERS_PER_SEC=5`, `GATLING_MAX_LEVEL_COUNT=10`, `GATLING_MAX_LEVEL_SECONDS=30`, and `GATLING_MAX_RAMP_SECONDS=10`.
-- **REQ-016**: Use deterministic default pass criteria for max-limit analysis: failed request percentage must be less than `5`, and HTTP response time percentile 95 must be less than or equal to `2000` milliseconds for a load level to be treated as passing.
+- **REQ-016**: Use the class-aligned max-limit pass criterion: a tested load level passes only when Gatling reports zero failed requests/checks/timeouts (`KO=0`). Response-time percentiles remain report evidence for graph explanation, not the max-limit pass/fail rule.
 - **REQ-017**: Normalize every Gatling report so `index.html` exists directly at `output/gatling/max-limit/index.html`, `output/gatling/load-5m/index.html`, and `output/gatling/stress-5m/index.html`.
 - **REQ-018**: Preserve raw Gatling run directories under `output/gatling/<run-type>/raw/`.
 - **REQ-019**: Write combined stdout and stderr logs to `output/gatling/max-limit/max-limit-run.log`, `output/gatling/load-5m/load-5m-run.log`, and `output/gatling/stress-5m/stress-5m-run.log`.
@@ -55,8 +57,8 @@ Follow-up update on 2026-06-11: the optional Jenkins `Gatling Max Limit` stage n
 - **REQ-021**: Capture one terminal or Jenkins-console screenshot for each run at `output/gatling/screenshots/max-limit-terminal.png`, `output/gatling/screenshots/load-5m-terminal.png`, and `output/gatling/screenshots/stress-5m-terminal.png`.
 - **REQ-022**: Document the actual run commands, result paths, graph interpretation, and max-limit conclusion in `docs/gatling.md`.
 - **REQ-023**: Do not invent performance values. If max-limit evidence does not cross the defined failure threshold, document the result as a tested lower bound and rerun with larger values before claiming a maximum.
-- **REQ-024**: Update `Jenkinsfile` so the required load and stress scripts run during non-timer CI/CD builds after deployment and before post-build archival.
-- **REQ-025**: Add an optional Jenkins `Gatling Max Limit` stage controlled by boolean parameter `RUN_GATLING_MAX_LIMIT`, default `false`, so full max-limit discovery can be launched from Jenkins without running on every CI/CD build.
+- **REQ-024**: Update `Jenkinsfile` so Gatling max-limit, load, and stress evidence stages run after deployment only when `RUN_GATLING_TESTS=true`.
+- **REQ-025**: Add one Jenkins boolean parameter `RUN_GATLING_TESTS`, default `false`, so full Gatling evidence collection can be launched from Jenkins without running on every CI/CD build.
 - **REQ-026**: Keep `Jenkinsfile` post-build HTML Publisher behavior compatible with stable report directories `output/gatling/max-limit/`, `output/gatling/load-5m/`, and `output/gatling/stress-5m/`.
 - **REQ-027**: Keep generated Gatling reports, screenshots, PDFs, logs, and raw result directories ignored by Git under `output/`.
 - **REQ-028**: Generate one final Jenkins Pipeline HTML report at `output/reports/pipeline-report.html` that summarizes stage evidence and links to archived Playwright, Gatling, HAR, and WAR artifacts when present.
@@ -163,10 +165,10 @@ Follow-up update on 2026-06-11: the optional Jenkins `Gatling Max Limit` stage n
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-050 | Add `RUN_GATLING_MAX_LIMIT` Jenkins parameter. | Yes | 2026-06-10 |
-| TASK-051 | Add optional `Gatling Max Limit` stage. | Yes | 2026-06-10 |
-| TASK-052 | Keep `Gatling Load Test` stage wired to load wrapper. | Yes | 2026-06-10 |
-| TASK-053 | Keep `Gatling Stress Test` stage wired to stress wrapper. | Yes | 2026-06-10 |
+| TASK-050 | Replace the max-limit-only Jenkins toggle with `RUN_GATLING_TESTS`. | Yes | 2026-06-12 |
+| TASK-051 | Gate `Gatling Max Limit` with `RUN_GATLING_TESTS=true` and keep it wired to the max-limit wrapper. | Yes | 2026-06-12 |
+| TASK-052 | Gate `Gatling Load Test` with `RUN_GATLING_TESTS=true` and keep it wired to the load wrapper. | Yes | 2026-06-12 |
+| TASK-053 | Gate `Gatling Stress Test` with `RUN_GATLING_TESTS=true` and keep it wired to the stress wrapper. | Yes | 2026-06-12 |
 | TASK-054 | Publish Gatling HTML/PDF reports through HTML Publisher. | Yes | 2026-06-10 |
 | TASK-055 | Create `scripts/generate-pipeline-report`. | Yes | 2026-06-10 |
 | TASK-056 | Archive and publish consolidated pipeline report. | Yes | 2026-06-10 |
@@ -243,7 +245,7 @@ Follow-up update on 2026-06-11: the optional Jenkins `Gatling Max Limit` stage n
 |------|-------------|-----------|------|
 | TASK-100 | Add a shell regression test for `scripts/run-gatling-max-limit` discovery attempts using a stubbed Gatling runner. | Yes | 2026-06-11 |
 | TASK-101 | Update `scripts/run-gatling-max-limit` to run repeated complete stepped profiles and stop on the first normalized assertion-failure report. | Yes | 2026-06-11 |
-| TASK-102 | Update `Jenkinsfile` so `RUN_GATLING_MAX_LIMIT=true` calls the max-limit wrapper instead of `scripts/run-gatling-container` directly. | Yes | 2026-06-11 |
+| TASK-102 | Update `Jenkinsfile` so the max-limit stage calls the max-limit wrapper instead of `scripts/run-gatling-container` directly. | Yes | 2026-06-11 |
 | TASK-103 | Increase the Jenkins pipeline timeout to allow the opt-in full max-limit discovery plus the required load and stress stages. | Yes | 2026-06-11 |
 | TASK-104 | Update Gatling docs, plan, and changelog with the bounded full-discovery behavior. | Yes | 2026-06-11 |
 
@@ -253,7 +255,7 @@ Follow-up update on 2026-06-11: the optional Jenkins `Gatling Max Limit` stage n
 - **ALT-002**: Add Gatling or Playwright runner services in `docker-compose.yml`. Rejected because Compose now owns only regular services `tomcat` and `jenkins`; validation runners start as disposable direct Docker or Jenkins Docker Pipeline containers.
 - **ALT-003**: Run Gatling only from the Jenkins UI with inline shell commands. Rejected because the workflow would not be reproducible from source control and would be harder to defend live.
 - **ALT-004**: Use the Jenkins Gatling plugin `gatlingArchive()` immediately. Rejected until a real Plan 08 run proves that the generated Gatling output shape matches the plugin's expectations; HTML Publisher already satisfies report visibility for this coursework deliverable.
-- **ALT-005**: Run max-limit discovery on every Jenkins CI/CD build. Rejected because max-limit discovery can be disruptive and is not required on every source change; it must be manually enabled with `RUN_GATLING_MAX_LIMIT=true`.
+- **ALT-005**: Run Gatling evidence collection on every Jenkins CI/CD build. Rejected because max-limit, load, and stress runs can be disruptive and are not required on every source change; they must be manually enabled with `RUN_GATLING_TESTS=true`.
 - **ALT-006**: Claim the highest configured max-limit step as the application maximum when no failure threshold is crossed. Rejected because `rules/compliance.md` forbids invented performance numbers; that result is only a tested lower bound.
 - **ALT-007**: Export Gatling PDFs manually only through the browser print dialog. Rejected as the primary path because automated Playwright PDF export is repeatable; manual print remains an emergency fallback if automated PDF export is blocked and the blocker is documented.
 
@@ -305,6 +307,7 @@ Follow-up update on 2026-06-11: the optional Jenkins `Gatling Max Limit` stage n
 - **TEST-003**: `./scripts/generate-pipeline-report` must create non-empty `output/reports/pipeline-report.html`.
 - **TEST-003A**: `sh tests/scripts/test-generate-pipeline-report.sh` must pass and prove the generated report uses external CSS, current Jenkins artifact URLs, status badges, opt-in max-limit wording, and evidence-backed stage states for missing/present artifacts.
 - **TEST-003B**: `sh tests/scripts/test-run-gatling-max-limit.sh` must pass and prove max-limit discovery repeats complete profiles, advances the user-per-second window, and stops on the first normalized threshold failure.
+- **TEST-003C**: `sh tests/scripts/test-gatling-assertions.sh` must pass and prove `MetaSimulation.scala` uses the zero-KO assertion policy without the old hard `p95 <= 2000 ms` gate.
 - **TEST-004**: `docker compose config --quiet` must pass.
 - **TEST-004A**: `docker compose up -d tomcat jenkins` must start both services.
 - **TEST-005**: `./scripts/deploy-war` must pass and print `Deployed URL: http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`.
@@ -316,8 +319,8 @@ Follow-up update on 2026-06-11: the optional Jenkins `Gatling Max Limit` stage n
 - **TEST-009B**: `scripts/run-gatling-container` must remove stale stable outputs before each run and normalize the latest raw report before returning a Gatling assertion failure status.
 - **TEST-010**: Jenkins-compatible execution path must remain source-controlled through `Jenkinsfile` and `scripts/run-gatling-container`.
 - **TEST-011**: Jenkins job `meta-container-ci-cd` should be rerun before final submission to capture live build-page evidence.
-- **TEST-012**: Jenkins job `meta-container-ci-cd` should run `Gatling Load Test` and `Gatling Stress Test` successfully in a non-timer build before final submission.
-- **TEST-013**: Jenkins job `meta-container-ci-cd` should run full `Gatling Max Limit` discovery successfully when `RUN_GATLING_MAX_LIMIT=true` before final submission.
+- **TEST-012**: Jenkins job `meta-container-ci-cd` should run `Gatling Load Test` and `Gatling Stress Test` successfully when `RUN_GATLING_TESTS=true` before final submission.
+- **TEST-013**: Jenkins job `meta-container-ci-cd` should run full `Gatling Max Limit` discovery successfully when `RUN_GATLING_TESTS=true` before final submission.
 - **TEST-014**: Jenkins HTML Publisher should expose `Pipeline Final Report`, `Gatling Max Limit Report`, `Gatling Load 5m Report`, and `Gatling Stress 5m Report` when the corresponding report files exist.
 - **TEST-015**: `test -s output/reports/pipeline-report.html && test -s output/gatling/max-limit/index.html && test -s output/gatling/load-5m/index.html && test -s output/gatling/stress-5m/index.html` must pass.
 - **TEST-016**: `test -s output/gatling/max-limit/max-limit-report.pdf && test -s output/gatling/load-5m/load-5m-report.pdf && test -s output/gatling/stress-5m/stress-5m-report.pdf` must pass.
