@@ -1,4 +1,0 @@
-interface:
-  display_name: "Compliance Validator"
-  short_description: "Validate project files against local compliance rules"
-  default_prompt: "Use $compliance-validator to validate this project against .agents/rules/compliance.md."
