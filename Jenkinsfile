@@ -11,6 +11,11 @@ pipeline {
 
   parameters {
     booleanParam(name: 'RUN_GATLING_MAX_LIMIT', defaultValue: false, description: 'Run Gatling max-limit discovery for performance evidence')
+    string(name: 'APP_BASE_URL', defaultValue: 'http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/', description: 'Application base URL for Tomcat verification, Playwright, and Gatling')
+    string(name: 'GATLING_MAX_START_USERS_PER_SEC', defaultValue: '200', description: 'Starting users/sec for Gatling max-limit discovery')
+    string(name: 'GATLING_MAX_STEP_USERS_PER_SEC', defaultValue: '50', description: 'Users/sec increase between Gatling max-limit levels')
+    string(name: 'GATLING_MAX_LEVEL_COUNT', defaultValue: '6', description: 'Number of levels in each Gatling max-limit attempt')
+    string(name: 'GATLING_MAX_DISCOVERY_ATTEMPTS', defaultValue: '3', description: 'Number of bounded Gatling max-limit attempts')
   }
 
   triggers {
@@ -18,8 +23,8 @@ pipeline {
   }
 
   environment {
-    APP_BASE_URL = 'http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/'
-    DEPLOY_CHECK_URL = 'http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/'
+    APP_BASE_URL = "${params.APP_BASE_URL}"
+    DEPLOY_CHECK_URL = "${params.APP_BASE_URL}"
     TOMCAT_CONTEXT = 'yonatan-csasznik-yoed-halberstam-niv-levin'
     PLAYWRIGHT_IMAGE = 'mcr.microsoft.com/playwright:v1.60.0-noble'
     GATLING_IMAGE = 'denvazh/gatling:3.2.1'
@@ -27,12 +32,12 @@ pipeline {
     GATLING_LOAD_USERS_PER_SEC = '5'
     GATLING_STRESS_START_USERS_PER_SEC = '5'
     GATLING_STRESS_TARGET_USERS_PER_SEC = '50'
-    GATLING_MAX_START_USERS_PER_SEC = '5'
-    GATLING_MAX_STEP_USERS_PER_SEC = '5'
-    GATLING_MAX_LEVEL_COUNT = '10'
+    GATLING_MAX_START_USERS_PER_SEC = "${params.GATLING_MAX_START_USERS_PER_SEC}"
+    GATLING_MAX_STEP_USERS_PER_SEC = "${params.GATLING_MAX_STEP_USERS_PER_SEC}"
+    GATLING_MAX_LEVEL_COUNT = "${params.GATLING_MAX_LEVEL_COUNT}"
     GATLING_MAX_LEVEL_SECONDS = '30'
     GATLING_MAX_RAMP_SECONDS = '10'
-    GATLING_MAX_DISCOVERY_ATTEMPTS = '3'
+    GATLING_MAX_DISCOVERY_ATTEMPTS = "${params.GATLING_MAX_DISCOVERY_ATTEMPTS}"
   }
 
   stages {

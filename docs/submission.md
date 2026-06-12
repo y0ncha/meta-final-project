@@ -104,7 +104,7 @@ These are the 12 items that `docs/final-project.txt` says to send by email.
 | h | Written HAR scenario | Scenario text in email or attached document | `docs/har-scenario.md` | Ready |
 | i | HAR file | `output/har/meta-functional-flow.har` | `output/har/meta-functional-flow.har` and `output/har/har-capture.log` | Ready |
 | j | Written max-limit result and explanation | Max-limit number, how it was found, and why it is the limit | `docs/gatling.md`, `output/gatling/max-limit/max-limit-run.log`, `output/gatling/max-limit/index.html` | Partial; current evidence supports a tested lower bound, not a true maximum |
-| k | Three screenshots of Gatling CMD summaries: max limit, load, stress | Terminal/CMD screenshots for all three Gatling runs | `output/gatling/screenshots/max-limit-terminal.png`, `output/gatling/screenshots/load-5m-terminal.png`, and `output/gatling/screenshots/stress-5m-terminal.png` are intentionally not captured yet | Deferred; must capture before final email |
+| k | Three screenshots of Gatling CMD summaries: max limit, load, stress | Terminal/CMD screenshots for all three Gatling runs | `submission/local/k-gatling-cmd-screenshots/stress-5m-terminal.png` is packaged; max-limit and load CMD screenshots are still pending | Partial; capture max-limit and load before final email |
 | l | Three Gatling result PDFs with graph explanations | Max-limit, load, and stress PDF reports plus written graph explanations | `output/gatling/max-limit/max-limit-report.pdf`, `output/gatling/load-5m/load-5m-report.pdf`, `output/gatling/stress-5m/stress-5m-report.pdf`, `docs/gatling.md` | Ready |
 
 ## Evidence Paths To Attach

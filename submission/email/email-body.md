@@ -20,7 +20,7 @@ Attached are the 12 required items for the MTA 2026 Semester B DevOps final proj
 8. HAR scenario description: `submission/local/h-har-scenario/scenario-description.md`
 9. HAR file: `submission/local/i-har-file/meta-functional-flow.har`
 10. Max-limit result and explanation: `submission/local/j-gatling-max-limit/`
-11. Gatling CMD summary screenshots: pending manual screenshots under `submission/local/k-gatling-cmd-screenshots/`
+11. Gatling CMD summary screenshots: stress screenshot packaged under `submission/local/k-gatling-cmd-screenshots/`; max-limit and load screenshots still pending
 12. Gatling result PDFs and graph explanations: `submission/local/l-gatling-result-pdfs/`
 
 Browser automation note: the assignment names Selenium IDE `.side`; this project uses Playwright as the Selenium IDE or similar browser automation tool, with the test file and passed-run evidence attached.

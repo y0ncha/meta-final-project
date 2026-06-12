@@ -1,7 +1,7 @@
 # Public Browser Automation Passed Run
 
 - Status: ready
-- Packaged files: `playwright-run.log`, `junit.xml`, `screenshots/valid-submit.png`, `screenshots/empty-submit.png`
+- Packaged files: `playwright-run.log`, `junit.xml`, `index.html`, `playwright-jenkins-report.css`, `screenshots/valid-submit.png`, `screenshots/empty-submit.png`
 - Source folder: `output/public-app/playwright/`
 - Required target: `http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`
 

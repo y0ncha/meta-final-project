@@ -1,6 +1,6 @@
 # Item D - Public GitHub Repository Link
 
-- Status: partial
+- Status: ready
 - Assignment item: `d) A link to your github public repo`
 - Packaged file: `github-public-repo.link`
 - Expected URL: `https://github.com/y0ncha/meta-final-project`

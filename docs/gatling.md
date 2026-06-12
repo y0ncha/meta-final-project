@@ -89,6 +89,15 @@ Generated evidence remains ignored by Git under `output/`.
 - `Gatling Load Test` runs `./scripts/run-gatling-load-5m`.
 - `Gatling Stress Test` runs `./scripts/run-gatling-stress-5m`.
 
+For Jenkins max-limit discovery, the build parameters expose the main discovery bounds:
+
+- `GATLING_MAX_START_USERS_PER_SEC=200`
+- `GATLING_MAX_STEP_USERS_PER_SEC=50`
+- `GATLING_MAX_LEVEL_COUNT=6`
+- `GATLING_MAX_DISCOVERY_ATTEMPTS=3`
+
+With those defaults, Jenkins tests 200-450 users/sec, then 500-750 users/sec, then 800-1050 users/sec unless a Gatling assertion threshold is crossed earlier.
+
 Monitoring is handled by the separate Jenkins Freestyle job `meta-monitoring`, which runs `./scripts/run-monitoring-check`; the Gatling stages are not part of that scheduled job. Jenkins publishes Gatling HTML/PDF evidence through HTML Publisher when `index.html` exists under `output/gatling/max-limit/`, `output/gatling/load-5m/`, or `output/gatling/stress-5m/`.
 
 Jenkins finalization exports Gatling PDFs from completed HTML reports in the `post` block before generating the final pipeline report. PDF export uses a temporary Playwright Docker Pipeline container because it is administrative report generation, not application validation.
@@ -115,7 +124,7 @@ The 5-minute stress test ramped from 5 to 50 users per second and completed with
 - Attach the three generated Gatling PDFs.
 - Include the max-limit conclusion and graph explanations in the final submission package.
 - Do not claim a precise max limit unless the run shows a passing level followed by a failing level.
-- The three terminal or Jenkins-console screenshots are not captured yet and must be added before final submission.
+- The stress terminal screenshot is packaged under `submission/local/k-gatling-cmd-screenshots/`; the max-limit and load terminal screenshots must still be added before final submission.
 
 ## Troubleshooting
 

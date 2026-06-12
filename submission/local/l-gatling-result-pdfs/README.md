@@ -6,4 +6,4 @@
 - Supporting files: `max-limit-index.html`, `load-5m-index.html`, `stress-5m-index.html`, `load-5m-run.log`, `stress-5m-run.log`, `graph-explanations.md`
 - Source folder: `output/gatling/`
 
-The terminal/CMD screenshots remain separate item `k` and are still missing.
+The terminal/CMD screenshots remain separate item `k`; the stress screenshot is packaged, while the max-limit and load screenshots are still missing.
