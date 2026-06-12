@@ -2,7 +2,7 @@
 
 - Plan: `docs/plans/10-aws-ec2-public-vm-bonus.md`
 - Date: 2026-06-12
-- Status: In progress; local scaffolding aligned, public EC2 evidence still pending.
+- Status: Completed for Plan 10 host readiness; Plan 11 still owns final public evidence classification and AWS cleanup verification.
 
 ## What Changed
 
@@ -19,11 +19,11 @@
 - Ran Playwright against the public EC2 app URL and staged artifacts under `output/public-app/playwright/`.
 - Ran the monitoring check script against the public EC2 app URL and staged `output/public-app/monitoring/latest-check.txt`.
 - Added `TOMCAT_RESTART_POLICY` to `docker-compose.yml`, defaulting to `no`, so EC2 can opt into `unless-stopped` through `.env` or an inline environment variable without changing local behavior.
-- Identified that EC2 restart-policy validation is still pending because the recorded EC2 checkout is the merge-base commit, while `TOMCAT_RESTART_POLICY` support is introduced by this branch.
-- Corrected Plan 10 task and test status so `TASK-017`, `TASK-021A`, `TEST-007`, and `TEST-011A` no longer claim completed restart-policy validation.
+- Validated EC2 restart-policy behavior from published branch commit `c51568e31e55d72475fbbdc143941933bf950ff3`.
+- Updated Plan 10 task and test status so `TASK-017`, `TASK-021A`, `TASK-030`, `TASK-031`, `TEST-007`, and `TEST-011A` reflect completed restart-policy validation.
 - Removed AWS resource cleanup as a Plan 10 completion gate; Plan 10 now finishes after EC2 restart behavior is validated, while cleanup verification is delegated to Plan 11/evidence closeout.
 - Updated the public host tracker to use the current Elastic IP `51.84.219.74`.
-- Documented that the live EC2 checkout must pull a commit containing this Compose change before its uncommitted `.env` can apply the public `APP_BASE_URL` and `TOMCAT_RESTART_POLICY=unless-stopped` settings.
+- Recorded that the live EC2 checkout fetched `origin/feature/10-aws-ec2-public-vm-bonus`, validated the branch, recreated Tomcat with `TOMCAT_RESTART_POLICY=unless-stopped`, and returned to clean `main`.
 
 ## Why
 
@@ -50,16 +50,19 @@ Plan 10 now chooses AWS EC2 because it gives the strongest public-IP bonus story
 - EC2 `docker compose version` - Docker Compose v5.1.4.
 - EC2 `git --version` - Git 2.34.1.
 - EC2 `mvn --version` - Maven 3.6.3.
-- EC2 `git rev-parse HEAD` - deployed public repository commit `debe9c710bd0d9826b487af7df06fb87f278c467`.
-- EC2 `TOMCAT_RESTART_POLICY=unless-stopped docker compose up -d tomcat` - pending rerun after the EC2 checkout is updated to a commit containing the Compose restart-policy field.
+- EC2 `git rev-parse origin/feature/10-aws-ec2-public-vm-bonus` - returned `c51568e31e55d72475fbbdc143941933bf950ff3`.
+- EC2 `git switch --track -c feature/10-aws-ec2-public-vm-bonus origin/feature/10-aws-ec2-public-vm-bonus` - checked out the published feature branch for validation.
+- EC2 `grep -n "restart:" docker-compose.yml` - confirmed `restart: "${TOMCAT_RESTART_POLICY:-no}"`.
+- EC2 `TOMCAT_RESTART_POLICY=unless-stopped docker compose up -d --force-recreate tomcat` - recreated only Tomcat with the EC2 restart policy.
 - EC2 `./scripts/deploy-war` - Maven build succeeded and deployed the WAR.
 - EC2 `docker compose ps` - showed only `meta-tomcat`, no Jenkins service.
 - EC2 `curl -fsS http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ >/dev/null` - passed.
-- EC2 restart-policy validation - pending; the recorded EC2 checkout is `debe9c710bd0d9826b487af7df06fb87f278c467`, which does not contain the branch Compose restart-policy field.
-- EC2 `.env` update for public `APP_BASE_URL` and `TOMCAT_RESTART_POLICY=unless-stopped` - pending effect until the branch Compose change is present on EC2.
+- EC2 `docker inspect -f "{{.HostConfig.RestartPolicy.Name}}" meta-tomcat` - returned `unless-stopped`.
+- EC2 `.env` update for public `APP_BASE_URL` and `TOMCAT_RESTART_POLICY=unless-stopped` - applied through the ignored EC2 `.env`.
+- EC2 final checkout - switched back to `main` at `debe9c710bd0d9826b487af7df06fb87f278c467` with clean `git status --short`.
 - EC2 `systemctl is-enabled docker` - returned `enabled`.
 - EC2 `systemctl is-active docker` - returned `active`.
-- Local `curl -I --connect-timeout 10 http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` - returned `HTTP/1.1 200`; this proves public app reachability, not restart-policy behavior.
+- Local `curl -I --connect-timeout 10 http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` - returned `HTTP/1.1 200` after published-branch restart-policy validation.
 - `APP_BASE_URL=http://51.84.147.234:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ ./scripts/run-playwright-container` - passed 1 Playwright test before the Elastic IP changed.
 - `APP_BASE_URL=http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ JOB_NAME=meta-monitoring BUILD_NUMBER=public-ec2-restart-policy ./scripts/run-monitoring-check` - passed.
 - Manual public-IP review - public EC2 evidence remains explicitly pending; no public-IP bonus is claimed from local docs.
@@ -68,6 +71,5 @@ Plan 10 now chooses AWS EC2 because it gives the strongest public-IP bonus story
 
 - Official UptimeRobot or SiteMonitorLite monitor UI evidence is still pending.
 - Public Gatling evidence is still pending.
-- EC2 restart-policy validation is still pending until EC2 pulls a commit containing this branch's Compose change and Tomcat is recreated with `TOMCAT_RESTART_POLICY=unless-stopped`.
 - The agent must not run Gatling directly. Public-target Gatling max-limit, load, and stress evidence must come from user-run Jenkins or runner artifacts.
 - AWS cleanup verification remains required for the overall evidence window, but it is delegated to Plan 11/evidence closeout rather than blocking Plan 10 completion.

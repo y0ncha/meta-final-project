@@ -1,10 +1,10 @@
 ---
 goal: AWS EC2 Tomcat-Only Public App Bonus Host
-version: 5.0
+version: 5.1
 date_created: 2026-06-11
 last_updated: 2026-06-12
 owner: Project team
-status: "In progress"
+status: "Completed"
 tags:
   - infrastructure
   - aws
@@ -19,9 +19,9 @@ tags:
 
 # AWS EC2 Tomcat-Only Public App Bonus Host
 
-![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
+![Status: Completed](https://img.shields.io/badge/status-Completed-brightgreen)
 
-This plan prepares the optional public-IP bonus host by deploying only the existing MeTA Tomcat web application on a short-lived AWS EC2 VM. Jenkins stays local/private and is not deployed to EC2. The EC2 VM exists only to expose the Tomcat application through a real public IPv4 address or AWS public DNS name long enough for Plan 11 to collect public-hosted bonus evidence. The user has `$100` AWS credit and accepts an estimated `$10-$20` evidence window, but the plan must avoid unnecessary AWS services.
+This plan prepared the optional public-IP bonus host by deploying only the existing MeTA Tomcat web application on a short-lived AWS EC2 VM. Jenkins stays local/private and is not deployed to EC2. The EC2 VM exists only to expose the Tomcat application through a real public IPv4 address or AWS public DNS name long enough for Plan 11 to collect public-hosted bonus evidence. The user has `$100` AWS credit and accepts an estimated `$10-$20` evidence window, but the plan must avoid unnecessary AWS services.
 
 Evidence ownership: `docs/plans/11-submission-package.md` owns the final evidence checklist, local base evidence, public-hosted bonus evidence, submission readiness, and AWS cleanup verification. This plan owns only the EC2 public host setup, public URL handoff, security boundaries, cost-control setup, and Tomcat restart-behavior validation.
 
@@ -100,12 +100,12 @@ Evidence ownership: `docs/plans/11-submission-package.md` owns the final evidenc
 | TASK-014 | Install Docker Engine, Docker Compose plugin, Git, and curl on the EC2 instance. | ✅ | 2026-06-12 |
 | TASK-015 | Clone `https://github.com/y0ncha/meta-final-project.git` onto the EC2 instance. | ✅ | 2026-06-12 |
 | TASK-016 | Check out the commit or branch selected for final evidence and record `git rev-parse HEAD` in `docs/public-app-bonus.md`. | ✅ | 2026-06-12 |
-| TASK-017 | Start only the Tomcat service with `TOMCAT_RESTART_POLICY=unless-stopped docker compose up -d tomcat`; do not start the Jenkins service on EC2. Tomcat-only startup was done, but restart-policy validation is pending until EC2 pulls a commit containing the Compose restart-policy field. | Partial | 2026-06-12 |
+| TASK-017 | Start only the Tomcat service with `TOMCAT_RESTART_POLICY=unless-stopped docker compose up -d tomcat`; do not start the Jenkins service on EC2. Validated on EC2 from published branch commit `c51568e31e55d72475fbbdc143941933bf950ff3`; final EC2 checkout returned to clean `main`. | ✅ | 2026-06-12 |
 | TASK-018 | Deploy the WAR on EC2 with `./scripts/deploy-war`. | ✅ | 2026-06-12 |
 | TASK-019 | Verify from the EC2 instance that `curl -fsS http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ >/dev/null` passes. | ✅ | 2026-06-12 |
 | TASK-020 | Verify externally that `http://<EC2_PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` or the public DNS equivalent loads. | ✅ | 2026-06-12 |
 | TASK-021 | Record the public URL and verification result in `docs/public-app-bonus.md`. | ✅ | 2026-06-12 |
-| TASK-021A | Add `TOMCAT_RESTART_POLICY` and `APP_BASE_URL` guidance to `.env.example`, document local/EC2 `.env` usage, and apply `unless-stopped` to the already-created EC2 `meta-tomcat` container. Local docs and Compose guidance are done; EC2 application of `unless-stopped` is pending until EC2 pulls a commit containing the Compose restart-policy field. | Partial | 2026-06-12 |
+| TASK-021A | Add `TOMCAT_RESTART_POLICY` and `APP_BASE_URL` guidance to `.env.example`, document local/EC2 `.env` usage, and apply `unless-stopped` to the already-created EC2 `meta-tomcat` container. Validated with `docker inspect` returning `unless-stopped`. | ✅ | 2026-06-12 |
 
 ### Implementation Phase 4
 
@@ -128,8 +128,8 @@ Evidence ownership: `docs/plans/11-submission-package.md` owns the final evidenc
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-030 | After EC2 pulls a commit containing the Compose restart-policy field, recreate Tomcat with `TOMCAT_RESTART_POLICY=unless-stopped` and verify the container restart policy. |  |  |
-| TASK-031 | Record the final EC2 `git rev-parse HEAD` and `docker inspect -f '{{.HostConfig.RestartPolicy.Name}}' meta-tomcat` result in `docs/public-app-bonus.md` and the Plan 10 changelog. |  |  |
+| TASK-030 | After EC2 pulls a commit containing the Compose restart-policy field, recreate Tomcat with `TOMCAT_RESTART_POLICY=unless-stopped` and verify the container restart policy. | ✅ | 2026-06-12 |
+| TASK-031 | Record the final EC2 `git rev-parse HEAD` and `docker inspect -f '{{.HostConfig.RestartPolicy.Name}}' meta-tomcat` result in `docs/public-app-bonus.md` and the Plan 10 changelog. | ✅ | 2026-06-12 |
 | TASK-032 | Delegate local base evidence and public-hosted bonus evidence separation to Plan 11 and `docs/submission.md`. | ✅ | 2026-06-12 |
 | TASK-033 | Update `docs/public-app-bonus.md` with public URL, selected path, EC2 details, cost-control notes, and remaining infrastructure risks; final evidence paths belong to Plan 11. | ✅ | 2026-06-12 |
 | TASK-034 | Create or update `docs/changelog/10-aws-ec2-public-vm-bonus.changelog.md` with implementation, validation, date, and remaining risks. | ✅ | 2026-06-12 |
@@ -181,19 +181,19 @@ Evidence ownership: `docs/plans/11-submission-package.md` owns the final evidenc
 - **TEST-004**: EC2 security group must restrict inbound `tcp/22` to the operator IP wherever the bootcamp account permits it.
 - **TEST-005**: On EC2, `docker --version` must print an installed Docker version.
 - **TEST-006**: On EC2, `docker compose version` must print an installed Compose plugin version.
-- **TEST-007**: Pending EC2 rerun after the checkout is updated to a commit containing the Compose restart-policy field: `TOMCAT_RESTART_POLICY=unless-stopped docker compose up -d tomcat` must start only Tomcat with the EC2 restart policy.
+- **TEST-007**: On EC2, `TOMCAT_RESTART_POLICY=unless-stopped docker compose up -d --force-recreate tomcat` started only Tomcat with the EC2 restart policy from published branch commit `c51568e31e55d72475fbbdc143941933bf950ff3`.
 - **TEST-008**: On EC2, `docker compose ps` must not show the Jenkins service running.
 - **TEST-009**: On EC2, `./scripts/deploy-war` must pass from the repository root.
 - **TEST-010**: On EC2, `curl -fsS http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ >/dev/null` must pass.
 - **TEST-011**: From an external browser or network, `http://<EC2_PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` or the public DNS equivalent must load.
-- **TEST-011A**: Pending EC2 rerun after the checkout is updated to a commit containing the Compose restart-policy field: `docker inspect -f '{{.HostConfig.RestartPolicy.Name}}' meta-tomcat` must print `unless-stopped`.
+- **TEST-011A**: On EC2, `docker inspect -f '{{.HostConfig.RestartPolicy.Name}}' meta-tomcat` printed `unless-stopped`.
 - **TEST-012**: Plan 11 must own UptimeRobot or SiteMonitorLite passed/up evidence for `PUBLIC_APP_BASE_URL` at a 5-minute cadence.
 - **TEST-013**: Plan 11 must classify the Playwright public-target run against the same five validations as `tests/playwright/meta-functional.spec.js`.
 - **TEST-014**: Plan 11 must own public Gatling max-limit evidence: log, HTML report, PDF report, and terminal or Jenkins-console screenshot.
 - **TEST-015**: Plan 11 must own public Gatling 5-minute load evidence: log, HTML report, PDF report, and terminal or Jenkins-console screenshot.
 - **TEST-016**: Plan 11 must own public Gatling 5-minute stress evidence: log, HTML report, PDF report, and terminal or Jenkins-console screenshot.
 - **TEST-017**: `docs/public-app-bonus.md` must list the selected path, AWS details, public URL, and cost-control decisions; Plan 11 owns final evidence paths.
-- **TEST-018**: Plan 10 completion requires EC2 restart-behavior validation only. AWS cleanup verification is delegated to Plan 11/evidence closeout and must not block marking this plan complete after restart behavior is validated.
+- **TEST-018**: Plan 10 completion requires EC2 restart-behavior validation only. AWS cleanup verification is delegated to Plan 11/evidence closeout and does not block this completed host-readiness plan.
 - **TEST-019**: `docs/submission.md` must not treat public bonus evidence as a replacement for the required local `localhost:8080/...` screenshot.
 - **TEST-020**: `git diff --check` must pass.
 - **TEST-021**: `python3 .agents/skills/compliance-validator/scripts/validate_compliance.py --target . --rules rules/compliance.md` must pass with no failures; manual public-IP evidence items must be documented.
