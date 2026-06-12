@@ -20,10 +20,10 @@ assert_not_contains() {
   fi
 }
 
-assert_contains "string(name: 'GATLING_MAX_BASE_USERS_PER_SEC', defaultValue: '200'"
+assert_contains "string(name: 'GATLING_MAX_BASE_USERS_PER_SEC', defaultValue: '50'"
 assert_contains "string(name: 'GATLING_MAX_STEP_USERS_PER_SEC', defaultValue: '50'"
 assert_contains "string(name: 'GATLING_MAX_DURATION_SECONDS', defaultValue: '30'"
-assert_contains "string(name: 'GATLING_MAX_LIMIT_USERS_PER_SEC', defaultValue: '1050'"
+assert_contains "string(name: 'GATLING_MAX_LIMIT_USERS_PER_SEC', defaultValue: '1000'"
 
 assert_contains 'GATLING_MAX_BASE_USERS_PER_SEC = "${params.GATLING_MAX_BASE_USERS_PER_SEC}"'
 assert_contains 'GATLING_MAX_STEP_USERS_PER_SEC = "${params.GATLING_MAX_STEP_USERS_PER_SEC}"'
@@ -43,6 +43,8 @@ assert_not_contains '-e GATLING_MAX_SINGLE_LEVEL_MODE=${env.GATLING_MAX_SINGLE_L
 assert_contains "booleanParam(name: 'RUN_GATLING_TESTS', defaultValue: false"
 assert_contains "expression { params.RUN_GATLING_TESTS }"
 assert_not_contains "RUN_GATLING_MAX_LIMIT"
+assert_not_contains "defaultValue: '200'"
+assert_not_contains "defaultValue: '1050'"
 
 run_gatling_count=$(grep -F "expression { params.RUN_GATLING_TESTS }" "$JENKINSFILE" | wc -l | tr -d ' ')
 if [ "$run_gatling_count" != "3" ]; then

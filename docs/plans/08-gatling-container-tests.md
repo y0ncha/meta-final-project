@@ -49,7 +49,7 @@ Follow-up update on 2026-06-12: Jenkins now exposes one evidence-run toggle, `RU
 - **REQ-013**: The 5-minute stress profile must run for exactly `300` seconds.
 - **REQ-014**: The max-limit profile must use deterministic stepped load levels and must not claim an exact maximum unless the generated Gatling evidence shows a failing threshold after a passing threshold.
 - **REQ-015**: Use deterministic default load values: `GATLING_LOAD_USERS_PER_SEC=5`, `GATLING_STRESS_START_USERS_PER_SEC=5`, `GATLING_STRESS_TARGET_USERS_PER_SEC=50`, `GATLING_MAX_DISCOVERY_ATTEMPTS=3`, `GATLING_MAX_START_USERS_PER_SEC=5`, `GATLING_MAX_STEP_USERS_PER_SEC=5`, `GATLING_MAX_LEVEL_COUNT=10`, `GATLING_MAX_LEVEL_SECONDS=30`, and `GATLING_MAX_RAMP_SECONDS=10`.
-- **REQ-016**: Use deterministic default pass criteria for max-limit analysis: failed request percentage must be less than `5`, and HTTP response time percentile 95 must be less than or equal to `2000` milliseconds for a load level to be treated as passing.
+- **REQ-016**: Use the class-aligned max-limit pass criterion: a tested load level passes only when Gatling reports zero failed requests/checks/timeouts (`KO=0`). Response-time percentiles remain report evidence for graph explanation, not the max-limit pass/fail rule.
 - **REQ-017**: Normalize every Gatling report so `index.html` exists directly at `output/gatling/max-limit/index.html`, `output/gatling/load-5m/index.html`, and `output/gatling/stress-5m/index.html`.
 - **REQ-018**: Preserve raw Gatling run directories under `output/gatling/<run-type>/raw/`.
 - **REQ-019**: Write combined stdout and stderr logs to `output/gatling/max-limit/max-limit-run.log`, `output/gatling/load-5m/load-5m-run.log`, and `output/gatling/stress-5m/stress-5m-run.log`.
@@ -307,6 +307,7 @@ Follow-up update on 2026-06-12: Jenkins now exposes one evidence-run toggle, `RU
 - **TEST-003**: `./scripts/generate-pipeline-report` must create non-empty `output/reports/pipeline-report.html`.
 - **TEST-003A**: `sh tests/scripts/test-generate-pipeline-report.sh` must pass and prove the generated report uses external CSS, current Jenkins artifact URLs, status badges, opt-in max-limit wording, and evidence-backed stage states for missing/present artifacts.
 - **TEST-003B**: `sh tests/scripts/test-run-gatling-max-limit.sh` must pass and prove max-limit discovery repeats complete profiles, advances the user-per-second window, and stops on the first normalized threshold failure.
+- **TEST-003C**: `sh tests/scripts/test-gatling-assertions.sh` must pass and prove `MetaSimulation.scala` uses the zero-KO assertion policy without the old hard `p95 <= 2000 ms` gate.
 - **TEST-004**: `docker compose config --quiet` must pass.
 - **TEST-004A**: `docker compose up -d tomcat jenkins` must start both services.
 - **TEST-005**: `./scripts/deploy-war` must pass and print `Deployed URL: http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`.

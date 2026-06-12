@@ -69,4 +69,23 @@ assert_file_contains "$CSS_FILE" '.status-ok'
 assert_file_contains "$CSS_FILE" '.status-log'
 assert_file_contains "$CSS_FILE" '.artifact-table'
 
+REQUESTED_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/pipeline-report-requested.XXXXXX")
+REPORT_FILE="$REQUESTED_ROOT/output/reports/pipeline-report.html"
+CSS_FILE="$REQUESTED_ROOT/output/reports/pipeline-report.css"
+
+JOB_NAME="meta-ci-cd" \
+BUILD_NUMBER="165" \
+BUILD_URL="http://localhost:8081/job/meta-ci-cd/165/" \
+BRANCH_NAME="main" \
+RUN_GATLING_TESTS="true" \
+  sh -c 'cd "$1" && "$2/scripts/generate-pipeline-report"' sh "$REQUESTED_ROOT" "$PROJECT_ROOT" >/tmp/generate-pipeline-report-requested-test.log
+
+test -s "$CSS_FILE"
+assert_contains 'Gatling evidence was requested with <code>RUN_GATLING_TESTS=true</code>'
+assert_contains 'Gatling Max Limit</td><td>HTML, PDF, raw report, log</td><td><span class="status status-missing">Missing</span>'
+assert_contains 'Gatling Load Test</td><td>HTML, PDF, raw report, log</td><td><span class="status status-missing">Missing</span>'
+assert_contains 'Gatling Stress Test</td><td>HTML, PDF, raw report, log</td><td><span class="status status-missing">Missing</span>'
+assert_contains 'Requested by RUN_GATLING_TESTS=true.'
+assert_not_contains 'Opt-in / not run'
+
 printf '%s\n' 'generate-pipeline-report rendering checks passed'

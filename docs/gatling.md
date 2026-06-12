@@ -36,16 +36,18 @@ APP_BASE_URL=http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ ./sc
 For max-limit discovery, raise or bound the search with environment variables:
 
 ```sh
-GATLING_MAX_BASE_USERS_PER_SEC=200 \
+GATLING_MAX_BASE_USERS_PER_SEC=50 \
 GATLING_MAX_STEP_USERS_PER_SEC=50 \
 GATLING_MAX_DURATION_SECONDS=30 \
-GATLING_MAX_LIMIT_USERS_PER_SEC=1050 \
+GATLING_MAX_LIMIT_USERS_PER_SEC=1000 \
 ./scripts/run-gatling-max-limit
 ```
 
 ## Max-Limit Method
 
 The max-limit wrapper runs one users/sec rate at a time until a Gatling assertion failure is found or the configured upper bound is reached. This lets the wrapper report both the highest passing tested level and the first failing tested level.
+
+The class PDFs show Gatling evidence in terms of users, successes, failures, and graphs. They do not define a `p95 <= 2000 ms` service-level rule. For this project, max-limit pass/fail therefore follows the course-facing rule: a tested level passes only when Gatling reports `KO=0`. Response-time percentiles remain graph evidence for explaining degradation, but latency alone does not define the max-limit failure point.
 
 The main controls are:
 
@@ -54,14 +56,11 @@ The main controls are:
 - `GATLING_MAX_DURATION_SECONDS`: how long each rate is held.
 - `GATLING_MAX_LIMIT_USERS_PER_SEC`: highest rate to test before reporting a lower bound.
 
-With Jenkins defaults, max-limit discovery tests `200`, `250`, `300`, and so on through `1050` users/sec unless a Gatling assertion threshold is crossed earlier. Each tested rate lasts `30` seconds.
+With Jenkins defaults, max-limit discovery tests `50`, `100`, `150`, and so on through `1000` users/sec unless a Gatling assertion threshold is crossed earlier. Each tested rate lasts `30` seconds.
 
 Legacy variables (`GATLING_MAX_START_USERS_PER_SEC`, `GATLING_MAX_LEVEL_SECONDS`, `GATLING_MAX_LEVEL_COUNT`, `GATLING_MAX_DISCOVERY_ATTEMPTS`, and `GATLING_MAX_SINGLE_LEVEL_MODE=false`) are still accepted for older local commands, but the Jenkins UI uses the clearer base/step/duration/limit model.
 
-A tested level is treated as passing only when both conditions hold:
-
-- Failed request percentage is less than `5`.
-- HTTP response time percentile 95 is less than or equal to `2000` milliseconds.
+A tested level is treated as passing only when Gatling reports zero failed requests/checks/timeouts.
 
 The max limit is the highest tested level that passes before the first tested level that fails. If a run fails after a report is normalized, the wrapper treats that assertion failure as successful discovery evidence, prints the exact first failing tested users/sec level, and preserves the failing report under `output/gatling/max-limit/`. If no tested level fails, the result is a tested lower bound, not the true application maximum.
 
@@ -94,14 +93,16 @@ Generated evidence remains ignored by Git under `output/`.
 - `RUN_GATLING_TESTS=true` runs `Gatling Max Limit`, `Gatling Load Test`, and `Gatling Stress Test` when their runner scripts exist.
 - Use `RUN_GATLING_TESTS=true` for final performance evidence collection.
 
+After this Jenkinsfile change is merged, run or reload the Pipeline once so Jenkins refreshes the Build with Parameters form. The old `RUN_GATLING_MAX_LIMIT` parameter is obsolete and should not be used for new evidence runs.
+
 For Jenkins max-limit discovery, the build parameters expose the main discovery bounds:
 
-- `GATLING_MAX_BASE_USERS_PER_SEC=200`
+- `GATLING_MAX_BASE_USERS_PER_SEC=50`
 - `GATLING_MAX_STEP_USERS_PER_SEC=50`
 - `GATLING_MAX_DURATION_SECONDS=30`
-- `GATLING_MAX_LIMIT_USERS_PER_SEC=1050`
+- `GATLING_MAX_LIMIT_USERS_PER_SEC=1000`
 
-With those defaults, Jenkins tests single levels from 200 through 1050 users/sec in 50 users/sec steps unless a Gatling assertion threshold is crossed earlier. When a threshold is crossed, the console log reports the highest passing tested level and the first failing tested level.
+With those defaults, Jenkins tests single levels from 50 through 1000 users/sec in 50 users/sec steps unless a Gatling assertion threshold is crossed earlier. When a threshold is crossed, the console log reports the highest passing tested level and the first failing tested level.
 
 Monitoring is handled by the separate Jenkins Freestyle job `meta-monitoring`, which runs `./scripts/run-monitoring-check`; the Gatling stages are not part of that scheduled job. Jenkins publishes Gatling HTML/PDF evidence through HTML Publisher when `index.html` exists under `output/gatling/max-limit/`, `output/gatling/load-5m/`, or `output/gatling/stress-5m/`.
 
@@ -113,7 +114,7 @@ Local `./scripts/export-gatling-pdfs` remains strict and requires all three Gatl
 
 ### Max Limit
 
-The max-limit run completed the configured stepped profile from 5 to 50 users per second without crossing the failure threshold. Gatling recorded 21,450 requests, 21,450 successful responses, 0 failed responses, and a 95th percentile response time of 10 ms. Because no tested level failed, this is a tested lower bound through the highest configured step, not the true application maximum.
+The current packaged max-limit evidence was produced before the class-aligned zero-KO max-limit rule was adopted. It recorded 21,450 requests, 21,450 successful responses, 0 failed responses, and a 95th percentile response time of 10 ms, so it remains useful graph evidence, but it should be refreshed with `RUN_GATLING_TESTS=true` before final submission. Under the current rule, the max-limit conclusion must name the highest tested users/sec with `KO=0` and the first tested users/sec where Gatling reports any KO.
 
 ### Load 5m
 
@@ -128,7 +129,7 @@ The 5-minute stress test ramped from 5 to 50 users per second and completed with
 - Attach the three terminal or Jenkins-console screenshots.
 - Attach the three generated Gatling PDFs.
 - Include the max-limit conclusion and graph explanations in the final submission package.
-- Do not claim a precise max limit unless the run shows a passing level followed by a failing level.
+- Do not claim a precise max limit unless the run shows a zero-KO passing level followed by a tested level with at least one KO.
 - The stress terminal screenshot is packaged under `submission/local/k-gatling-cmd-screenshots/`; the max-limit and load terminal screenshots must still be added before final submission.
 
 ## Troubleshooting

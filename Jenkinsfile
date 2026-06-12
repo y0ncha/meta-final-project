@@ -12,10 +12,10 @@ pipeline {
   parameters {
     booleanParam(name: 'RUN_GATLING_TESTS', defaultValue: false, description: 'Run Gatling max-limit, load, and stress tests for performance evidence')
     string(name: 'APP_BASE_URL', defaultValue: 'http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/', description: 'Application base URL for Tomcat verification, Playwright, and Gatling')
-    string(name: 'GATLING_MAX_BASE_USERS_PER_SEC', defaultValue: '200', description: 'First users/sec rate for Gatling max-limit discovery')
+    string(name: 'GATLING_MAX_BASE_USERS_PER_SEC', defaultValue: '50', description: 'First users/sec rate for Gatling max-limit discovery')
     string(name: 'GATLING_MAX_STEP_USERS_PER_SEC', defaultValue: '50', description: 'Users/sec increase between Gatling max-limit levels')
     string(name: 'GATLING_MAX_DURATION_SECONDS', defaultValue: '30', description: 'Seconds to hold each Gatling max-limit rate')
-    string(name: 'GATLING_MAX_LIMIT_USERS_PER_SEC', defaultValue: '1050', description: 'Highest users/sec rate to test before reporting a lower bound')
+    string(name: 'GATLING_MAX_LIMIT_USERS_PER_SEC', defaultValue: '1000', description: 'Highest users/sec rate to test before reporting a lower bound')
   }
 
   triggers {

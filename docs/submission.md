@@ -83,7 +83,7 @@ These are the required services, features, and pipeline capabilities that must w
 | Monitoring | A separate Jenkins Freestyle job checks the application every 5 minutes and official monitor evidence shows the target is up. | Monitor passed screenshot plus `meta-monitoring` scheduled build log. | Missing official monitor screenshot and final scheduled Jenkins evidence |
 | Browser functional automation | Browser automation validates 5 application behaviors and is triggerable from Jenkins. | Playwright test file, passed run log/report, screenshots, validation explanation. | Ready with Playwright override risk |
 | HAR scenario capture | A browser scenario is described and the actual HAR file is captured. | `docs/har-scenario.md`, `output/har/meta-functional-flow.har`, HAR validation log. | Ready |
-| Gatling max-limit test | Gatling discovers the app's tested max limit or a documented lower bound. | Max-limit run log, terminal screenshot, HTML/PDF report, written max-limit conclusion. | Reports/logs ready; terminal screenshot deferred |
+| Gatling max-limit test | Gatling discovers the app's tested max limit or a documented lower bound. | Max-limit run log, terminal screenshot, HTML/PDF report, written max-limit conclusion. | Needs fresh evidence after class-aligned zero-KO max-limit rule; terminal screenshot deferred |
 | Gatling 5-minute load test | Gatling runs a 5-minute load test through Jenkins. | Jenkins/terminal log, screenshot, HTML/PDF report, graph explanation. | Reports/logs ready; terminal screenshot deferred |
 | Gatling 5-minute stress test | Gatling runs a 5-minute stress test through Jenkins. | Jenkins/terminal log, screenshot, HTML/PDF report, graph explanation. | Reports/logs ready; terminal screenshot deferred |
 | Final submission package | The final email contains all 12 required evidence items and written explanations. | Completed A-L evidence checklist with no missing rows. | Not ready until final screenshots, monitor evidence, GitHub accessibility, and Jenkins live build evidence are captured |
@@ -103,7 +103,7 @@ These are the 12 items that `docs/final-project.txt` says to send by email.
 | g | Selenium/automation passed-run screenshot plus validation explanation | Playwright test file, run log, screenshots, report, and written validation explanation | `output/playwright/playwright-run.log`, `output/playwright/junit.xml`, `output/playwright/playwright-report/index.html`, `output/playwright/screenshots/valid-submit.png`, `output/playwright/screenshots/empty-submit.png`, `docs/playwright.md` | Ready |
 | h | Written HAR scenario | Scenario text in email or attached document | `docs/har-scenario.md` | Ready |
 | i | HAR file | `output/har/meta-functional-flow.har` | `output/har/meta-functional-flow.har` and `output/har/har-capture.log` | Ready |
-| j | Written max-limit result and explanation | Max-limit number, how it was found, and why it is the limit | `docs/gatling.md`, `output/gatling/max-limit/max-limit-run.log`, `output/gatling/max-limit/index.html` | Partial; current evidence supports a tested lower bound, not a true maximum |
+| j | Written max-limit result and explanation | Max-limit number, how it was found, and why it is the limit | `docs/gatling.md`, `output/gatling/max-limit/max-limit-run.log`, `output/gatling/max-limit/index.html` | Partial; refresh after the zero-KO max-limit rule and report highest `KO=0` level plus first KO level |
 | k | Three screenshots of Gatling CMD summaries: max limit, load, stress | Terminal/CMD screenshots for all three Gatling runs | `submission/local/k-gatling-cmd-screenshots/stress-5m-terminal.png` is packaged; max-limit and load CMD screenshots are still pending | Partial; capture max-limit and load before final email |
 | l | Three Gatling result PDFs with graph explanations | Max-limit, load, and stress PDF reports plus written graph explanations | `output/gatling/max-limit/max-limit-report.pdf`, `output/gatling/load-5m/load-5m-report.pdf`, `output/gatling/stress-5m/stress-5m-report.pdf`, `docs/gatling.md` | Ready |
 
@@ -170,7 +170,7 @@ Plan 11 (`docs/plans/11-submission-package.md`) owns the selected evidence rows,
 - Confirm `meta-container-ci-cd` uses script path `Jenkinsfile`.
 - Confirm `meta-monitoring` is a Freestyle project, runs `./scripts/run-monitoring-check` every 5 minutes, archives `output/monitoring/**/*`, and does not run Maven, deploy, Playwright, or Gatling commands.
 - Confirm the Playwright override is explained clearly because the assignment text names Selenium IDE specifically.
-- Confirm all Gatling numbers and graph explanations come from real generated reports.
+- Confirm all Gatling numbers and graph explanations come from real generated reports, and define max limit as the highest tested users/sec with `KO=0`.
 - If claiming the public-IP bonus, confirm the selected public app exposure path has a real public URL, monitor evidence, Playwright evidence, Gatling max/load/stress evidence, and no pending rows for bullets 6-10.
 - Capture the three Gatling terminal/CMD summary screenshots before sending; Plan 08 intentionally leaves those screenshot files deferred.
 - Confirm the email has exactly the required subject: `Final Exercise from: <yournames>`.

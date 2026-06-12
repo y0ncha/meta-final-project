@@ -7,7 +7,7 @@
 ## What Changed
 
 - Added Dockerized Gatling execution through source-controlled runner scripts for max-limit, 5-minute load, and 5-minute stress profiles.
-- Added `src/gatling/user-files/simulations/MetaSimulation.scala` with run-type selection, JSP GET/POST checks, and failure/response-time assertions.
+- Added `src/gatling/user-files/simulations/MetaSimulation.scala` with run-type selection, JSP GET/POST checks, and Gatling failure assertions.
 - Added automated Gatling PDF export through the Playwright container.
 - Updated Jenkins pipeline behavior to include optional max-limit execution and required load/stress stages for non-timer builds.
 - Removed the earlier profiled Compose runner-service approach; `docker-compose.yml` now remains limited to long-running `tomcat` and `jenkins` services.
@@ -99,8 +99,11 @@ Generated evidence remains ignored under `output/`. The older `08-*` generated e
 - Gated `Gatling Max Limit`, `Gatling Load Test`, and `Gatling Stress Test` with `params.RUN_GATLING_TESTS` while preserving their existing script-existence checks.
 - Kept max-limit tuning parameters unchanged: `GATLING_MAX_BASE_USERS_PER_SEC`, `GATLING_MAX_STEP_USERS_PER_SEC`, `GATLING_MAX_DURATION_SECONDS`, and `GATLING_MAX_LIMIT_USERS_PER_SEC`.
 - Updated `scripts/generate-pipeline-report` so max-limit, load, and stress evidence are all labeled opt-in unless a `RUN_GATLING_TESTS=true` Jenkins build produced artifacts.
+- Updated `scripts/generate-pipeline-report` after review so a requested `RUN_GATLING_TESTS=true` evidence build reports missing Gatling artifacts as `Missing`, not `Opt-in / not run`.
 - Updated `docs/gatling.md`, `docs/jenkins.md`, and `docs/plans/08-gatling-container-tests.md` so normal CI/CD runs skip all Gatling stages and explicit evidence builds use `RUN_GATLING_TESTS=true`.
+- Documented that Jenkins may need one Pipeline run or reload after merge before the Build with Parameters form exposes `RUN_GATLING_TESTS`; old `RUN_GATLING_MAX_LIMIT` invocations are obsolete.
 - Added static coverage in `tests/scripts/test-jenkinsfile-gatling-params.sh` to reject the old parameter and require exactly three `RUN_GATLING_TESTS` stage gates.
+- Added pipeline-report regression coverage for `RUN_GATLING_TESTS=true` with no Gatling artifacts, expecting `Missing`.
 
 Validation:
 
@@ -122,6 +125,27 @@ Remaining risks and follow-up:
 
 - Run a Jenkins build with `RUN_GATLING_TESTS=true` before final submission to produce current max-limit, load, and stress reports, logs, PDFs, and Jenkins-console evidence.
 - Confirm the published Jenkins HTML report links show all three Gatling evidence areas after that build.
+
+## 2026-06-12 Class-Aligned Max-Limit Follow-Up
+
+- Updated Gatling assertions so `max-limit`, `load-5m`, and `stress-5m` pass/fail on zero failed Gatling requests/checks/timeouts instead of the earlier hard `p95 <= 2000 ms` SLA.
+- Kept response-time percentiles as report and graph-explanation evidence, but not as the max-limit pass/fail rule.
+- Updated Jenkins max-limit defaults to start discovery at `50` users/sec, step by `50`, and search through `1000`.
+- Updated `docs/gatling.md`, `docs/submission.md`, and Plan 08 so the max-limit explanation matches the class PDFs: highest tested users/sec with `KO=0`, first tested level with any KO as the failure point.
+- Added `tests/scripts/test-gatling-assertions.sh` to reject the old p95 gate and require the zero-KO assertion policy.
+
+Validation:
+
+- `sh tests/scripts/test-gatling-assertions.sh`: passed.
+- `sh -n scripts/run-gatling-container scripts/run-gatling-max-limit scripts/run-gatling-load-5m scripts/run-gatling-stress-5m scripts/export-gatling-pdfs scripts/generate-pipeline-report`: passed.
+- `sh tests/scripts/test-run-gatling-max-limit.sh`: passed.
+- `sh tests/scripts/test-jenkinsfile-gatling-params.sh`: passed.
+- `sh tests/scripts/test-generate-pipeline-report.sh`: passed.
+- `git diff --check`: passed.
+
+Skipped validation:
+
+- Gatling execution was not run by the agent. Current project instructions require asking the user to run Gatling validation and provide the output or artifacts.
 
 ## 2026-06-11 Pipeline Report Rendering Follow-Up
 
