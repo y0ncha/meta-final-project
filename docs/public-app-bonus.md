@@ -38,7 +38,7 @@ This file tracks the optional public-IP bonus host for the AWS EC2 Tomcat-only p
 | security_group_id | `sg-01f4e4d1d0d23faf0` |
 | security_group_rules | `tcp/22` from `109.186.132.220/32`, `tcp/8080` from `0.0.0.0/0`, no `tcp/8081` rule |
 | ssh_access_mode | Temporary EC2 key pair `meta-public-app-20260612`; private key kept outside the repo under `/private/tmp/` |
-| ec2_env_policy | EC2 checkout keeps an uncommitted `.env` with `APP_BASE_URL=http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` and `TOMCAT_RESTART_POLICY=unless-stopped`; local `.env` should stay absent or use local defaults |
+| ec2_env_policy | EC2 checkout should keep an uncommitted `.env` with `APP_BASE_URL=http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` and `TOMCAT_RESTART_POLICY=unless-stopped` after the checkout is updated to a commit containing the Compose restart-policy change; local `.env` should stay absent or use local defaults |
 
 ## EC2 Deployment Contract
 
@@ -106,10 +106,10 @@ Run these only after the EC2 instance exists and `PUBLIC_APP_BASE_URL` is known:
 | EC2 tools | Docker 29.5.3, Docker Compose v5.1.4, Git 2.34.1, curl 7.81.0, Maven 3.6.3 |
 | Repository commit on EC2 | `debe9c710bd0d9826b487af7df06fb87f278c467` on `main` |
 | Running compose services | Only `meta-tomcat`; Jenkins is not running on EC2 |
-| Tomcat restart policy | `meta-tomcat` must use Docker restart policy `unless-stopped` from EC2-only `TOMCAT_RESTART_POLICY=unless-stopped` so EC2 stop/start brings the public app back without manually starting Tomcat |
-| EC2 `.env` | Uncommitted EC2 `.env` sets `APP_BASE_URL` to the public URL and `TOMCAT_RESTART_POLICY=unless-stopped`; do not commit real `.env` files |
+| Tomcat restart policy | Pending verification after updating the EC2 checkout to a commit containing the `docker-compose.yml` `restart: "${TOMCAT_RESTART_POLICY:-no}"` change; do not claim restart-policy evidence from the recorded `debe9c710bd0d9826b487af7df06fb87f278c467` checkout |
+| EC2 `.env` | Planned uncommitted EC2 `.env` sets `APP_BASE_URL` to the public URL and `TOMCAT_RESTART_POLICY=unless-stopped`; this takes effect only after the branch Compose change is present on EC2 |
 | EC2 local app check | `curl -fsS http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ >/dev/null` passed |
-| External public app check | `curl -I --connect-timeout 10 http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` returned `HTTP/1.1 200` after Tomcat restart-policy setup |
+| External public app check | `curl -I --connect-timeout 10 http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` returned `HTTP/1.1 200`; restart-policy validation remains pending because the recorded EC2 checkout is the merge-base commit |
 | Public Playwright smoke check | Passed with 1 test and 5 validation steps against `PUBLIC_APP_BASE_URL`; Plan 11 decides whether the artifacts are submission-ready |
 | Public monitoring script check | `scripts/run-monitoring-check` passed against `PUBLIC_APP_BASE_URL`; Plan 11 decides whether the artifacts are submission-ready |
 
