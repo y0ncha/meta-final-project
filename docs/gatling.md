@@ -88,11 +88,11 @@ Generated evidence remains ignored by Git under `output/`.
 
 ## Jenkins Integration
 
-`Jenkinsfile` runs Gatling only for non-timer builds:
+`Jenkinsfile` gates all Gatling evidence stages behind one build parameter:
 
-- `Gatling Max Limit` runs the full `./scripts/run-gatling-max-limit` discovery wrapper only when the build parameter `RUN_GATLING_MAX_LIMIT=true`.
-- `Gatling Load Test` runs `./scripts/run-gatling-load-5m`.
-- `Gatling Stress Test` runs `./scripts/run-gatling-stress-5m`.
+- `RUN_GATLING_TESTS=false` skips all Gatling stages for normal CI/CD runs.
+- `RUN_GATLING_TESTS=true` runs `Gatling Max Limit`, `Gatling Load Test`, and `Gatling Stress Test` when their runner scripts exist.
+- Use `RUN_GATLING_TESTS=true` for final performance evidence collection.
 
 For Jenkins max-limit discovery, the build parameters expose the main discovery bounds:
 
@@ -107,7 +107,7 @@ Monitoring is handled by the separate Jenkins Freestyle job `meta-monitoring`, w
 
 Jenkins finalization exports Gatling PDFs from completed HTML reports in the `post` block before generating the final pipeline report. PDF export uses a temporary Playwright Docker Pipeline container because it is administrative report generation, not application validation.
 
-Local `./scripts/export-gatling-pdfs` remains strict and requires all three Gatling reports. Jenkins runs the same script with `GATLING_PDF_REQUIRE_ALL=false` so normal builds that skip optional max-limit discovery can still export the load and stress PDFs that were produced in that build.
+Local `./scripts/export-gatling-pdfs` remains strict and requires all three Gatling reports. Jenkins runs the same script with `GATLING_PDF_REQUIRE_ALL=false` so normal builds that skip Gatling can still finish cleanly, while explicit `RUN_GATLING_TESTS=true` evidence builds export the Gatling PDFs that were produced in that build.
 
 ## Graph Explanations
 

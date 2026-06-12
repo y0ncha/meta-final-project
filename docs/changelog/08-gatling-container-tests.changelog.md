@@ -21,12 +21,12 @@
 - Escaped dynamic Jenkins job, build, branch, and timestamp values in the generated Pipeline HTML report.
 - Improved the generated Pipeline HTML report rendering by moving styles into `output/reports/pipeline-report.css`, replacing run-together summary text with a metadata grid, grouping artifacts by evidence area, and rendering status badges.
 - Updated Pipeline report artifact links to use the current Jenkins `BUILD_URL`, so renamed jobs such as `meta-ci-cd` do not keep old `meta-container-ci-cd` artifact URLs after a fresh build.
-- Marked missing max-limit artifacts as opt-in/not-run evidence requiring `RUN_GATLING_MAX_LIMIT=true` instead of treating the manual-only stage as an unexpected missing artifact.
+- Marked missing Gatling artifacts as opt-in/not-run evidence requiring `RUN_GATLING_TESTS=true` instead of treating intentionally skipped evidence stages as unexpected missing artifacts.
 - Added `tests/scripts/test-generate-pipeline-report.sh` to guard the report rendering behavior.
 - Added `docs/gatling.md` with runtime details, commands, evidence paths, max-limit method, and report-backed graph explanations.
 - Updated `docs/submission.md` to show Gatling logs/reports/PDFs as ready while keeping the three Gatling terminal screenshots explicitly deferred.
 - Fixed the Gatling runner normalization flow so logs and PDFs are not deleted when the latest raw report is copied into the stable report directory.
-- Updated the opt-in max-limit path so `RUN_GATLING_MAX_LIMIT=true` runs `scripts/run-gatling-max-limit`, which performs bounded full discovery attempts instead of calling the one-attempt primitive directly.
+- Updated the opt-in max-limit path so the Jenkins Gatling evidence toggle runs `scripts/run-gatling-max-limit`, which performs bounded full discovery attempts instead of calling the one-attempt primitive directly.
 
 ## Evidence Produced
 
@@ -92,6 +92,36 @@ Generated evidence remains ignored under `output/`. The older `08-*` generated e
 - Added `tests/scripts/test-run-gatling-max-limit.sh` to verify repeated full-profile attempts and stop-on-threshold behavior with a stubbed runner.
 - Validation:
   - `sh tests/scripts/test-run-gatling-max-limit.sh`
+
+## 2026-06-12 RUN_GATLING_TESTS Jenkins Toggle Follow-Up
+
+- Replaced the Jenkins build parameter `RUN_GATLING_MAX_LIMIT` with `RUN_GATLING_TESTS`.
+- Gated `Gatling Max Limit`, `Gatling Load Test`, and `Gatling Stress Test` with `params.RUN_GATLING_TESTS` while preserving their existing script-existence checks.
+- Kept max-limit tuning parameters unchanged: `GATLING_MAX_BASE_USERS_PER_SEC`, `GATLING_MAX_STEP_USERS_PER_SEC`, `GATLING_MAX_DURATION_SECONDS`, and `GATLING_MAX_LIMIT_USERS_PER_SEC`.
+- Updated `scripts/generate-pipeline-report` so max-limit, load, and stress evidence are all labeled opt-in unless a `RUN_GATLING_TESTS=true` Jenkins build produced artifacts.
+- Updated `docs/gatling.md`, `docs/jenkins.md`, and `docs/plans/08-gatling-container-tests.md` so normal CI/CD runs skip all Gatling stages and explicit evidence builds use `RUN_GATLING_TESTS=true`.
+- Added static coverage in `tests/scripts/test-jenkinsfile-gatling-params.sh` to reject the old parameter and require exactly three `RUN_GATLING_TESTS` stage gates.
+
+Validation:
+
+- `sh tests/scripts/test-jenkinsfile-gatling-params.sh`: passed.
+- `sh tests/scripts/test-run-gatling-max-limit.sh`: passed.
+- `sh tests/scripts/test-generate-pipeline-report.sh`: passed.
+- `sh -n scripts/run-gatling-max-limit`: passed.
+- `sh -n scripts/generate-pipeline-report`: passed.
+- `git diff --check`: passed.
+- `mvn -q test`: passed.
+- Jenkins declarative linter via `docker compose exec -T jenkins sh -lc '. /var/jenkins_home/codex-automation.env && curl -fsS -u "$JENKINS_USER:$JENKINS_TOKEN" -X POST -F "jenkinsfile=</workspace/final-project/Jenkinsfile" "http://localhost:8080/pipeline-model-converter/validate"'`: passed with `Jenkinsfile successfully validated.`
+
+Skipped validation:
+
+- Gatling execution was not run by the agent. Current project instructions require asking the user to run Gatling validation and provide the output or artifacts.
+- Compliance-validator execution was not run because this checkout contains `.agents/rules/compliance.md` but does not contain the previously documented `.agents/skills/compliance-validator/scripts/validate_compliance.py` script or root `rules/compliance.md` path.
+
+Remaining risks and follow-up:
+
+- Run a Jenkins build with `RUN_GATLING_TESTS=true` before final submission to produce current max-limit, load, and stress reports, logs, PDFs, and Jenkins-console evidence.
+- Confirm the published Jenkins HTML report links show all three Gatling evidence areas after that build.
 
 ## 2026-06-11 Pipeline Report Rendering Follow-Up
 

@@ -451,7 +451,7 @@ cat > "$REPORT_FILE" <<EOF
         <div><dt>Branch</dt><dd>$branch_name_html</dd></div>
         <div><dt>Generated</dt><dd>$generated_at_html</dd></div>
       </dl>
-      <p class="callout">Gatling max-limit is part of this Jenkins pipeline, but it is intentionally opt-in. Requires <code>RUN_GATLING_MAX_LIMIT=true</code> for max-limit evidence.</p>
+      <p class="callout">Gatling max-limit, load, and stress stages are part of this Jenkins pipeline, but they are intentionally opt-in. Requires <code>RUN_GATLING_TESTS=true</code> for Gatling evidence.</p>
     </header>
 
     <main>
@@ -473,11 +473,11 @@ gatling_max_status=$(bundle_status "opt-in" \
   "output/gatling/max-limit/max-limit-run.log" \
   "output/gatling/max-limit/index.html" \
   "output/gatling/max-limit/max-limit-report.pdf")
-gatling_load_status=$(bundle_status "required" \
+gatling_load_status=$(bundle_status "opt-in" \
   "output/gatling/load-5m/load-5m-run.log" \
   "output/gatling/load-5m/index.html" \
   "output/gatling/load-5m/load-5m-report.pdf")
-gatling_stress_status=$(bundle_status "required" \
+gatling_stress_status=$(bundle_status "opt-in" \
   "output/gatling/stress-5m/stress-5m-run.log" \
   "output/gatling/stress-5m/index.html" \
   "output/gatling/stress-5m/stress-5m-report.pdf")
@@ -487,9 +487,9 @@ write_stage_row "Build WAR" "Archived target/yonatan-csasznik-yoed-halberstam-ni
 write_stage_row "Deploy Tomcat" "Jenkins console log" "Console log" "Deploys yonatan-csasznik-yoed-halberstam-niv-levin.war into the Tomcat webapps volume."
 write_stage_row "Verify Tomcat" "Jenkins console log" "Console log" "Checks http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ after deployment from the Docker network."
 write_stage_row "Playwright Functional Test" "HTML, JUnit XML, screenshots, log" "$playwright_status" "Validates the Playwright container workspace, commit identity, and Tomcat reachability before running the test."
-write_stage_row "Gatling Max Limit" "HTML, PDF, raw report, log" "$gatling_max_status" "Runs bounded full max-limit discovery. Requires RUN_GATLING_MAX_LIMIT=true."
-write_stage_row "Gatling Load Test" "HTML, PDF, raw report, log" "$gatling_load_status" "Validates the Gatling container workspace before running the required five-minute load test."
-write_stage_row "Gatling Stress Test" "HTML, PDF, raw report, log" "$gatling_stress_status" "Validates the Gatling container workspace before running the required five-minute stress test."
+write_stage_row "Gatling Max Limit" "HTML, PDF, raw report, log" "$gatling_max_status" "Runs bounded full max-limit discovery when RUN_GATLING_TESTS=true."
+write_stage_row "Gatling Load Test" "HTML, PDF, raw report, log" "$gatling_load_status" "Runs the required five-minute load test when RUN_GATLING_TESTS=true."
+write_stage_row "Gatling Stress Test" "HTML, PDF, raw report, log" "$gatling_stress_status" "Runs the required five-minute stress test when RUN_GATLING_TESTS=true."
 write_stage_row "Post-build" "Generated reports and archived output" "Console log" "Jenkins may show this as Declarative: Post Actions because it is implemented with a Declarative post block."
 
 cat >> "$REPORT_FILE" <<EOF
@@ -511,9 +511,9 @@ write_single_ref_row "Playwright" "Jenkins-safe HTML report" "output/playwright/
 write_single_ref_row "Playwright" "Native HTML artifact" "output/playwright/playwright-report/index.html" "Native"
 write_single_ref_row "Playwright" "Valid-submit screenshot" "output/playwright/screenshots/valid-submit.png" "Screenshot"
 write_single_ref_row "Playwright" "Empty-submit screenshot" "output/playwright/screenshots/empty-submit.png" "Screenshot"
-write_bundle_row "Gatling" "Max-limit evidence" "opt-in" "Requires RUN_GATLING_MAX_LIMIT=true." "output/gatling/max-limit/max-limit-run.log" "output/gatling/max-limit/index.html" "output/gatling/max-limit/max-limit-report.pdf"
-write_bundle_row "Gatling" "Load test evidence" "required" "" "output/gatling/load-5m/load-5m-run.log" "output/gatling/load-5m/index.html" "output/gatling/load-5m/load-5m-report.pdf"
-write_bundle_row "Gatling" "Stress test evidence" "required" "" "output/gatling/stress-5m/stress-5m-run.log" "output/gatling/stress-5m/index.html" "output/gatling/stress-5m/stress-5m-report.pdf"
+write_bundle_row "Gatling" "Max-limit evidence" "opt-in" "Requires RUN_GATLING_TESTS=true." "output/gatling/max-limit/max-limit-run.log" "output/gatling/max-limit/index.html" "output/gatling/max-limit/max-limit-report.pdf"
+write_bundle_row "Gatling" "Load test evidence" "opt-in" "Requires RUN_GATLING_TESTS=true." "output/gatling/load-5m/load-5m-run.log" "output/gatling/load-5m/index.html" "output/gatling/load-5m/load-5m-report.pdf"
+write_bundle_row "Gatling" "Stress test evidence" "opt-in" "Requires RUN_GATLING_TESTS=true." "output/gatling/stress-5m/stress-5m-run.log" "output/gatling/stress-5m/index.html" "output/gatling/stress-5m/stress-5m-report.pdf"
 write_single_ref_row "HAR" "Scenario capture" "output/har/meta-functional-flow.har" "HAR"
 
 cat >> "$REPORT_FILE" <<EOF

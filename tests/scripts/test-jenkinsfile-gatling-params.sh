@@ -40,4 +40,14 @@ assert_not_contains '-e GATLING_MAX_LEVEL_SECONDS=${env.GATLING_MAX_LEVEL_SECOND
 assert_not_contains '-e GATLING_MAX_DISCOVERY_ATTEMPTS=${env.GATLING_MAX_DISCOVERY_ATTEMPTS}'
 assert_not_contains '-e GATLING_MAX_SINGLE_LEVEL_MODE=${env.GATLING_MAX_SINGLE_LEVEL_MODE}'
 
-printf '%s\n' 'Jenkinsfile Gatling max-limit parameter checks passed'
+assert_contains "booleanParam(name: 'RUN_GATLING_TESTS', defaultValue: false"
+assert_contains "expression { params.RUN_GATLING_TESTS }"
+assert_not_contains "RUN_GATLING_MAX_LIMIT"
+
+run_gatling_count=$(grep -F "expression { params.RUN_GATLING_TESTS }" "$JENKINSFILE" | wc -l | tr -d ' ')
+if [ "$run_gatling_count" != "3" ]; then
+  printf 'Expected 3 RUN_GATLING_TESTS stage gates, got %s\n' "$run_gatling_count" >&2
+  exit 1
+fi
+
+printf '%s\n' 'Jenkinsfile Gatling parameter checks passed'

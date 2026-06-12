@@ -88,8 +88,7 @@ Run these only after the EC2 instance exists and `PUBLIC_APP_BASE_URL` is known:
 - On EC2 after restart-policy changes: `docker inspect -f '{{.HostConfig.RestartPolicy.Name}}' meta-tomcat` should print `unless-stopped`
 - On EC2: `curl -fsS http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ >/dev/null`
 - Local/private browser automation: `APP_BASE_URL=<PUBLIC_APP_BASE_URL> ./scripts/run-playwright-container`
-- User-run Gatling max-limit: run the approved Jenkins or runner flow with `RUN_GATLING_MAX_LIMIT=true` and `APP_BASE_URL=<PUBLIC_APP_BASE_URL>`
-- User-run Gatling load/stress: run the approved Jenkins or runner flow with `APP_BASE_URL=<PUBLIC_APP_BASE_URL>`
+- User-run Gatling max-limit/load/stress: run the approved Jenkins or runner flow with `RUN_GATLING_TESTS=true` and `APP_BASE_URL=<PUBLIC_APP_BASE_URL>`
 
 ## EC2 Deployment Checks
 
