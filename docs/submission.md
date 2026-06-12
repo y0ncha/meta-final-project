@@ -125,28 +125,30 @@ Attach these when present and freshly validated:
 
 The public-IP bonus is separate from the base local submission package. Do not replace the required `localhost:8080/...` Tomcat screenshot with public app exposure evidence.
 
-The primary free path is home router port-forwarding:
+The selected path is AWS EC2 Tomcat-only public hosting:
 
 - Local Tomcat remains `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`.
-- Router forwards public `tcp/8080` to the laptop `tcp/8080`.
-- Jenkins remains local/private at `http://localhost:8081/`.
-- UptimeRobot, Playwright, and Gatling target `http://<PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`.
+- One short-lived EC2 Ubuntu VM exposes only the Tomcat application on public `tcp/8080`.
+- Jenkins remains local/private at `http://localhost:8081/` and is not deployed to EC2.
+- SSH `tcp/22` is restricted to the operator public IP wherever the bootcamp account allows it.
+- UptimeRobot or SiteMonitorLite, Playwright, and Gatling target `http://<EC2_PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` or the selected AWS public DNS equivalent.
+- The EC2 instance and any public IPv4 resource are terminated immediately after evidence capture.
 
-Use a public VM only as fallback if home public IP exposure is blocked by CGNAT, router restrictions, ISP restrictions, or unstable laptop availability.
+Home router port-forwarding is no longer the selected path for Plan 10. Keep it as a rejected fallback unless AWS EC2 becomes blocked by account restrictions.
 
 Bonus evidence is claimable only when all public-target rows below are real and current:
 
 | Bonus item | Public target | Required evidence | Status |
 |---|---|---|---|
-| Public Tomcat URL | `http://<PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` | Browser screenshot from outside the hosting network with address bar visible. | Pending public IP and port-forward or VM validation |
-| Availability monitor | `http://<PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` | UptimeRobot or approved monitor screenshot showing up/pass state and public URL. | Pending public monitor evidence |
-| Jenkins monitoring | `APP_BASE_URL=http://<PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` | `meta-monitoring` build log and archived `output/monitoring/latest-check.txt`. | Pending public-target Jenkins evidence |
-| Browser automation | `APP_BASE_URL=http://<PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` | Playwright passed-run log/report/screenshots from the public target. | Pending public-target Playwright evidence |
-| Gatling max-limit | `APP_BASE_URL=http://<PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` | Max-limit log, HTML report, PDF, and terminal or Jenkins-console screenshot. | Pending user-run public evidence |
-| Gatling load 5m | `APP_BASE_URL=http://<PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` | Load-test log, HTML report, PDF, and terminal or Jenkins-console screenshot. | Pending user-run public evidence |
-| Gatling stress 5m | `APP_BASE_URL=http://<PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` | Stress-test log, HTML report, PDF, and terminal or Jenkins-console screenshot. | Pending user-run public evidence |
+| Public Tomcat URL | `http://<EC2_PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` or AWS public DNS equivalent | Browser screenshot from outside the EC2 instance with address bar visible. | Pending EC2 public URL validation |
+| Availability monitor | Same `PUBLIC_APP_BASE_URL` | UptimeRobot or approved monitor screenshot showing up/pass state, cadence, and public URL. | Pending public monitor evidence |
+| Jenkins monitoring | `APP_BASE_URL=<PUBLIC_APP_BASE_URL>` | `meta-monitoring` build log and archived `output/monitoring/latest-check.txt`. | Pending public-target Jenkins evidence |
+| Browser automation | `APP_BASE_URL=<PUBLIC_APP_BASE_URL>` | Playwright passed-run log/report/screenshots from the public target. | Pending public-target Playwright evidence |
+| Gatling max-limit | `APP_BASE_URL=<PUBLIC_APP_BASE_URL>` | Max-limit log, HTML report, PDF, and terminal or Jenkins-console screenshot. | Pending user-run public evidence |
+| Gatling load 5m | `APP_BASE_URL=<PUBLIC_APP_BASE_URL>` | Load-test log, HTML report, PDF, and terminal or Jenkins-console screenshot. | Pending user-run public evidence |
+| Gatling stress 5m | `APP_BASE_URL=<PUBLIC_APP_BASE_URL>` | Stress-test log, HTML report, PDF, and terminal or Jenkins-console screenshot. | Pending user-run public evidence |
 
-Track the selected path, public URL, firewall or router decisions, and public evidence paths in Plan 10 (`docs/plans/10-aws-ec2-public-vm-bonus.md`) or in a future evidence note if the plan is executed.
+Plan 11 (`docs/plans/11-submission-package.md`) owns the selected evidence rows, attachment readiness, and local-vs-public-hosted separation. Use `docs/public-app-bonus.md` only for the selected public target, EC2 security group decisions, cost controls, and cleanup verification inputs.
 
 ## Final Review Before Sending
 
