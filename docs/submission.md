@@ -105,7 +105,7 @@ These are the 12 items that `docs/final-project.txt` says to send by email.
 | i | HAR file | `output/har/meta-functional-flow.har` | `output/har/meta-functional-flow.har` and `output/har/har-capture.log` | Ready |
 | j | Written max-limit result and explanation | Max-limit number, how it was found, and why it is the limit | `docs/gatling.md`, `output/gatling/max-limit/max-limit-run.log`, `output/gatling/max-limit/index.html` | Partial; refresh after the zero-KO max-limit rule and report highest `KO=0` level plus first KO level |
 | k | Three screenshots of Gatling CMD summaries: max limit, load, stress | Terminal/CMD screenshots for all three Gatling runs | `submission/local/k-gatling-cmd-screenshots/stress-5m-terminal.png` is packaged; max-limit and load CMD screenshots are still pending | Partial; capture max-limit and load before final email |
-| l | Three Gatling result PDFs with graph explanations | Max-limit, load, and stress PDF reports plus written graph explanations | `output/gatling/max-limit/max-limit-report.pdf`, `output/gatling/load-5m/load-5m-report.pdf`, `output/gatling/stress-5m/stress-5m-report.pdf`, `docs/gatling.md` | Ready |
+| l | Three Gatling result PDFs with graph explanations | Max-limit, load, and stress PDF reports plus written graph explanations | `output/gatling/max-limit/max-limit-report.pdf`, `output/gatling/load-5m/load-5m-report.pdf`, `output/gatling/stress-5m/stress-5m-report.pdf`, `docs/gatling.md` | Partial; refresh the max-limit PDF after the zero-KO rule, then attach all three freshly validated PDFs |
 
 ## Evidence Paths To Attach
 

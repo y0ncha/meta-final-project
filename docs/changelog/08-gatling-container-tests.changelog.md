@@ -132,7 +132,9 @@ Remaining risks and follow-up:
 - Kept response-time percentiles as report and graph-explanation evidence, but not as the max-limit pass/fail rule.
 - Updated Jenkins max-limit defaults to start discovery at `50` users/sec, step by `50`, and search through `1000`.
 - Updated `docs/gatling.md`, `docs/submission.md`, and Plan 08 so the max-limit explanation matches the class PDFs: highest tested users/sec with `KO=0`, first tested level with any KO as the failure point.
+- Corrected `docs/submission.md` after review so the three-PDF Gatling checklist row is partial until the max-limit PDF is refreshed under the zero-KO rule.
 - Added `tests/scripts/test-gatling-assertions.sh` to reject the old p95 gate and require the zero-KO assertion policy.
+- Added `tests/scripts/test-submission-readiness.sh` to guard the max-limit and Gatling PDF submission-readiness rows.
 
 Validation:
 
@@ -141,6 +143,7 @@ Validation:
 - `sh tests/scripts/test-run-gatling-max-limit.sh`: passed.
 - `sh tests/scripts/test-jenkinsfile-gatling-params.sh`: passed.
 - `sh tests/scripts/test-generate-pipeline-report.sh`: passed.
+- `sh tests/scripts/test-submission-readiness.sh`: passed.
 - `git diff --check`: passed.
 
 Skipped validation:
