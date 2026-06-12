@@ -11,12 +11,11 @@ pipeline {
 
   parameters {
     booleanParam(name: 'RUN_GATLING_MAX_LIMIT', defaultValue: false, description: 'Run Gatling max-limit discovery for performance evidence')
-    booleanParam(name: 'GATLING_MAX_SINGLE_LEVEL_MODE', defaultValue: true, description: 'Run max-limit discovery one users/sec level at a time and report the first failing tested level')
     string(name: 'APP_BASE_URL', defaultValue: 'http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/', description: 'Application base URL for Tomcat verification, Playwright, and Gatling')
-    string(name: 'GATLING_MAX_START_USERS_PER_SEC', defaultValue: '200', description: 'Starting users/sec for Gatling max-limit discovery')
+    string(name: 'GATLING_MAX_BASE_USERS_PER_SEC', defaultValue: '200', description: 'First users/sec rate for Gatling max-limit discovery')
     string(name: 'GATLING_MAX_STEP_USERS_PER_SEC', defaultValue: '50', description: 'Users/sec increase between Gatling max-limit levels')
-    string(name: 'GATLING_MAX_LEVEL_COUNT', defaultValue: '6', description: 'Number of levels in each Gatling max-limit attempt')
-    string(name: 'GATLING_MAX_DISCOVERY_ATTEMPTS', defaultValue: '3', description: 'Number of bounded Gatling max-limit attempts')
+    string(name: 'GATLING_MAX_DURATION_SECONDS', defaultValue: '30', description: 'Seconds to hold each Gatling max-limit rate')
+    string(name: 'GATLING_MAX_LIMIT_USERS_PER_SEC', defaultValue: '1050', description: 'Highest users/sec rate to test before reporting a lower bound')
   }
 
   triggers {
@@ -33,13 +32,11 @@ pipeline {
     GATLING_LOAD_USERS_PER_SEC = '5'
     GATLING_STRESS_START_USERS_PER_SEC = '5'
     GATLING_STRESS_TARGET_USERS_PER_SEC = '50'
-    GATLING_MAX_START_USERS_PER_SEC = "${params.GATLING_MAX_START_USERS_PER_SEC}"
+    GATLING_MAX_BASE_USERS_PER_SEC = "${params.GATLING_MAX_BASE_USERS_PER_SEC}"
     GATLING_MAX_STEP_USERS_PER_SEC = "${params.GATLING_MAX_STEP_USERS_PER_SEC}"
-    GATLING_MAX_LEVEL_COUNT = "${params.GATLING_MAX_LEVEL_COUNT}"
-    GATLING_MAX_LEVEL_SECONDS = '30'
+    GATLING_MAX_DURATION_SECONDS = "${params.GATLING_MAX_DURATION_SECONDS}"
+    GATLING_MAX_LIMIT_USERS_PER_SEC = "${params.GATLING_MAX_LIMIT_USERS_PER_SEC}"
     GATLING_MAX_RAMP_SECONDS = '10'
-    GATLING_MAX_DISCOVERY_ATTEMPTS = "${params.GATLING_MAX_DISCOVERY_ATTEMPTS}"
-    GATLING_MAX_SINGLE_LEVEL_MODE = "${params.GATLING_MAX_SINGLE_LEVEL_MODE}"
   }
 
   stages {
@@ -112,7 +109,7 @@ NODE'''
       }
       steps {
         script {
-          def gatlingArgs = "--platform ${env.GATLING_PLATFORM} --entrypoint= --network meta --volumes-from meta-jenkins -w ${env.WORKSPACE} -e WORKSPACE=${env.WORKSPACE} -e APP_BASE_URL=${env.APP_BASE_URL} -e GATLING_RUN_TYPE=max-limit -e GATLING_LOAD_USERS_PER_SEC=${env.GATLING_LOAD_USERS_PER_SEC} -e GATLING_STRESS_START_USERS_PER_SEC=${env.GATLING_STRESS_START_USERS_PER_SEC} -e GATLING_STRESS_TARGET_USERS_PER_SEC=${env.GATLING_STRESS_TARGET_USERS_PER_SEC} -e GATLING_MAX_START_USERS_PER_SEC=${env.GATLING_MAX_START_USERS_PER_SEC} -e GATLING_MAX_STEP_USERS_PER_SEC=${env.GATLING_MAX_STEP_USERS_PER_SEC} -e GATLING_MAX_LEVEL_COUNT=${env.GATLING_MAX_LEVEL_COUNT} -e GATLING_MAX_LEVEL_SECONDS=${env.GATLING_MAX_LEVEL_SECONDS} -e GATLING_MAX_RAMP_SECONDS=${env.GATLING_MAX_RAMP_SECONDS} -e GATLING_MAX_DISCOVERY_ATTEMPTS=${env.GATLING_MAX_DISCOVERY_ATTEMPTS} -e GATLING_MAX_SINGLE_LEVEL_MODE=${env.GATLING_MAX_SINGLE_LEVEL_MODE}"
+          def gatlingArgs = "--platform ${env.GATLING_PLATFORM} --entrypoint= --network meta --volumes-from meta-jenkins -w ${env.WORKSPACE} -e WORKSPACE=${env.WORKSPACE} -e APP_BASE_URL=${env.APP_BASE_URL} -e GATLING_RUN_TYPE=max-limit -e GATLING_LOAD_USERS_PER_SEC=${env.GATLING_LOAD_USERS_PER_SEC} -e GATLING_STRESS_START_USERS_PER_SEC=${env.GATLING_STRESS_START_USERS_PER_SEC} -e GATLING_STRESS_TARGET_USERS_PER_SEC=${env.GATLING_STRESS_TARGET_USERS_PER_SEC} -e GATLING_MAX_BASE_USERS_PER_SEC=${env.GATLING_MAX_BASE_USERS_PER_SEC} -e GATLING_MAX_STEP_USERS_PER_SEC=${env.GATLING_MAX_STEP_USERS_PER_SEC} -e GATLING_MAX_DURATION_SECONDS=${env.GATLING_MAX_DURATION_SECONDS} -e GATLING_MAX_LIMIT_USERS_PER_SEC=${env.GATLING_MAX_LIMIT_USERS_PER_SEC} -e GATLING_MAX_RAMP_SECONDS=${env.GATLING_MAX_RAMP_SECONDS}"
           docker.image(env.GATLING_IMAGE).inside(gatlingArgs) {
             sh 'pwd'
             sh 'test "$PWD" = "$WORKSPACE"'
@@ -130,7 +127,7 @@ NODE'''
       }
       steps {
         script {
-          def gatlingArgs = "--platform ${env.GATLING_PLATFORM} --entrypoint= --network meta --volumes-from meta-jenkins -w ${env.WORKSPACE} -e WORKSPACE=${env.WORKSPACE} -e APP_BASE_URL=${env.APP_BASE_URL} -e GATLING_RUN_TYPE=load-5m -e GATLING_LOAD_USERS_PER_SEC=${env.GATLING_LOAD_USERS_PER_SEC} -e GATLING_STRESS_START_USERS_PER_SEC=${env.GATLING_STRESS_START_USERS_PER_SEC} -e GATLING_STRESS_TARGET_USERS_PER_SEC=${env.GATLING_STRESS_TARGET_USERS_PER_SEC} -e GATLING_MAX_START_USERS_PER_SEC=${env.GATLING_MAX_START_USERS_PER_SEC} -e GATLING_MAX_STEP_USERS_PER_SEC=${env.GATLING_MAX_STEP_USERS_PER_SEC} -e GATLING_MAX_LEVEL_COUNT=${env.GATLING_MAX_LEVEL_COUNT} -e GATLING_MAX_LEVEL_SECONDS=${env.GATLING_MAX_LEVEL_SECONDS} -e GATLING_MAX_RAMP_SECONDS=${env.GATLING_MAX_RAMP_SECONDS}"
+          def gatlingArgs = "--platform ${env.GATLING_PLATFORM} --entrypoint= --network meta --volumes-from meta-jenkins -w ${env.WORKSPACE} -e WORKSPACE=${env.WORKSPACE} -e APP_BASE_URL=${env.APP_BASE_URL} -e GATLING_RUN_TYPE=load-5m -e GATLING_LOAD_USERS_PER_SEC=${env.GATLING_LOAD_USERS_PER_SEC} -e GATLING_STRESS_START_USERS_PER_SEC=${env.GATLING_STRESS_START_USERS_PER_SEC} -e GATLING_STRESS_TARGET_USERS_PER_SEC=${env.GATLING_STRESS_TARGET_USERS_PER_SEC}"
           docker.image(env.GATLING_IMAGE).inside(gatlingArgs) {
             sh 'pwd'
             sh 'test "$PWD" = "$WORKSPACE"'
@@ -148,7 +145,7 @@ NODE'''
       }
       steps {
         script {
-          def gatlingArgs = "--platform ${env.GATLING_PLATFORM} --entrypoint= --network meta --volumes-from meta-jenkins -w ${env.WORKSPACE} -e WORKSPACE=${env.WORKSPACE} -e APP_BASE_URL=${env.APP_BASE_URL} -e GATLING_RUN_TYPE=stress-5m -e GATLING_LOAD_USERS_PER_SEC=${env.GATLING_LOAD_USERS_PER_SEC} -e GATLING_STRESS_START_USERS_PER_SEC=${env.GATLING_STRESS_START_USERS_PER_SEC} -e GATLING_STRESS_TARGET_USERS_PER_SEC=${env.GATLING_STRESS_TARGET_USERS_PER_SEC} -e GATLING_MAX_START_USERS_PER_SEC=${env.GATLING_MAX_START_USERS_PER_SEC} -e GATLING_MAX_STEP_USERS_PER_SEC=${env.GATLING_MAX_STEP_USERS_PER_SEC} -e GATLING_MAX_LEVEL_COUNT=${env.GATLING_MAX_LEVEL_COUNT} -e GATLING_MAX_LEVEL_SECONDS=${env.GATLING_MAX_LEVEL_SECONDS} -e GATLING_MAX_RAMP_SECONDS=${env.GATLING_MAX_RAMP_SECONDS}"
+          def gatlingArgs = "--platform ${env.GATLING_PLATFORM} --entrypoint= --network meta --volumes-from meta-jenkins -w ${env.WORKSPACE} -e WORKSPACE=${env.WORKSPACE} -e APP_BASE_URL=${env.APP_BASE_URL} -e GATLING_RUN_TYPE=stress-5m -e GATLING_LOAD_USERS_PER_SEC=${env.GATLING_LOAD_USERS_PER_SEC} -e GATLING_STRESS_START_USERS_PER_SEC=${env.GATLING_STRESS_START_USERS_PER_SEC} -e GATLING_STRESS_TARGET_USERS_PER_SEC=${env.GATLING_STRESS_TARGET_USERS_PER_SEC}"
           docker.image(env.GATLING_IMAGE).inside(gatlingArgs) {
             sh 'pwd'
             sh 'test "$PWD" = "$WORKSPACE"'

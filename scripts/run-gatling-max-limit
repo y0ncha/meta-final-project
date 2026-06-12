@@ -31,14 +31,19 @@ bool_value() {
   esac
 }
 
+GATLING_MAX_BASE_USERS_PER_SEC="${GATLING_MAX_BASE_USERS_PER_SEC:-${GATLING_MAX_START_USERS_PER_SEC:-5}}"
+GATLING_MAX_STEP_USERS_PER_SEC="${GATLING_MAX_STEP_USERS_PER_SEC:-5}"
+GATLING_MAX_DURATION_SECONDS="${GATLING_MAX_DURATION_SECONDS:-${GATLING_MAX_LEVEL_SECONDS:-30}}"
+GATLING_MAX_RAMP_SECONDS="${GATLING_MAX_RAMP_SECONDS:-10}"
 GATLING_MAX_SINGLE_LEVEL_MODE="${GATLING_MAX_SINGLE_LEVEL_MODE:-true}"
 GATLING_MAX_DISCOVERY_ATTEMPTS="${GATLING_MAX_DISCOVERY_ATTEMPTS:-3}"
-GATLING_MAX_START_USERS_PER_SEC="${GATLING_MAX_START_USERS_PER_SEC:-5}"
-GATLING_MAX_STEP_USERS_PER_SEC="${GATLING_MAX_STEP_USERS_PER_SEC:-5}"
 GATLING_MAX_LEVEL_COUNT="${GATLING_MAX_LEVEL_COUNT:-10}"
-GATLING_MAX_LEVEL_SECONDS="${GATLING_MAX_LEVEL_SECONDS:-30}"
-GATLING_MAX_RAMP_SECONDS="${GATLING_MAX_RAMP_SECONDS:-10}"
+GATLING_MAX_START_USERS_PER_SEC="${GATLING_MAX_START_USERS_PER_SEC:-$GATLING_MAX_BASE_USERS_PER_SEC}"
+GATLING_MAX_LEVEL_SECONDS="${GATLING_MAX_LEVEL_SECONDS:-$GATLING_MAX_DURATION_SECONDS}"
 
+positive_int GATLING_MAX_BASE_USERS_PER_SEC "$GATLING_MAX_BASE_USERS_PER_SEC"
+positive_int GATLING_MAX_STEP_USERS_PER_SEC "$GATLING_MAX_STEP_USERS_PER_SEC"
+positive_int GATLING_MAX_DURATION_SECONDS "$GATLING_MAX_DURATION_SECONDS"
 bool_value GATLING_MAX_SINGLE_LEVEL_MODE "$GATLING_MAX_SINGLE_LEVEL_MODE"
 positive_int GATLING_MAX_DISCOVERY_ATTEMPTS "$GATLING_MAX_DISCOVERY_ATTEMPTS"
 positive_int GATLING_MAX_START_USERS_PER_SEC "$GATLING_MAX_START_USERS_PER_SEC"
@@ -46,6 +51,17 @@ positive_int GATLING_MAX_STEP_USERS_PER_SEC "$GATLING_MAX_STEP_USERS_PER_SEC"
 positive_int GATLING_MAX_LEVEL_COUNT "$GATLING_MAX_LEVEL_COUNT"
 positive_int GATLING_MAX_LEVEL_SECONDS "$GATLING_MAX_LEVEL_SECONDS"
 positive_int GATLING_MAX_RAMP_SECONDS "$GATLING_MAX_RAMP_SECONDS"
+
+if [ -z "${GATLING_MAX_LIMIT_USERS_PER_SEC:-}" ]; then
+  total_legacy_levels=$((GATLING_MAX_LEVEL_COUNT * GATLING_MAX_DISCOVERY_ATTEMPTS))
+  GATLING_MAX_LIMIT_USERS_PER_SEC=$((GATLING_MAX_BASE_USERS_PER_SEC + (GATLING_MAX_STEP_USERS_PER_SEC * (total_legacy_levels - 1))))
+fi
+positive_int GATLING_MAX_LIMIT_USERS_PER_SEC "$GATLING_MAX_LIMIT_USERS_PER_SEC"
+
+if [ "$GATLING_MAX_LIMIT_USERS_PER_SEC" -lt "$GATLING_MAX_BASE_USERS_PER_SEC" ]; then
+  printf '%s\n' 'GATLING_MAX_LIMIT_USERS_PER_SEC must be greater than or equal to GATLING_MAX_BASE_USERS_PER_SEC' >&2
+  exit 2
+fi
 
 OUTPUT_DIR="output/gatling/max-limit"
 DISCOVERY_LOG="$OUTPUT_DIR/raw/max-limit-discovery.log"
@@ -79,44 +95,37 @@ current_start="$GATLING_MAX_START_USERS_PER_SEC"
 highest_passing_level=""
 
 if [ "$GATLING_MAX_SINGLE_LEVEL_MODE" = true ]; then
-  while [ "$attempt" -le "$GATLING_MAX_DISCOVERY_ATTEMPTS" ]; do
-    highest_level=$((current_start + (GATLING_MAX_STEP_USERS_PER_SEC * (GATLING_MAX_LEVEL_COUNT - 1))))
+  current_start="$GATLING_MAX_BASE_USERS_PER_SEC"
+  log "Max-limit single-level discovery: ${GATLING_MAX_BASE_USERS_PER_SEC}-${GATLING_MAX_LIMIT_USERS_PER_SEC} users/sec, step ${GATLING_MAX_STEP_USERS_PER_SEC}, duration ${GATLING_MAX_DURATION_SECONDS}s"
 
-    log "Max-limit single-level attempt $attempt/$GATLING_MAX_DISCOVERY_ATTEMPTS: ${current_start}-${highest_level} users/sec"
+  while [ "$current_start" -le "$GATLING_MAX_LIMIT_USERS_PER_SEC" ]; do
+    log "Max-limit testing level ${current_start} users/sec."
 
-    level=1
-    while [ "$level" -le "$GATLING_MAX_LEVEL_COUNT" ]; do
-      log "Max-limit testing level ${current_start} users/sec."
+    set +e
+    GATLING_MAX_LEVEL_SECONDS="$GATLING_MAX_DURATION_SECONDS" run_gatling_level "$current_start" 1
+    status=$?
+    set -e
 
-      set +e
-      run_gatling_level "$current_start" 1
-      status=$?
-      set -e
+    if [ "$status" -eq 0 ]; then
+      highest_passing_level="$current_start"
+      log "Max-limit level ${current_start} users/sec passed."
+      current_start=$((current_start + GATLING_MAX_STEP_USERS_PER_SEC))
+      continue
+    fi
 
-      if [ "$status" -eq 0 ]; then
-        highest_passing_level="$current_start"
-        log "Max-limit level ${current_start} users/sec passed."
-        current_start=$((current_start + GATLING_MAX_STEP_USERS_PER_SEC))
-        level=$((level + 1))
-        continue
+    if has_gatling_report; then
+      if [ -n "$highest_passing_level" ]; then
+        log "Max-limit highest passing tested level: ${highest_passing_level} users/sec."
+      else
+        log "No passing tested level found before first failure."
       fi
+      log "Max-limit first failing tested level: ${current_start} users/sec."
+      log "Treating this assertion failure as successful max-limit discovery evidence."
+      exit 0
+    fi
 
-      if has_gatling_report; then
-        if [ -n "$highest_passing_level" ]; then
-          log "Max-limit highest passing tested level: ${highest_passing_level} users/sec."
-        else
-          log "No passing tested level found before first failure."
-        fi
-        log "Max-limit first failing tested level: ${current_start} users/sec."
-        log "Treating this assertion failure as successful max-limit discovery evidence."
-        exit 0
-      fi
-
-      log "Max-limit level ${current_start} users/sec failed before a usable Gatling report was created."
-      exit "$status"
-    done
-
-    attempt=$((attempt + 1))
+    log "Max-limit level ${current_start} users/sec failed before a usable Gatling report was created."
+    exit "$status"
   done
 
   log "No failing threshold found. Result is a tested lower bound through ${highest_passing_level} users/sec."

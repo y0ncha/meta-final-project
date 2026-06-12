@@ -102,18 +102,17 @@ assert_file_equals "5|5|2|1|1
   CALL_LOG="$CALL_LOG" \
   FAIL_ON_ATTEMPT=3 \
   GATLING_MAX_SINGLE_LEVEL_MODE=true \
-  GATLING_MAX_DISCOVERY_ATTEMPTS=2 \
-  GATLING_MAX_START_USERS_PER_SEC=100 \
+  GATLING_MAX_BASE_USERS_PER_SEC=100 \
   GATLING_MAX_STEP_USERS_PER_SEC=25 \
-  GATLING_MAX_LEVEL_COUNT=4 \
-  GATLING_MAX_LEVEL_SECONDS=1 \
+  GATLING_MAX_DURATION_SECONDS=7 \
+  GATLING_MAX_LIMIT_USERS_PER_SEC=175 \
   GATLING_MAX_RAMP_SECONDS=1 \
     "$SCRIPT_DIR/run-gatling-max-limit" > "$TEST_ROOT/single-level.log"
 )
 
-assert_file_equals "100|25|1|1|1
-125|25|1|1|1
-150|25|1|1|1" "$CALL_LOG"
+assert_file_equals "100|25|1|7|1
+125|25|1|7|1
+150|25|1|7|1" "$CALL_LOG"
 
 grep -Fq 'Max-limit level 100 users/sec passed.' "$TEST_ROOT/single-level.log"
 grep -Fq 'Max-limit level 125 users/sec passed.' "$TEST_ROOT/single-level.log"
