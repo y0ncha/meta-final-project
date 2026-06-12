@@ -16,10 +16,12 @@ assert_contains "string(name: 'GATLING_MAX_START_USERS_PER_SEC', defaultValue: '
 assert_contains "string(name: 'GATLING_MAX_STEP_USERS_PER_SEC', defaultValue: '50'"
 assert_contains "string(name: 'GATLING_MAX_LEVEL_COUNT', defaultValue: '6'"
 assert_contains "string(name: 'GATLING_MAX_DISCOVERY_ATTEMPTS', defaultValue: '3'"
+assert_contains "booleanParam(name: 'GATLING_MAX_SINGLE_LEVEL_MODE', defaultValue: true"
 
 assert_contains 'GATLING_MAX_START_USERS_PER_SEC = "${params.GATLING_MAX_START_USERS_PER_SEC}"'
 assert_contains 'GATLING_MAX_STEP_USERS_PER_SEC = "${params.GATLING_MAX_STEP_USERS_PER_SEC}"'
 assert_contains 'GATLING_MAX_LEVEL_COUNT = "${params.GATLING_MAX_LEVEL_COUNT}"'
 assert_contains 'GATLING_MAX_DISCOVERY_ATTEMPTS = "${params.GATLING_MAX_DISCOVERY_ATTEMPTS}"'
+assert_contains 'GATLING_MAX_SINGLE_LEVEL_MODE = "${params.GATLING_MAX_SINGLE_LEVEL_MODE}"'
 
 printf '%s\n' 'Jenkinsfile Gatling max-limit parameter checks passed'

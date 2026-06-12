@@ -19,6 +19,19 @@ positive_int() {
   fi
 }
 
+bool_value() {
+  name="$1"
+  value="$2"
+  case "$value" in
+    true|false) ;;
+    *)
+      printf '%s\n' "$name must be true or false" >&2
+      exit 2
+      ;;
+  esac
+}
+
+GATLING_MAX_SINGLE_LEVEL_MODE="${GATLING_MAX_SINGLE_LEVEL_MODE:-true}"
 GATLING_MAX_DISCOVERY_ATTEMPTS="${GATLING_MAX_DISCOVERY_ATTEMPTS:-3}"
 GATLING_MAX_START_USERS_PER_SEC="${GATLING_MAX_START_USERS_PER_SEC:-5}"
 GATLING_MAX_STEP_USERS_PER_SEC="${GATLING_MAX_STEP_USERS_PER_SEC:-5}"
@@ -26,6 +39,7 @@ GATLING_MAX_LEVEL_COUNT="${GATLING_MAX_LEVEL_COUNT:-10}"
 GATLING_MAX_LEVEL_SECONDS="${GATLING_MAX_LEVEL_SECONDS:-30}"
 GATLING_MAX_RAMP_SECONDS="${GATLING_MAX_RAMP_SECONDS:-10}"
 
+bool_value GATLING_MAX_SINGLE_LEVEL_MODE "$GATLING_MAX_SINGLE_LEVEL_MODE"
 positive_int GATLING_MAX_DISCOVERY_ATTEMPTS "$GATLING_MAX_DISCOVERY_ATTEMPTS"
 positive_int GATLING_MAX_START_USERS_PER_SEC "$GATLING_MAX_START_USERS_PER_SEC"
 positive_int GATLING_MAX_STEP_USERS_PER_SEC "$GATLING_MAX_STEP_USERS_PER_SEC"
@@ -42,8 +56,72 @@ log() {
   printf '%s\n' "$*" | tee -a "$DISCOVERY_LOG"
 }
 
+run_gatling_level() {
+  start_users_per_sec="$1"
+  level_count="$2"
+
+  env \
+    GATLING_RUN_TYPE=max-limit \
+    GATLING_MAX_START_USERS_PER_SEC="$start_users_per_sec" \
+    GATLING_MAX_STEP_USERS_PER_SEC="$GATLING_MAX_STEP_USERS_PER_SEC" \
+    GATLING_MAX_LEVEL_COUNT="$level_count" \
+    GATLING_MAX_LEVEL_SECONDS="$GATLING_MAX_LEVEL_SECONDS" \
+    GATLING_MAX_RAMP_SECONDS="$GATLING_MAX_RAMP_SECONDS" \
+    "$RUNNER"
+}
+
+has_gatling_report() {
+  [ -s "$OUTPUT_DIR/index.html" ] && [ -s "$OUTPUT_DIR/max-limit-run.log" ]
+}
+
 attempt=1
 current_start="$GATLING_MAX_START_USERS_PER_SEC"
+highest_passing_level=""
+
+if [ "$GATLING_MAX_SINGLE_LEVEL_MODE" = true ]; then
+  while [ "$attempt" -le "$GATLING_MAX_DISCOVERY_ATTEMPTS" ]; do
+    highest_level=$((current_start + (GATLING_MAX_STEP_USERS_PER_SEC * (GATLING_MAX_LEVEL_COUNT - 1))))
+
+    log "Max-limit single-level attempt $attempt/$GATLING_MAX_DISCOVERY_ATTEMPTS: ${current_start}-${highest_level} users/sec"
+
+    level=1
+    while [ "$level" -le "$GATLING_MAX_LEVEL_COUNT" ]; do
+      log "Max-limit testing level ${current_start} users/sec."
+
+      set +e
+      run_gatling_level "$current_start" 1
+      status=$?
+      set -e
+
+      if [ "$status" -eq 0 ]; then
+        highest_passing_level="$current_start"
+        log "Max-limit level ${current_start} users/sec passed."
+        current_start=$((current_start + GATLING_MAX_STEP_USERS_PER_SEC))
+        level=$((level + 1))
+        continue
+      fi
+
+      if has_gatling_report; then
+        if [ -n "$highest_passing_level" ]; then
+          log "Max-limit highest passing tested level: ${highest_passing_level} users/sec."
+        else
+          log "No passing tested level found before first failure."
+        fi
+        log "Max-limit first failing tested level: ${current_start} users/sec."
+        log "Treating this assertion failure as successful max-limit discovery evidence."
+        exit 0
+      fi
+
+      log "Max-limit level ${current_start} users/sec failed before a usable Gatling report was created."
+      exit "$status"
+    done
+
+    attempt=$((attempt + 1))
+  done
+
+  log "No failing threshold found. Result is a tested lower bound through ${highest_passing_level} users/sec."
+  exit 0
+fi
 
 while [ "$attempt" -le "$GATLING_MAX_DISCOVERY_ATTEMPTS" ]; do
   highest_level=$((current_start + (GATLING_MAX_STEP_USERS_PER_SEC * (GATLING_MAX_LEVEL_COUNT - 1))))
@@ -51,14 +129,7 @@ while [ "$attempt" -le "$GATLING_MAX_DISCOVERY_ATTEMPTS" ]; do
   log "Max-limit attempt $attempt/$GATLING_MAX_DISCOVERY_ATTEMPTS: ${current_start}-${highest_level} users/sec"
 
   set +e
-  env \
-    GATLING_RUN_TYPE=max-limit \
-    GATLING_MAX_START_USERS_PER_SEC="$current_start" \
-    GATLING_MAX_STEP_USERS_PER_SEC="$GATLING_MAX_STEP_USERS_PER_SEC" \
-    GATLING_MAX_LEVEL_COUNT="$GATLING_MAX_LEVEL_COUNT" \
-    GATLING_MAX_LEVEL_SECONDS="$GATLING_MAX_LEVEL_SECONDS" \
-    GATLING_MAX_RAMP_SECONDS="$GATLING_MAX_RAMP_SECONDS" \
-    "$RUNNER"
+  run_gatling_level "$current_start" "$GATLING_MAX_LEVEL_COUNT"
   status=$?
   set -e
 
@@ -73,7 +144,7 @@ while [ "$attempt" -le "$GATLING_MAX_DISCOVERY_ATTEMPTS" ]; do
     continue
   fi
 
-  if [ -s "$OUTPUT_DIR/index.html" ] && [ -s "$OUTPUT_DIR/max-limit-run.log" ]; then
+  if has_gatling_report; then
     log "Max-limit attempt $attempt crossed a Gatling threshold in the ${current_start}-${highest_level} users/sec range."
     log "Treating this assertion failure as successful max-limit discovery evidence."
     exit 0

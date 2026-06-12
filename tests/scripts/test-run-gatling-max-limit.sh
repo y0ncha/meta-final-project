@@ -64,6 +64,7 @@ EOF
 (
   cd "$TEST_ROOT"
   CALL_LOG="$CALL_LOG" \
+  GATLING_MAX_SINGLE_LEVEL_MODE=false \
   GATLING_MAX_DISCOVERY_ATTEMPTS=3 \
   GATLING_MAX_START_USERS_PER_SEC=10 \
   GATLING_MAX_STEP_USERS_PER_SEC=10 \
@@ -82,6 +83,7 @@ assert_file_equals "10|10|3|1|1
   cd "$TEST_ROOT"
   CALL_LOG="$CALL_LOG" \
   FAIL_ON_ATTEMPT=2 \
+  GATLING_MAX_SINGLE_LEVEL_MODE=false \
   GATLING_MAX_DISCOVERY_ATTEMPTS=4 \
   GATLING_MAX_START_USERS_PER_SEC=5 \
   GATLING_MAX_STEP_USERS_PER_SEC=5 \
@@ -93,5 +95,29 @@ assert_file_equals "10|10|3|1|1
 
 assert_file_equals "5|5|2|1|1
 15|5|2|1|1" "$CALL_LOG"
+
+: > "$CALL_LOG"
+(
+  cd "$TEST_ROOT"
+  CALL_LOG="$CALL_LOG" \
+  FAIL_ON_ATTEMPT=3 \
+  GATLING_MAX_SINGLE_LEVEL_MODE=true \
+  GATLING_MAX_DISCOVERY_ATTEMPTS=2 \
+  GATLING_MAX_START_USERS_PER_SEC=100 \
+  GATLING_MAX_STEP_USERS_PER_SEC=25 \
+  GATLING_MAX_LEVEL_COUNT=4 \
+  GATLING_MAX_LEVEL_SECONDS=1 \
+  GATLING_MAX_RAMP_SECONDS=1 \
+    "$SCRIPT_DIR/run-gatling-max-limit" > "$TEST_ROOT/single-level.log"
+)
+
+assert_file_equals "100|25|1|1|1
+125|25|1|1|1
+150|25|1|1|1" "$CALL_LOG"
+
+grep -Fq 'Max-limit level 100 users/sec passed.' "$TEST_ROOT/single-level.log"
+grep -Fq 'Max-limit level 125 users/sec passed.' "$TEST_ROOT/single-level.log"
+grep -Fq 'Max-limit first failing tested level: 150 users/sec.' "$TEST_ROOT/single-level.log"
+grep -Fq 'Max-limit highest passing tested level: 125 users/sec.' "$TEST_ROOT/single-level.log"
 
 printf '%s\n' 'run-gatling-max-limit discovery checks passed'

@@ -37,6 +37,7 @@ For max-limit discovery, raise or bound the search with environment variables:
 
 ```sh
 GATLING_MAX_DISCOVERY_ATTEMPTS=3 \
+GATLING_MAX_SINGLE_LEVEL_MODE=true \
 GATLING_MAX_START_USERS_PER_SEC=5 \
 GATLING_MAX_STEP_USERS_PER_SEC=5 \
 GATLING_MAX_LEVEL_COUNT=10 \
@@ -45,20 +46,24 @@ GATLING_MAX_LEVEL_COUNT=10 \
 
 ## Max-Limit Method
 
-The max-limit wrapper runs complete stepped profiles until a Gatling assertion failure is found or the bounded discovery attempts are exhausted. By default it runs up to `3` full attempts:
+The max-limit wrapper runs bounded discovery until a Gatling assertion failure is found or the configured attempts are exhausted. By default `GATLING_MAX_SINGLE_LEVEL_MODE=true`, so each users/sec level is a separate Gatling execution. This lets the wrapper report both the highest passing tested level and the first failing tested level.
+
+With the local script defaults, the tested levels are grouped into up to `3` discovery attempts:
 
 - Attempt 1 starts at `5` users per second and reaches `50` users per second.
 - Attempt 2 starts at `55` users per second and reaches `100` users per second.
 - Attempt 3 starts at `105` users per second and reaches `150` users per second.
 
-Each attempt increases by `5` users per second for `10` levels, keeps each level for `30` seconds, and uses `10` second ramps between levels. Set `GATLING_MAX_DISCOVERY_ATTEMPTS=1` when you intentionally want only one complete stepped profile.
+Each tested level lasts `30` seconds by default. In single-level mode the ramp setting is still passed to Gatling, but each run contains one level, so the reported failing users/sec is a tested level rather than a broad range.
+
+Set `GATLING_MAX_SINGLE_LEVEL_MODE=false` only when you intentionally want the legacy faster batched mode. Batched mode runs a complete stepped profile per attempt, increases by the configured users/sec step for the configured level count, and can only report the failed range for that attempt.
 
 A tested level is treated as passing only when both conditions hold:
 
 - Failed request percentage is less than `5`.
 - HTTP response time percentile 95 is less than or equal to `2000` milliseconds.
 
-The max limit is the highest tested level that passes before the first tested level that fails. If an attempt fails after a report is normalized, the wrapper treats that assertion failure as successful discovery evidence and preserves the failing report under `output/gatling/max-limit/`. If no tested level fails, the result is a tested lower bound, not the true application maximum.
+The max limit is the highest tested level that passes before the first tested level that fails. If a single-level run fails after a report is normalized, the wrapper treats that assertion failure as successful discovery evidence, prints the exact first failing tested users/sec level, and preserves the failing report under `output/gatling/max-limit/`. If no tested level fails, the result is a tested lower bound, not the true application maximum.
 
 ## Evidence Files
 
@@ -95,8 +100,9 @@ For Jenkins max-limit discovery, the build parameters expose the main discovery 
 - `GATLING_MAX_STEP_USERS_PER_SEC=50`
 - `GATLING_MAX_LEVEL_COUNT=6`
 - `GATLING_MAX_DISCOVERY_ATTEMPTS=3`
+- `GATLING_MAX_SINGLE_LEVEL_MODE=true`
 
-With those defaults, Jenkins tests 200-450 users/sec, then 500-750 users/sec, then 800-1050 users/sec unless a Gatling assertion threshold is crossed earlier.
+With those defaults, Jenkins tests single levels from 200-450 users/sec, then 500-750 users/sec, then 800-1050 users/sec unless a Gatling assertion threshold is crossed earlier. When a threshold is crossed, the console log reports the highest passing tested level and the first failing tested level.
 
 Monitoring is handled by the separate Jenkins Freestyle job `meta-monitoring`, which runs `./scripts/run-monitoring-check`; the Gatling stages are not part of that scheduled job. Jenkins publishes Gatling HTML/PDF evidence through HTML Publisher when `index.html` exists under `output/gatling/max-limit/`, `output/gatling/load-5m/`, or `output/gatling/stress-5m/`.
 
