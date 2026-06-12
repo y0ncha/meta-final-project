@@ -21,9 +21,9 @@ tags:
 
 ![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
 
-This plan prepares the optional public-IP bonus host by deploying only the existing MeTA Tomcat web application on a short-lived AWS EC2 VM. Jenkins stays local/private and is not deployed to EC2. The EC2 VM exists only to expose the Tomcat application through a real public IPv4 address or AWS public DNS name long enough for Plan 11 to collect public-hosted bonus evidence. The user has `$100` AWS credit and accepts an estimated `$10-$20` evidence window, but the plan must avoid unnecessary AWS services and terminate resources immediately after Plan 11 evidence capture is complete.
+This plan prepares the optional public-IP bonus host by deploying only the existing MeTA Tomcat web application on a short-lived AWS EC2 VM. Jenkins stays local/private and is not deployed to EC2. The EC2 VM exists only to expose the Tomcat application through a real public IPv4 address or AWS public DNS name long enough for Plan 11 to collect public-hosted bonus evidence. The user has `$100` AWS credit and accepts an estimated `$10-$20` evidence window, but the plan must avoid unnecessary AWS services.
 
-Evidence ownership: `docs/plans/11-submission-package.md` owns the final evidence checklist, local base evidence, public-hosted bonus evidence, and submission readiness. This plan owns only the EC2 public host setup, public URL handoff, security boundaries, cost controls, and cleanup.
+Evidence ownership: `docs/plans/11-submission-package.md` owns the final evidence checklist, local base evidence, public-hosted bonus evidence, submission readiness, and AWS cleanup verification. This plan owns only the EC2 public host setup, public URL handoff, security boundaries, cost-control setup, and Tomcat restart-behavior validation.
 
 ## 1. Requirements & Constraints
 
@@ -38,8 +38,8 @@ Evidence ownership: `docs/plans/11-submission-package.md` owns the final evidenc
 - **REQ-009**: Use an EC2 security group with inbound `tcp/8080` public for Tomcat, inbound `tcp/22` restricted to the operator IP for SSH, and no inbound `tcp/8081`.
 - **REQ-010**: Use the cheapest bootcamp-approved Ubuntu EC2 instance that can run Docker and the Tomcat container reliably.
 - **REQ-011**: Do not use a load balancer, NAT Gateway, RDS, ECS, EKS, Auto Scaling Group, or any additional paid AWS service unless explicitly approved later. Elastic IP is approved only for this short evidence window so the public URL stays stable across EC2 stop/start.
-- **REQ-012**: Use AWS CLI v2 where available for setup evidence and resource cleanup, but preserve console fallback if the bootcamp account blocks CLI operations.
-- **REQ-013**: Keep total AWS spend bounded by using a short evidence window and terminating the EC2 instance immediately after public evidence is captured.
+- **REQ-012**: Use AWS CLI v2 where available for setup evidence, but preserve console fallback if the bootcamp account blocks CLI operations.
+- **REQ-013**: Keep Plan 10 cost exposure bounded by using a short-lived, Tomcat-only EC2 host and avoiding unnecessary AWS services. Actual AWS resource cleanup is delegated to Plan 11/evidence closeout and is not a Plan 10 completion gate.
 - **REQ-014**: Record AWS region, instance type, AMI, public IPv4 or public DNS, security group rules, public app URL, monitor target, Playwright target, Gatling target, and cost-control decisions in `docs/public-app-bonus.md`.
 - **REQ-015**: Delegate final evidence readiness and local-versus-public-hosted separation to `docs/plans/11-submission-package.md` and `docs/submission.md`.
 - **REQ-016**: Do not claim the public-IP bonus from this plan alone; Plan 11 must confirm all required public-target evidence exists and uses the same public application URL.
@@ -47,7 +47,7 @@ Evidence ownership: `docs/plans/11-submission-package.md` owns the final evidenc
 - **SEC-001**: Do not commit AWS console credentials, AWS access keys, SSH private keys, Jenkins secrets, UptimeRobot credentials, SiteMonitorLite credentials, cookies, API keys, or sensitive screenshots.
 - **SEC-002**: Do not expose Jenkins `tcp/8081` publicly to the internet.
 - **SEC-003**: Restrict SSH `tcp/22` to the operator public IP wherever the bootcamp account allows source-IP restriction.
-- **SEC-004**: Terminate the EC2 instance and release any public IPv4 or Elastic IP resource immediately after evidence capture.
+- **SEC-004**: Document that AWS resource cleanup belongs to Plan 11/evidence closeout, and do not mark the public-IP bonus claim ready until cleanup verification is captured there.
 - **SEC-005**: Do not paste, save, screenshot, or commit AWS access keys, session tokens, private key material, or full credential configuration output while using AWS CLI.
 - **CON-001**: Read `AGENTS.md`, `contribution.md`, and `rules/compliance.md` before implementation.
 - **CON-002**: Preserve filename `docs/plans/10-aws-ec2-public-vm-bonus.md` for numbered plan continuity.
@@ -58,7 +58,7 @@ Evidence ownership: `docs/plans/11-submission-package.md` owns the final evidenc
 - **GUD-001**: Prefer EC2 because it provides the strongest public-IP evidence story for the assignment bonus.
 - **GUD-002**: Prefer the cheapest viable VM because the EC2 host runs only Tomcat, not Jenkins, Playwright, or Gatling.
 - **GUD-003**: Prefer running Gatling from local/private Jenkins against EC2 instead of running the load generator on the EC2 Tomcat host.
-- **GUD-004**: Prefer AWS CloudShell or local AWS CLI for fast verification and cleanup commands.
+- **GUD-004**: Prefer AWS CloudShell or local AWS CLI for fast setup and verification commands.
 - **PAT-001**: Follow existing repository patterns: source-controlled scripts in `scripts/`, documentation in `docs/`, implementation plans in `docs/plans/`, closeout in `docs/changelog/`, and generated evidence under ignored `output/`.
 - **PAT-002**: Keep public bonus evidence labels explicit by including the public app URL in screenshots, logs, monitor configuration, and documentation wherever possible.
 
@@ -100,12 +100,12 @@ Evidence ownership: `docs/plans/11-submission-package.md` owns the final evidenc
 | TASK-014 | Install Docker Engine, Docker Compose plugin, Git, and curl on the EC2 instance. | ✅ | 2026-06-12 |
 | TASK-015 | Clone `https://github.com/y0ncha/meta-final-project.git` onto the EC2 instance. | ✅ | 2026-06-12 |
 | TASK-016 | Check out the commit or branch selected for final evidence and record `git rev-parse HEAD` in `docs/public-app-bonus.md`. | ✅ | 2026-06-12 |
-| TASK-017 | Start only the Tomcat service with `TOMCAT_RESTART_POLICY=unless-stopped docker compose up -d tomcat`; do not start the Jenkins service on EC2. | ✅ | 2026-06-12 |
+| TASK-017 | Start only the Tomcat service with `TOMCAT_RESTART_POLICY=unless-stopped docker compose up -d tomcat`; do not start the Jenkins service on EC2. Tomcat-only startup was done, but restart-policy validation is pending until EC2 pulls a commit containing the Compose restart-policy field. | Partial | 2026-06-12 |
 | TASK-018 | Deploy the WAR on EC2 with `./scripts/deploy-war`. | ✅ | 2026-06-12 |
 | TASK-019 | Verify from the EC2 instance that `curl -fsS http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ >/dev/null` passes. | ✅ | 2026-06-12 |
 | TASK-020 | Verify externally that `http://<EC2_PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` or the public DNS equivalent loads. | ✅ | 2026-06-12 |
 | TASK-021 | Record the public URL and verification result in `docs/public-app-bonus.md`. | ✅ | 2026-06-12 |
-| TASK-021A | Add `TOMCAT_RESTART_POLICY` and `APP_BASE_URL` guidance to `.env.example`, document local/EC2 `.env` usage, and apply `unless-stopped` to the already-created EC2 `meta-tomcat` container. | ✅ | 2026-06-12 |
+| TASK-021A | Add `TOMCAT_RESTART_POLICY` and `APP_BASE_URL` guidance to `.env.example`, document local/EC2 `.env` usage, and apply `unless-stopped` to the already-created EC2 `meta-tomcat` container. Local docs and Compose guidance are done; EC2 application of `unless-stopped` is pending until EC2 pulls a commit containing the Compose restart-policy field. | Partial | 2026-06-12 |
 
 ### Implementation Phase 4
 
@@ -124,12 +124,12 @@ Evidence ownership: `docs/plans/11-submission-package.md` owns the final evidenc
 
 ### Implementation Phase 5
 
-- GOAL-005: Shut down AWS resources and close out evidence.
+- GOAL-005: Validate restart behavior and close Plan 10 host readiness.
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-030 | Terminate the EC2 instance immediately after Plan 11 public-hosted evidence capture is complete. |  |  |
-| TASK-031 | Verify no Elastic IP, load balancer, NAT Gateway, or extra paid resource remains. |  |  |
+| TASK-030 | After EC2 pulls a commit containing the Compose restart-policy field, recreate Tomcat with `TOMCAT_RESTART_POLICY=unless-stopped` and verify the container restart policy. |  |  |
+| TASK-031 | Record the final EC2 `git rev-parse HEAD` and `docker inspect -f '{{.HostConfig.RestartPolicy.Name}}' meta-tomcat` result in `docs/public-app-bonus.md` and the Plan 10 changelog. |  |  |
 | TASK-032 | Delegate local base evidence and public-hosted bonus evidence separation to Plan 11 and `docs/submission.md`. | ✅ | 2026-06-12 |
 | TASK-033 | Update `docs/public-app-bonus.md` with public URL, selected path, EC2 details, cost-control notes, and remaining infrastructure risks; final evidence paths belong to Plan 11. | ✅ | 2026-06-12 |
 | TASK-034 | Create or update `docs/changelog/10-aws-ec2-public-vm-bonus.changelog.md` with implementation, validation, date, and remaining risks. | ✅ | 2026-06-12 |
@@ -158,7 +158,7 @@ Evidence ownership: `docs/plans/11-submission-package.md` owns the final evidenc
 - **DEP-008**: UptimeRobot account access, or SiteMonitorLite access if UptimeRobot is blocked.
 - **DEP-009**: Browser access from outside the EC2 instance to verify public reachability.
 - **DEP-010**: User-provided Jenkins/Gatling artifacts are required because the agent must not run Gatling directly.
-- **DEP-011**: AWS CloudShell or local AWS CLI v2 access is optional but preferred for metadata, security-group evidence, and cleanup verification.
+- **DEP-011**: AWS CloudShell or local AWS CLI v2 access is optional but preferred for metadata and security-group evidence.
 
 ## 5. Files
 
@@ -181,19 +181,19 @@ Evidence ownership: `docs/plans/11-submission-package.md` owns the final evidenc
 - **TEST-004**: EC2 security group must restrict inbound `tcp/22` to the operator IP wherever the bootcamp account permits it.
 - **TEST-005**: On EC2, `docker --version` must print an installed Docker version.
 - **TEST-006**: On EC2, `docker compose version` must print an installed Compose plugin version.
-- **TEST-007**: On EC2, `TOMCAT_RESTART_POLICY=unless-stopped docker compose up -d tomcat` must start only Tomcat with the EC2 restart policy.
+- **TEST-007**: Pending EC2 rerun after the checkout is updated to a commit containing the Compose restart-policy field: `TOMCAT_RESTART_POLICY=unless-stopped docker compose up -d tomcat` must start only Tomcat with the EC2 restart policy.
 - **TEST-008**: On EC2, `docker compose ps` must not show the Jenkins service running.
 - **TEST-009**: On EC2, `./scripts/deploy-war` must pass from the repository root.
 - **TEST-010**: On EC2, `curl -fsS http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ >/dev/null` must pass.
 - **TEST-011**: From an external browser or network, `http://<EC2_PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` or the public DNS equivalent must load.
-- **TEST-011A**: On EC2, `docker inspect -f '{{.HostConfig.RestartPolicy.Name}}' meta-tomcat` must print `unless-stopped`.
+- **TEST-011A**: Pending EC2 rerun after the checkout is updated to a commit containing the Compose restart-policy field: `docker inspect -f '{{.HostConfig.RestartPolicy.Name}}' meta-tomcat` must print `unless-stopped`.
 - **TEST-012**: Plan 11 must own UptimeRobot or SiteMonitorLite passed/up evidence for `PUBLIC_APP_BASE_URL` at a 5-minute cadence.
 - **TEST-013**: Plan 11 must classify the Playwright public-target run against the same five validations as `tests/playwright/meta-functional.spec.js`.
 - **TEST-014**: Plan 11 must own public Gatling max-limit evidence: log, HTML report, PDF report, and terminal or Jenkins-console screenshot.
 - **TEST-015**: Plan 11 must own public Gatling 5-minute load evidence: log, HTML report, PDF report, and terminal or Jenkins-console screenshot.
 - **TEST-016**: Plan 11 must own public Gatling 5-minute stress evidence: log, HTML report, PDF report, and terminal or Jenkins-console screenshot.
 - **TEST-017**: `docs/public-app-bonus.md` must list the selected path, AWS details, public URL, and cost-control decisions; Plan 11 owns final evidence paths.
-- **TEST-018**: AWS console or AWS CLI cleanup verification must show the EC2 instance is terminated and the Elastic IP is released, with no load balancer, NAT Gateway, or extra paid resource remaining.
+- **TEST-018**: Plan 10 completion requires EC2 restart-behavior validation only. AWS cleanup verification is delegated to Plan 11/evidence closeout and must not block marking this plan complete after restart behavior is validated.
 - **TEST-019**: `docs/submission.md` must not treat public bonus evidence as a replacement for the required local `localhost:8080/...` screenshot.
 - **TEST-020**: `git diff --check` must pass.
 - **TEST-021**: `python3 .agents/skills/compliance-validator/scripts/validate_compliance.py --target . --rules rules/compliance.md` must pass with no failures; manual public-IP evidence items must be documented.
@@ -202,14 +202,14 @@ Evidence ownership: `docs/plans/11-submission-package.md` owns the final evidenc
 ## 7. Risks & Assumptions
 
 - **RISK-001**: AWS bootcamp accounts can restrict regions, instance types, public IPv4 assignment, key pairs, security group rules, or service availability.
-- **RISK-002**: Even small AWS resources cost money if left running; cleanup verification is mandatory.
+- **RISK-002**: Even small AWS resources cost money if left running; Plan 11/evidence closeout must own cleanup verification after public-hosted evidence capture.
 - **RISK-003**: Very small EC2 instances can run out of memory if anything beyond Tomcat is started.
 - **RISK-004**: Public IPv4 address or public DNS can change if the instance is stopped and restarted without the approved Elastic IP association.
 - **RISK-005**: Public network latency can change Gatling response-time graphs; graph explanations must describe the observed public-run behavior.
 - **RISK-006**: UptimeRobot may need several minutes to show a clean passed state after monitor creation.
 - **RISK-007**: Exposing Jenkins publicly creates avoidable security risk; Jenkins must stay local/private.
 - **RISK-008**: The final submission deadline is 2026-06-15 at midnight, so AWS setup troubleshooting time is limited.
-- **RISK-009**: Cost estimates can drift by region, instance type, traffic volume, or forgotten resources; keep the evidence window short and verify cleanup.
+- **RISK-009**: Cost estimates can drift by region, instance type, traffic volume, or forgotten resources; keep the Plan 10 host minimal and hand cleanup verification to Plan 11/evidence closeout.
 - **ASSUMPTION-001**: The app context path remains `/yonatan-csasznik-yoed-halberstam-niv-levin/`.
 - **ASSUMPTION-002**: Local Tomcat remains reachable at `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`.
 - **ASSUMPTION-003**: Local/private Jenkins can run or trigger Playwright and Gatling with `APP_BASE_URL` set to the public EC2 application URL.

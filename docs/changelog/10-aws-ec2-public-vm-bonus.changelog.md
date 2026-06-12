@@ -20,6 +20,8 @@
 - Ran the monitoring check script against the public EC2 app URL and staged `output/public-app/monitoring/latest-check.txt`.
 - Added `TOMCAT_RESTART_POLICY` to `docker-compose.yml`, defaulting to `no`, so EC2 can opt into `unless-stopped` through `.env` or an inline environment variable without changing local behavior.
 - Identified that EC2 restart-policy validation is still pending because the recorded EC2 checkout is the merge-base commit, while `TOMCAT_RESTART_POLICY` support is introduced by this branch.
+- Corrected Plan 10 task and test status so `TASK-017`, `TASK-021A`, `TEST-007`, and `TEST-011A` no longer claim completed restart-policy validation.
+- Removed AWS resource cleanup as a Plan 10 completion gate; Plan 10 now finishes after EC2 restart behavior is validated, while cleanup verification is delegated to Plan 11/evidence closeout.
 - Updated the public host tracker to use the current Elastic IP `51.84.219.74`.
 - Documented that the live EC2 checkout must pull a commit containing this Compose change before its uncommitted `.env` can apply the public `APP_BASE_URL` and `TOMCAT_RESTART_POLICY=unless-stopped` settings.
 
@@ -68,5 +70,4 @@ Plan 10 now chooses AWS EC2 because it gives the strongest public-IP bonus story
 - Public Gatling evidence is still pending.
 - EC2 restart-policy validation is still pending until EC2 pulls a commit containing this branch's Compose change and Tomcat is recreated with `TOMCAT_RESTART_POLICY=unless-stopped`.
 - The agent must not run Gatling directly. Public-target Gatling max-limit, load, and stress evidence must come from user-run Jenkins or runner artifacts.
-- The EC2 instance is currently running and should be terminated immediately after remaining public evidence is captured.
-- EC2 cleanup verification is mandatory before claiming the evidence window is closed.
+- AWS cleanup verification remains required for the overall evidence window, but it is delegated to Plan 11/evidence closeout rather than blocking Plan 10 completion.
