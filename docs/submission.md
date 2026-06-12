@@ -4,7 +4,7 @@ This file maps the assignment requirements from `docs/final-project.txt` to the 
 
 ## Submit To
 
-- Recipient: `mosh.mta2@gmail.com`
+- Recipient: assignment recipient from `final-project.pdf`
 - Subject: `Final Exercise from: <yournames>`
 - Deadline from assignment: `2026-06-15` at midnight
 - Base local app URL for evidence: `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`
@@ -20,6 +20,19 @@ Replace `<yournames>` with the final group member names before sending.
 - Use the Tomcat URL screenshot only if the browser address bar visibly shows `localhost:8080/...`.
 - Keep public-IP bonus evidence separate from the base local evidence. Do not claim the bonus unless the public target and steps 6-10 were actually validated against it.
 - Review the HAR before sending because HAR files can include cookies, headers, response content, URLs, and cache metadata.
+
+## Packaged Evidence Folder
+
+The sendable evidence package is under `submission/`:
+
+| Folder | Purpose |
+|---|---|
+| `submission/local/` | Required local/base evidence for assignment email items `a` through `l`. |
+| `submission/public/` | Optional public-IP bonus evidence only; it does not replace any required local item. |
+| `submission/email/` | Email draft and attachment manifest. |
+| `submission/archive/pre-2026-06-12-structure/` | Previous package layout and stale copied evidence preserved for traceability. |
+
+Use `submission/email/attachments-manifest.md` as the current readiness source before sending the final email. Use `submission/manual-actions.md` as the list of screenshots, external checks, and user-run Gatling actions that still need manual work.
 
 ## Instructor Open Questions
 
@@ -65,7 +78,7 @@ These are the required services, features, and pipeline capabilities that must w
 |---|---|---|---|
 | JSP web application | A simple JSP application with at least one link, one button, and one text input. | Source file, GitHub screenshot, Tomcat screenshot, Playwright validations. | Ready |
 | Git/GitHub source control | Application and automation code are stored in Git and the public GitHub repository. | Public repository link and GitHub screenshot showing the JSP/app. | Needs final public accessibility check and screenshot |
-| Tomcat production deployment | Jenkins deploys the WAR into the Tomcat container and the app is reachable at `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`. | Jenkins build log, `./scripts/deploy-war` output, Tomcat screenshot with address bar visible. | Partial; final address-bar screenshot still needed |
+| Tomcat production deployment | Jenkins deploys the WAR into the Tomcat container and the app is reachable at `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`. | Jenkins build log, `./scripts/deploy-war` output, Tomcat screenshot with address bar visible. | Ready for packaged screenshot; recapture after final deploy only if the app changes |
 | Jenkins CI/CD pipeline | Jenkins builds, deploys, verifies, and triggers the required automation flows from source control. | `meta-container-ci-cd` SCM/manual build log, Jenkins job configuration, archived/published reports. | Partial; needs final SCM-backed evidence after all stages exist |
 | Monitoring | A separate Jenkins Freestyle job checks the application every 5 minutes and official monitor evidence shows the target is up. | Monitor passed screenshot plus `meta-monitoring` scheduled build log. | Missing official monitor screenshot and final scheduled Jenkins evidence |
 | Browser functional automation | Browser automation validates 5 application behaviors and is triggerable from Jenkins. | Playwright test file, passed run log/report, screenshots, validation explanation. | Ready with Playwright override risk |
@@ -83,7 +96,7 @@ These are the 12 items that `docs/final-project.txt` says to send by email.
 |---|---|---|---|---|
 | a | The JSP file used | `src/main/webapp/index.jsp` | `src/main/webapp/index.jsp` | Ready |
 | b | Screenshot of GitHub with the application/JSP in it | Manual screenshot of GitHub showing the repo and JSP/app file | Public repo URL is documented as `https://github.com/y0ncha/meta-final-project`; screenshot still must be captured | Missing screenshot |
-| c | Screenshot of the app in Tomcat with `localhost:8080/...` visible | Manual browser screenshot with address bar visible at `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` | `output/screenshots/tomcat-meta-local.png` is supplemental only because it does not show browser chrome | Needs final screenshot |
+| c | Screenshot of the app in Tomcat with `localhost:8080/...` visible | Manual browser screenshot with address bar visible at `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` | `submission/local/c-tomcat-local-screenshot/tomcat-local-url.png` shows browser chrome and the localhost URL | Ready |
 | d | Link to public GitHub repo | `https://github.com/y0ncha/meta-final-project` | Git remote is expected to be that repository | Needs final accessibility check |
 | e | Monitor tool name, monitored target, and passed monitor screenshot | UptimeRobot or approved monitor name, target URL, interval, and passed/up screenshot | Jenkins Freestyle job `meta-monitoring` runs `./scripts/run-monitoring-check` on schedule `H/5 * * * *`; official monitor screenshot is not present | Missing |
 | f | Selenium IDE file `.side` | Playwright substitute: `tests/playwright/meta-functional.spec.js` | Playwright override documented in `rules/compliance.md` and `docs/playwright.md` | Ready with override risk |
@@ -143,7 +156,7 @@ Bonus evidence is claimable only when all public-target rows below are real and 
 | Public Tomcat URL | `http://<EC2_PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` or AWS public DNS equivalent | Browser screenshot from outside the EC2 instance with address bar visible. | Pending EC2 public URL validation |
 | Availability monitor | Same `PUBLIC_APP_BASE_URL` | UptimeRobot or approved monitor screenshot showing up/pass state, cadence, and public URL. | Pending public monitor evidence |
 | Jenkins monitoring | `APP_BASE_URL=<PUBLIC_APP_BASE_URL>` | `meta-monitoring` build log and archived `output/monitoring/latest-check.txt`. | Pending public-target Jenkins evidence |
-| Browser automation | `APP_BASE_URL=<PUBLIC_APP_BASE_URL>` | Playwright passed-run log/report/screenshots from the public target. | Pending public-target Playwright evidence |
+| Browser automation | `APP_BASE_URL=<PUBLIC_APP_BASE_URL>` | Playwright passed-run log/report/screenshots from the public target. | Packaged under `submission/public/public-browser-test-passed-run/`; re-check target before claiming bonus |
 | Gatling max-limit | `APP_BASE_URL=<PUBLIC_APP_BASE_URL>` | Max-limit log, HTML report, PDF, and terminal or Jenkins-console screenshot. | Pending user-run public evidence |
 | Gatling load 5m | `APP_BASE_URL=<PUBLIC_APP_BASE_URL>` | Load-test log, HTML report, PDF, and terminal or Jenkins-console screenshot. | Pending user-run public evidence |
 | Gatling stress 5m | `APP_BASE_URL=<PUBLIC_APP_BASE_URL>` | Stress-test log, HTML report, PDF, and terminal or Jenkins-console screenshot. | Pending user-run public evidence |

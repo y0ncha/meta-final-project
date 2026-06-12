@@ -1,0 +1,5 @@
+status=up
+target=http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/
+checked_at=2026-06-12T10:41:39Z
+job=meta-monitoring
+build=uptimerobot-recovery-check

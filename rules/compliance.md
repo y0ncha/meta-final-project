@@ -88,7 +88,7 @@ The authoritative assignment source is `final-project.pdf`. This file is the act
 
 ## Submission Package
 
-Send the final email to `mosh.mta2@gmail.com` with subject `Final Exercise from: <yournames>`.
+Send the final email to the assignment recipient with subject `Final Exercise from: <yournames>`.
 
 The email must include all 12 required items:
 
