@@ -7,7 +7,9 @@
 # Local agent and workspace metadata
 .agents/
 .codex/
+AGENTS.md
 skills-lock.json
+skills-lock.yaml
 
 # Java and Maven build output
 target/
@@ -59,3 +61,5 @@ temp/
 .cache/
 .rtk/
 *.tmp
+
+

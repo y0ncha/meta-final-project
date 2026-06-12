@@ -1,8 +1,8 @@
 # MTA DevOps Final Project
 
-This repository contains the coursework implementation for the MTA 2026 Semester B DevOps final project. The assignment asks for a simple JSP application delivered to Tomcat through Jenkins, with monitoring, browser automation, HAR evidence, and Gatling performance evidence.
+This repository answers the MTA 2026 Semester B DevOps final project for the MeTA corporate scenario. The assignment source is `final-project.pdf`; `docs/final-project.txt` is the searchable text extract used by the project docs.
 
-The assignment source is `final-project.pdf`; `docs/final-project.txt` is the searchable text extract used by the project docs.
+The project is a simple JSP application delivered to Tomcat through Jenkins, with monitoring, browser automation, HAR evidence, and Gatling performance evidence. The default runtime is the approved containerized track: Tomcat, Jenkins, Playwright, and Gatling run through Docker instead of host-installed coursework tools. The main CI/CD implementation is the Jenkins Pipeline job `meta-container-ci-cd`. Monitoring is intentionally split into the separate Jenkins Freestyle job `meta-monitoring`, following the documented instructor clarification in `rules/compliance.md`.
 
 ## Project Links
 
@@ -12,29 +12,30 @@ The assignment source is `final-project.pdf`; `docs/final-project.txt` is the se
 - Jenkins CI/CD job: `meta-container-ci-cd`
 - Jenkins monitoring job: `meta-monitoring`
 
-## What Is Implemented
+## Assignment Requirements
 
-| Assignment area | Project implementation |
+| Final-project requirement | Repository answer |
 |---|---|
-| JSP web app | Maven JSP app in `src/main/webapp/index.jsp`, packaged as `target/yonatan-csasznik-yoed-halberstam-niv-levin.war`. |
-| Git and GitHub | Repository remote points to `https://github.com/y0ncha/meta-final-project.git`. |
-| Tomcat deployment | Dockerized Tomcat serves the app at `/yonatan-csasznik-yoed-halberstam-niv-levin/`; deployment uses `scripts/deploy-war`. |
-| Jenkins CI/CD | `Jenkinsfile` builds, deploys, verifies Tomcat, runs Playwright, runs Gatling, and publishes reports. |
-| Monitoring | Separate Jenkins Freestyle job `meta-monitoring` runs every 5 minutes via `scripts/run-monitoring-check`. |
-| Browser automation | Playwright test in `tests/playwright/meta-functional.spec.js` covers five application validations. |
-| HAR evidence | HAR scenario is documented in `docs/har-scenario.md`; capture uses `scripts/capture-har`. |
-| Gatling evidence | Gatling max-limit, 5-minute load, and 5-minute stress flows are documented in `docs/gatling.md`. |
-| Submission package | Required email items are tracked in `docs/submission.md`. |
+| 1. Simple JSP app with at least one link, one button, and one text input | `src/main/webapp/index.jsp` implements the MeTA page, link, submit button, and name input. |
+| 2. Store code in Git and GitHub | The repository is tracked in Git and published at `https://github.com/y0ncha/meta-final-project`. |
+| 3. Tomcat `webapps` folder name includes group names | Maven builds `target/yonatan-csasznik-yoed-halberstam-niv-levin.war`, served at `/yonatan-csasznik-yoed-halberstam-niv-levin/`. |
+| 4. Jenkins deploys Git/GitHub code to Tomcat | `Jenkinsfile` builds the WAR, deploys it with `scripts/deploy-war`, and verifies Tomcat. |
+| 5. Optional public-IP bonus | Tracked separately in `docs/public-app-bonus.md`; do not claim unless the public URL and bullets 6-10 are validated with real evidence. |
+| 6. Availability monitor every 5 minutes | `meta-monitoring` runs `scripts/run-monitoring-check` on `H/5 * * * *`; UptimeRobot/SiteMonitorLite evidence is tracked in `docs/submission.md`. |
+| 7. Browser test with 5 validations | `tests/playwright/meta-functional.spec.js` provides the Selenium IDE or similar substitute and is run by Jenkins through `scripts/run-playwright-container`. |
+| 8. Gatling max-limit test | `scripts/run-gatling-max-limit` runs bounded max-limit discovery in a Gatling container and writes evidence under `output/gatling/max-limit/`. |
+| 9. 5-minute Gatling load test | `scripts/run-gatling-load-5m` runs the 5-minute load flow from Jenkins or local evidence capture. |
+| 10. 5-minute Gatling stress test | `scripts/run-gatling-stress-5m` runs the 5-minute stress flow from Jenkins or local evidence capture. |
 
 ## Main Local Commands
 
-Start the local stack:
+Start Tomcat and Jenkins:
 
 ```sh
 docker compose up -d tomcat jenkins
 ```
 
-Build and deploy the JSP app to Tomcat:
+Build and deploy the JSP app:
 
 ```sh
 ./scripts/deploy-war
@@ -46,14 +47,14 @@ Run browser automation:
 ./scripts/run-playwright-container
 ```
 
-Capture HAR evidence:
+Capture and validate HAR evidence:
 
 ```sh
 ./scripts/capture-har
 ./scripts/validate-har output/har/meta-functional-flow.har
 ```
 
-Run Gatling evidence flows:
+Run Gatling evidence flows only when intentionally refreshing performance evidence:
 
 ```sh
 ./scripts/run-gatling-max-limit
@@ -67,15 +68,16 @@ Do not run Gatling casually; the load and stress tests are intentionally heavier
 ## Documentation Map
 
 - `rules/compliance.md` - operational compliance checklist and approved project overrides.
-- `docs/submission.md` - final email checklist and remaining evidence status.
+- `docs/submission.md` - final email checklist, missing evidence, and package readiness.
 - `docs/jenkins.md` - Jenkins jobs, stages, schedules, and evidence to capture.
 - `docs/playwright.md` - five browser validations and Playwright override explanation.
-- `docs/gatling.md` - Gatling run commands, evidence paths, and graph explanations.
+- `docs/gatling.md` - Gatling commands, evidence paths, max-limit method, and graph explanations.
 - `docs/monitoring.md` - five-minute monitoring job setup.
 - `docs/har-scenario.md` - HAR scenario and validation notes.
+- `docs/public-app-bonus.md` - optional public-IP bonus target and cleanup notes.
 
 ## Evidence Policy
 
-Generated evidence is written under ignored `output/` paths and should be reviewed before submission. Do not commit fake screenshots, guessed Gatling numbers, secrets, Jenkins passwords, HAR data that has not been reviewed, or placeholder evidence.
+Generated evidence is written under ignored `output/` paths and reviewed or copied into `submission/` only when it is fresh. Do not commit fake screenshots, guessed Gatling numbers, secrets, Jenkins passwords, unreviewed HAR data, or placeholder evidence.
 
 Before final submission, refresh `docs/submission.md` and make sure every required item from `docs/final-project.txt` is backed by real artifacts or screenshots.

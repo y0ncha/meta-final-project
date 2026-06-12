@@ -46,7 +46,7 @@ j) Write in the email what is your app max limit, explain why this is the limit 
 k) Attach 3 screenshots of: max limit, load and stress gatling run summary (screenshot of the CMD)
 l) Attach 3 PDFs (max limit, load and stress) with Gatling results/graphs (export/print the index.html to pdf),
    explain why the results look this way. Guess, what happened in the system
-Send those 12 items to mosh.mta2@gmail.com the email subject: “Final Exercise from: <yournames>”
+Send those 12 items to [assignment recipient email redacted] the email subject: “Final Exercise from: <yournames>”
 
 Project defense instructions
       A. You will need to demo your work from your Laptop connected to the projector/ google meet
