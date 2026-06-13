@@ -27,6 +27,7 @@
 - Updated `docs/submission.md` to show Gatling logs/reports/PDFs as ready while keeping the three Gatling terminal screenshots explicitly deferred.
 - Fixed the Gatling runner normalization flow so logs and PDFs are not deleted when the latest raw report is copied into the stable report directory.
 - Updated the opt-in max-limit path so the Jenkins Gatling evidence toggle runs `scripts/run-gatling-max-limit`, which performs bounded full discovery attempts instead of calling the one-attempt primitive directly.
+- Added `GATLING_CONSOLE_MODE=summary|full` so Jenkins can show compact Gatling summaries while preserving complete run logs in `output/gatling/<run-type>/`.
 
 ## Evidence Produced
 
@@ -67,6 +68,7 @@ Generated evidence remains ignored under `output/`. The older `08-*` generated e
 - `GATLING_PDF_REQUIRE_ALL=false ./scripts/export-gatling-pdfs`
 - `./scripts/generate-pipeline-report`
 - `sh tests/scripts/test-generate-pipeline-report.sh`
+- `sh tests/scripts/test-run-gatling-console-mode.sh`
 - `docker compose ps`
 - `./scripts/deploy-war`
 - `./scripts/run-gatling-stress-5m`

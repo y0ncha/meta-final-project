@@ -24,11 +24,13 @@ assert_contains "string(name: 'GATLING_MAX_BASE_USERS', defaultValue: '50'"
 assert_contains "string(name: 'GATLING_MAX_STEP_USERS', defaultValue: '50'"
 assert_contains "string(name: 'GATLING_MAX_DURATION_SECONDS', defaultValue: '30'"
 assert_contains "string(name: 'GATLING_MAX_LIMIT_USERS', defaultValue: '1000'"
+assert_contains "choice(name: 'GATLING_CONSOLE_MODE', choices: ['summary', 'full']"
 
 assert_contains 'GATLING_MAX_BASE_USERS = "${params.GATLING_MAX_BASE_USERS}"'
 assert_contains 'GATLING_MAX_STEP_USERS = "${params.GATLING_MAX_STEP_USERS}"'
 assert_contains 'GATLING_MAX_DURATION_SECONDS = "${params.GATLING_MAX_DURATION_SECONDS}"'
 assert_contains 'GATLING_MAX_LIMIT_USERS = "${params.GATLING_MAX_LIMIT_USERS}"'
+assert_contains 'GATLING_CONSOLE_MODE = "${params.GATLING_CONSOLE_MODE}"'
 
 assert_not_contains "string(name: 'GATLING_MAX_BASE_USERS_PER_SEC'"
 assert_not_contains "string(name: 'GATLING_MAX_STEP_USERS_PER_SEC'"
@@ -45,6 +47,7 @@ assert_not_contains '-e GATLING_MAX_SINGLE_LEVEL_MODE=${env.GATLING_MAX_SINGLE_L
 assert_not_contains 'GATLING_LOAD_USERS_PER_SEC'
 assert_not_contains 'GATLING_STRESS_START_USERS_PER_SEC'
 assert_not_contains 'GATLING_STRESS_TARGET_USERS_PER_SEC'
+assert_contains '-e GATLING_CONSOLE_MODE=${env.GATLING_CONSOLE_MODE}'
 
 assert_contains "booleanParam(name: 'RUN_GATLING_TESTS', defaultValue: false"
 assert_contains "expression { params.RUN_GATLING_TESTS }"

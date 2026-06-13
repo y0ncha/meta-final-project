@@ -4,7 +4,7 @@ set -eu
 # Optional environment variables:
 # GATLING_IMAGE, GATLING_PLATFORM, APP_BASE_URL, GATLING_CONTAINER_NAME,
 # GATLING_SIMULATION_CLASS, GATLING_DOCKER_NETWORK, GATLING_DOCKER_PIPELINE,
-# GATLING_BIN, GATLING_* virtual-user load values.
+# GATLING_BIN, GATLING_CONSOLE_MODE, GATLING_* virtual-user load values.
 
 SCRIPT_DIR=$(dirname "$0")
 PROJECT_ROOT=$(cd "$SCRIPT_DIR/.." && pwd -P)
@@ -26,12 +26,21 @@ GATLING_CONTAINER_NAME="${GATLING_CONTAINER_NAME:-meta-gatling-${GATLING_RUN_TYP
 GATLING_DOCKER_NETWORK="${GATLING_DOCKER_NETWORK:-meta}"
 GATLING_DOCKER_PIPELINE="${GATLING_DOCKER_PIPELINE:-0}"
 GATLING_BIN="${GATLING_BIN:-}"
+GATLING_CONSOLE_MODE="${GATLING_CONSOLE_MODE:-full}"
 GATLING_LOAD_USERS="${GATLING_LOAD_USERS:-${GATLING_LOAD_USERS_PER_SEC:-5}}"
 GATLING_STRESS_START_USERS="${GATLING_STRESS_START_USERS:-${GATLING_STRESS_START_USERS_PER_SEC:-5}}"
 GATLING_STRESS_TARGET_USERS="${GATLING_STRESS_TARGET_USERS:-${GATLING_STRESS_TARGET_USERS_PER_SEC:-50}}"
 GATLING_MAX_USERS="${GATLING_MAX_USERS:-${GATLING_MAX_START_USERS_PER_SEC:-5}}"
 GATLING_MAX_DURATION_SECONDS="${GATLING_MAX_DURATION_SECONDS:-${GATLING_MAX_LEVEL_SECONDS:-30}}"
 SIMULATION_CLASS="${GATLING_SIMULATION_CLASS:-MetaSimulation}"
+
+case "$GATLING_CONSOLE_MODE" in
+  full|summary) ;;
+  *)
+    printf '%s\n' 'GATLING_CONSOLE_MODE must be full or summary' >&2
+    exit 2
+    ;;
+esac
 
 OUTPUT_DIR="output/gatling/$GATLING_RUN_TYPE"
 RAW_DIR="$OUTPUT_DIR/raw"
@@ -40,12 +49,26 @@ LOG_FILE="$OUTPUT_DIR/${GATLING_RUN_TYPE}-run.log"
 mkdir -p "$OUTPUT_DIR" "$RAW_DIR" output/gatling/screenshots
 find "$OUTPUT_DIR" -mindepth 1 -maxdepth 1 ! -name raw -exec rm -rf {} +
 
+print_log_summary() {
+  printf '%s\n' "Gatling console mode: summary. Full log saved to $LOG_FILE"
+  grep -E '^(=+|----|>|Simulation|Generating reports|Reports generated|Assertions|All assertions|Please open)' "$LOG_FILE" || {
+    printf '%s\n' "No Gatling summary lines matched; inspect $LOG_FILE"
+  }
+}
+
 run_and_log() {
   set +e
   "$@" > "$LOG_FILE" 2>&1
   status=$?
   set -e
-  cat "$LOG_FILE"
+  case "$GATLING_CONSOLE_MODE" in
+    full)
+      cat "$LOG_FILE"
+      ;;
+    summary)
+      print_log_summary
+      ;;
+  esac
   return "$status"
 }
 
