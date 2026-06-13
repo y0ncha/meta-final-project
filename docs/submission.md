@@ -27,7 +27,7 @@ Attached are the 12 required items for the MTA 2026 Semester B DevOps final proj
 7. Browser automation passed-run evidence and validation explanation: `submission/local/g-browser-test-passed-run/`
 8. HAR scenario description: `submission/local/h-har-scenario/scenario-description.md`
 9. HAR file: `submission/local/i-har-file/meta-functional-flow.har`
-10. Max-limit result and explanation: `submission/local/j-gatling-max-limit/` (`8400` virtual users passed; `8420` was the first failing tested level)
+10. Max-limit result and email explanation: `submission/local/j-gatling-max-limit/email-max-limit-text.md` (`8400` virtual users passed; `8420` was the first failing tested level)
 11. Gatling CMD summary screenshots: `submission/local/k-gatling-cmd-screenshots/`
 12. Gatling result PDFs and graph explanations: `submission/local/l-gatling-result-pdfs/`
 
@@ -59,18 +59,25 @@ These are the 12 items requested by `docs/final-project.txt`.
 | d | Link to public GitHub repo | `submission/local/d-github-public-link/github-public-repo.link` | ready, final browser check recommended | Link file contains `https://github.com/y0ncha/meta-final-project`; open once without authentication before sending. |
 | e | Monitor tool name, monitored target, and passed monitor screenshot | `submission/local/e-monitoring-evidence/` | ready | Jenkins `meta-monitoring` screenshots show scheduled monitoring evidence. Public UptimeRobot bonus evidence is under `submission/public/public-monitoring-evidence/`. |
 | f | Selenium IDE file `.side` | `submission/local/f-browser-test-file/meta-functional.spec.js` | ready with approved substitute risk | The project uses Playwright as the browser automation substitute; keep the substitution note in the email. |
-| g | Browser automation passed-run screenshot and validation explanation | `submission/local/g-browser-test-passed-run/` | ready | Includes run log, JUnit, screenshots, report, and `validation-explanation.md`. |
+| g | Browser automation passed-run screenshot and validation explanation | `submission/local/g-browser-test-passed-run/` | ready | Includes run log, native Playwright HTML report, passed-report screenshot, app screenshots, and `validation-explanation.md`. |
 | h | Written HAR scenario | `submission/local/h-har-scenario/scenario-description.md` | ready | Describes the browser scenario in words. |
 | i | HAR file | `submission/local/i-har-file/meta-functional-flow.har` | packaged; sensitivity review recommended | HAR validation passed, but the file contains local `JSESSIONID` cookie evidence. Review before external sharing. |
-| j | Max-limit result, why it is the limit, and how it was found | `submission/local/j-gatling-max-limit/` | ready | Local build `#224`: `8400` passed with `KO=0`; `8420` first failed. |
+| j | Max-limit result, why it is the limit, and how it was found | `submission/local/j-gatling-max-limit/` | ready | Email-ready text is in `email-max-limit-text.md`. Local build `#224`: `8400` passed with `KO=0`; `8420` first failed. |
 | k | Three Gatling CMD summary screenshots | `submission/local/k-gatling-cmd-screenshots/` | ready | Contains max-limit, load, and stress summary screenshots. |
-| l | Three Gatling result PDFs with graph explanations | `submission/local/l-gatling-result-pdfs/` | ready | Contains max-limit, load, and stress PDFs, HTML reports, logs, and `graph-explanations.md`. |
+| l | Three Gatling result PDFs with graph explanations | `submission/local/l-gatling-result-pdfs/` | ready | Contains max-limit, load, and stress PDFs plus `graph-explanations.md`. |
 
 ## Required Explanations
 
 ### Browser Validations
 
 The browser automation evidence is packaged under `submission/local/g-browser-test-passed-run/` and the test source is `submission/local/f-browser-test-file/meta-functional.spec.js`.
+
+Passed-run evidence:
+
+- Native Playwright report: `submission/local/g-browser-test-passed-run/playwright-run-report.html`
+- Passed-report screenshot: `submission/local/g-browser-test-passed-run/playwright-run-report.png`
+- Console log: `submission/local/g-browser-test-passed-run/playwright-run.log`
+- Screenshots: `submission/local/g-browser-test-passed-run/screenshots/valid-submit.png` and `submission/local/g-browser-test-passed-run/screenshots/empty-submit.png`
 
 Validation types used:
 

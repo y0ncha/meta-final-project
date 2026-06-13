@@ -7,6 +7,7 @@ class MetaSimulation extends Simulation {
   private val appRootUrl = appBaseUrl + "/"
   private val appSubmitUrl = appBaseUrl + "/index.jsp"
   private val runType = sys.env.getOrElse("GATLING_RUN_TYPE", "load-5m")
+  private val maxProfileMode = sys.env.getOrElse("GATLING_MAX_PROFILE_MODE", "single").trim
 
   if (!Set("max-limit", "load-5m", "stress-5m").contains(runType)) {
     throw new IllegalArgumentException("GATLING_RUN_TYPE must be max-limit, load-5m, or stress-5m")
@@ -18,6 +19,29 @@ class MetaSimulation extends Simulation {
       throw new IllegalArgumentException(s"$name must be greater than 0")
     }
     value
+  }
+
+  private def staircaseLevels(startUsers: Int, targetUsers: Int, name: String): Seq[Int] = {
+    if (targetUsers < startUsers) {
+      throw new IllegalArgumentException(s"${name}_TARGET_USERS must be greater than or equal to ${name}_START_USERS")
+    }
+    if ((targetUsers - startUsers) % 4 != 0) {
+      throw new IllegalArgumentException(s"${name}_TARGET_USERS minus ${name}_START_USERS must divide evenly into four staircase steps")
+    }
+
+    val stepUsers = (targetUsers - startUsers) / 4
+    (0 to 4).map(level => startUsers + (stepUsers * level))
+  }
+
+  private def steppedLevels(baseUsers: Int, targetUsers: Int, stepUsers: Int, name: String): Seq[Int] = {
+    if (targetUsers < baseUsers) {
+      throw new IllegalArgumentException(s"${name}_USERS must be greater than or equal to ${name}_BASE_USERS")
+    }
+    if ((targetUsers - baseUsers) % stepUsers != 0) {
+      throw new IllegalArgumentException(s"${name}_USERS minus ${name}_BASE_USERS must divide evenly by ${name}_STEP_USERS")
+    }
+
+    (baseUsers to targetUsers by stepUsers).toSeq
   }
 
   private val httpProtocol = http
@@ -54,9 +78,13 @@ class MetaSimulation extends Simulation {
 
   runType match {
     case "load-5m" =>
+      val loadUsers = intEnv("GATLING_LOAD_USERS", 5)
+
       setUp(
         scn.inject(
-          constantConcurrentUsers(intEnv("GATLING_LOAD_USERS", 5)).during(300.seconds)
+          rampConcurrentUsers(0).to(loadUsers).during(60.seconds),
+          constantConcurrentUsers(loadUsers).during(180.seconds),
+          rampConcurrentUsers(loadUsers).to(0).during(60.seconds)
         )
       )
         .protocols(httpProtocol)
@@ -65,11 +93,17 @@ class MetaSimulation extends Simulation {
         )
 
     case "stress-5m" =>
+      val stressStartUsers = intEnv("GATLING_STRESS_START_USERS", 10)
+      val stressTargetUsers = intEnv("GATLING_STRESS_TARGET_USERS", 50)
+      val stressLevels = staircaseLevels(stressStartUsers, stressTargetUsers, "GATLING_STRESS")
+
       setUp(
         scn.inject(
-          rampConcurrentUsers(intEnv("GATLING_STRESS_START_USERS", 5))
-            .to(intEnv("GATLING_STRESS_TARGET_USERS", 50))
-            .during(300.seconds)
+          constantConcurrentUsers(stressLevels(0)).during(60.seconds),
+          constantConcurrentUsers(stressLevels(1)).during(60.seconds),
+          constantConcurrentUsers(stressLevels(2)).during(60.seconds),
+          constantConcurrentUsers(stressLevels(3)).during(60.seconds),
+          constantConcurrentUsers(stressLevels(4)).during(60.seconds)
         )
       )
         .protocols(httpProtocol)
@@ -78,10 +112,30 @@ class MetaSimulation extends Simulation {
         )
 
     case "max-limit" =>
+      val maxUsers = intEnv("GATLING_MAX_USERS", 5)
+      val maxDurationSeconds = intEnv("GATLING_MAX_DURATION_SECONDS", 30)
+      val maxInjectionProfile = maxProfileMode match {
+        case "single" =>
+          Seq(
+            constantConcurrentUsers(maxUsers).during(maxDurationSeconds.seconds)
+          )
+
+        case "visual" =>
+          val maxBaseUsers = intEnv("GATLING_MAX_BASE_USERS", maxUsers)
+          val maxStepUsers = intEnv("GATLING_MAX_STEP_USERS", 5)
+          val maxVisualSteps = steppedLevels(maxBaseUsers, maxUsers, maxStepUsers, "GATLING_MAX")
+
+          maxVisualSteps.map { level =>
+            constantConcurrentUsers(level).during(maxDurationSeconds.seconds)
+          } :+ rampConcurrentUsers(maxUsers).to(0).during(10.seconds)
+
+        case _ =>
+          throw new IllegalArgumentException("GATLING_MAX_PROFILE_MODE must be single or visual")
+      }
+
       setUp(
         scn.inject(
-          constantConcurrentUsers(intEnv("GATLING_MAX_USERS", 5))
-            .during(intEnv("GATLING_MAX_DURATION_SECONDS", 30).seconds)
+          maxInjectionProfile: _*
         )
       )
         .protocols(httpProtocol)

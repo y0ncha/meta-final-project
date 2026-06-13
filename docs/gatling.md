@@ -36,6 +36,12 @@ The target can be overridden when a real environment changes:
 APP_BASE_URL=http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ ./scripts/run-gatling-load-5m
 ```
 
+The maintained simulation uses closed virtual-user profiles:
+
+- Load: 60 seconds ramping from 0 to `GATLING_LOAD_USERS`, 180 seconds holding that level, then 60 seconds ramping back down to 0.
+- Stress: five 60-second staircase levels from `GATLING_STRESS_START_USERS` to `GATLING_STRESS_TARGET_USERS`. Defaults are `10`, `20`, `30`, `40`, and `50` virtual users.
+- Max-limit: single-level discovery runs plus a final visual stepped report when the wrapper finds a failing level.
+
 For max-limit discovery, raise or bound the search with environment variables:
 
 ```sh
@@ -50,6 +56,8 @@ GATLING_MAX_LIMIT_USERS=1000 \
 
 The max-limit wrapper runs one virtual-user level at a time until a Gatling assertion failure is found or the configured upper bound is reached. This lets the wrapper report both the highest passing tested virtual-user level and the first failing tested level.
 
+Boundary discovery always uses `GATLING_MAX_PROFILE_MODE=single`, which holds exactly one tested level for `GATLING_MAX_DURATION_SECONDS`. When discovery finds the first failing level and Gatling produced a usable report, the wrapper immediately runs one final native Gatling visual report with `GATLING_MAX_PROFILE_MODE=visual`. That report steps from `GATLING_MAX_BASE_USERS` up to the first failing level using `GATLING_MAX_STEP_USERS`, then ramps down. The visual report can include the failing level; the max-limit number remains the previous tested level with `KO=0`.
+
 The class PDFs show Gatling evidence in terms of users, successes, failures, and graphs. They do not define a `p95 <= 2000 ms` service-level rule. For this project, max-limit pass/fail therefore follows the course-facing rule: a tested level passes only when Gatling reports `KO=0`. Response-time percentiles remain graph evidence for explaining degradation, but latency alone does not define the max-limit failure point.
 
 The main controls are:
@@ -58,8 +66,9 @@ The main controls are:
 - `GATLING_MAX_STEP_USERS`: virtual-user increment after each passing level.
 - `GATLING_MAX_DURATION_SECONDS`: how long each virtual-user level is held.
 - `GATLING_MAX_LIMIT_USERS`: highest virtual-user level to test before reporting a lower bound.
+- `GATLING_MAX_PROFILE_MODE`: internal runner mode, `single` for one boundary level or `visual` for the stepped report.
 
-With Jenkins defaults, max-limit discovery tests `50`, `100`, `150`, and so on through `1000` virtual users unless a Gatling assertion threshold is crossed earlier. Each tested level lasts `30` seconds.
+With Jenkins defaults, max-limit discovery tests `50`, `100`, `150`, and so on through `1000` virtual users unless a Gatling assertion threshold is crossed earlier. Each tested discovery level lasts `30` seconds. If a failing level is found, the final normalized max-limit report is the stepped visual report through that failing level.
 
 Legacy users/sec-named variables are accepted by the shell wrappers only as compatibility aliases for older local commands. The Jenkins UI and current documentation use virtual-user terminology.
 
@@ -95,7 +104,7 @@ Generated evidence remains ignored by Git under `output/`.
 - `RUN_GATLING_TESTS=false` skips all Gatling stages for normal CI/CD runs.
 - `RUN_GATLING_TESTS=true` runs `Gatling Max Limit`, `Gatling Load Test`, and `Gatling Stress Test` when their runner scripts exist.
 - Use `RUN_GATLING_TESTS=true` for final performance evidence collection.
-- `GATLING_CONSOLE_MODE=summary` keeps the Jenkins console compact while preserving the complete Gatling run log under `output/gatling/<run-type>/`. For all Gatling runs, the console prints Gatling's native `Global Information` summary block instead of a custom rewritten metrics line. Each test starts with one short parameter line: `load test started : <users> virtual users | duration: 300s`, `stress test started : <start>-<target> virtual users | duration: 300s`, or `max limit tests started : <range> virtual users | step: <step> virtual users | duration: <seconds>s per level`. For max-limit discovery, each passing level prints one short `max limit level finished : <level> virtual users | duration: <seconds>s | passed` ping while artifact path lines stay out of the console. Per-level progress is kept in `output/gatling/max-limit/raw/max-limit-discovery.log`. When a failing level exists, the console prints only that failing level's native summary, followed by one final max-limit test summary with the tested range, step, duration, highest passing tested level, and first failing tested level. If no level fails, the final summary reports a tested lower bound.
+- `GATLING_CONSOLE_MODE=summary` keeps the Jenkins console compact while preserving the complete Gatling run log under `output/gatling/<run-type>/`. For all Gatling runs, the console prints Gatling's native `Global Information` summary block instead of a custom rewritten metrics line. Each test starts with one short parameter line: `load test started : <users> virtual users | duration: 300s`, `stress test started : <start>-<target> virtual users | duration: 300s`, or `max limit tests started : <range> virtual users | step: <step> virtual users | duration: <seconds>s per level`. For max-limit discovery, each passing level prints one short `max limit level finished : <level> virtual users | duration: <seconds>s | passed` ping while artifact path lines stay out of the console. Per-level progress is kept in `output/gatling/max-limit/raw/max-limit-discovery.log`. When a failing level exists, the console prints only that failing level's native summary, followed by one final max-limit test summary with the tested range, step, duration, highest passing tested level, first failing tested level, and final visual-report status. If no level fails, the final summary reports a tested lower bound.
 - `GATLING_CONSOLE_MODE=full` prints the complete Gatling run log to the Jenkins console.
 
 Summary mode preserves Gatling's own report wording so Jenkins screenshots match the standard Gatling terminal summary expected for submission.
@@ -121,15 +130,15 @@ Local `./scripts/export-gatling-pdfs` remains strict and requires all three Gatl
 
 ### Max Limit
 
-The current packaged max-limit evidence was produced before the HAR-derived scenario and virtual-user terminology were adopted. It remains historical graph evidence only. Refresh with `RUN_GATLING_TESTS=true` before final submission. Under the current rule, the max-limit conclusion must name the highest tested virtual-user level with `KO=0` and the first tested virtual-user level where Gatling reports any KO.
+The current packaged max-limit evidence must be refreshed after profile changes. When a failing level is found, the refreshed max-limit PDF is the final visual report from the wrapper: stepped levels from the configured base level through the first failing tested level, followed by a ramp down. The max-limit conclusion must name the highest tested virtual-user level with `KO=0` and the first tested virtual-user level where Gatling reports any KO.
 
 ### Load 5m
 
-The 5-minute load test holds the default fixed virtual-user level for 300 seconds. After refreshing evidence, explain the active-users graph as a stable concurrent-user level, the request-rate graph as resulting throughput, and the response-time/KO graphs as system behavior under that load.
+The 5-minute load test ramps from 0 virtual users to `GATLING_LOAD_USERS` for 60 seconds, holds for 180 seconds, and ramps down to 0 for 60 seconds. After refreshing evidence, explain the active-users graph as ramp-up, plateau, and ramp-down; the request-rate graph as resulting throughput; and the response-time/KO graphs as system behavior under that load.
 
 ### Stress 5m
 
-The 5-minute stress test ramps concurrent virtual users from the configured start level to the target level over 300 seconds. After refreshing evidence, explain the active-users graph as the configured ramp, the request-rate graph as resulting throughput, and the response-time/KO graphs as the system response while load increases.
+The 5-minute stress test uses five 60-second staircase levels from `GATLING_STRESS_START_USERS` to `GATLING_STRESS_TARGET_USERS`. After refreshing evidence, explain the active-users graph as those stepped levels, the request-rate graph as resulting throughput, and the response-time/KO graphs as the system response while load increases.
 
 ## Submission Notes
 

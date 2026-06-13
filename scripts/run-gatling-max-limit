@@ -131,6 +131,23 @@ run_gatling_level() {
   env \
     GATLING_RUN_TYPE=max-limit \
     GATLING_MAX_DISCOVERY_WRAPPER=1 \
+    GATLING_MAX_PROFILE_MODE=single \
+    GATLING_MAX_BASE_USERS="$GATLING_MAX_BASE_USERS" \
+    GATLING_MAX_STEP_USERS="$GATLING_MAX_STEP_USERS" \
+    GATLING_MAX_USERS="$users" \
+    GATLING_MAX_DURATION_SECONDS="$GATLING_MAX_DURATION_SECONDS" \
+    "$RUNNER"
+}
+
+run_gatling_visual_report() {
+  users="$1"
+
+  env \
+    GATLING_RUN_TYPE=max-limit \
+    GATLING_MAX_DISCOVERY_WRAPPER=1 \
+    GATLING_MAX_PROFILE_MODE=visual \
+    GATLING_MAX_BASE_USERS="$GATLING_MAX_BASE_USERS" \
+    GATLING_MAX_STEP_USERS="$GATLING_MAX_STEP_USERS" \
     GATLING_MAX_USERS="$users" \
     GATLING_MAX_DURATION_SECONDS="$GATLING_MAX_DURATION_SECONDS" \
     "$RUNNER"
@@ -138,6 +155,25 @@ run_gatling_level() {
 
 has_gatling_report() {
   [ -s "$OUTPUT_DIR/index.html" ] && [ -s "$OUTPUT_DIR/max-limit-run.log" ]
+}
+
+generate_visual_report() {
+  users="$1"
+
+  summary_log "max limit visual report started : ${GATLING_MAX_BASE_USERS}-${users} virtual users | step: ${GATLING_MAX_STEP_USERS} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s per level"
+
+  set +e
+  run_gatling_visual_report "$users"
+  visual_status=$?
+  set -e
+
+  if has_gatling_report; then
+    summary_log "max limit visual report ready : $OUTPUT_DIR/index.html"
+    return 0
+  fi
+
+  summary_log "Max-limit visual report failed before a usable Gatling report was created."
+  return "$visual_status"
 }
 
 attempt=1
@@ -167,7 +203,8 @@ if [ "$GATLING_MAX_SINGLE_LEVEL_MODE" = true ]; then
 
     if has_gatling_report; then
       print_test_summary "failure boundary found" "$highest_passing_level" "$current_start"
-      exit 0
+      generate_visual_report "$current_start"
+      exit $?
     fi
 
     summary_log "Max-limit level ${current_start} virtual users failed before a usable Gatling report was created."
@@ -202,7 +239,8 @@ while [ "$attempt" -le "$GATLING_MAX_DISCOVERY_ATTEMPTS" ]; do
 
   if has_gatling_report; then
     print_test_summary "failure boundary found" "$highest_passing_level" "$current_start"
-    exit 0
+    generate_visual_report "$current_start"
+    exit $?
   fi
 
   summary_log "Max-limit attempt $attempt failed before a usable Gatling report was created."
