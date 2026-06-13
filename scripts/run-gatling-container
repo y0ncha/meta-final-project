@@ -174,12 +174,16 @@ cp -R "$REPORT_DIR"/. "$OUTPUT_DIR"/
 test -s "$OUTPUT_DIR/index.html"
 test -s "$LOG_FILE"
 
-printf '%s\n' 'Gatling evidence:'
-printf '%s\n' "  $LOG_FILE"
-printf '%s\n' "  $OUTPUT_DIR/index.html"
-printf '%s\n' "  $RAW_DIR"
+if [ "$GATLING_CONSOLE_MODE" != summary ] || [ "$GATLING_RUN_TYPE" != max-limit ]; then
+  printf '%s\n' 'Gatling evidence:'
+  printf '%s\n' "  $LOG_FILE"
+  printf '%s\n' "  $OUTPUT_DIR/index.html"
+  printf '%s\n' "  $RAW_DIR"
+fi
 
 if [ "$gatling_status" -ne 0 ]; then
-  printf '%s\n' "Gatling exited with status $gatling_status after report normalization" >&2
+  if [ "$GATLING_CONSOLE_MODE" != summary ] || [ "$GATLING_RUN_TYPE" != max-limit ]; then
+    printf '%s\n' "Gatling exited with status $gatling_status after report normalization" >&2
+  fi
   exit "$gatling_status"
 fi

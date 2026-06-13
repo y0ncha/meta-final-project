@@ -90,6 +90,10 @@ summary_log() {
   printf '%s\n' "$*" | tee -a "$DISCOVERY_LOG"
 }
 
+print_test_parameters() {
+  summary_log "tested range: ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} virtual users | step: ${GATLING_MAX_STEP_USERS} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s per level"
+}
+
 print_test_summary() {
   result="$1"
   highest_passing="$2"
@@ -133,6 +137,8 @@ has_gatling_report() {
 attempt=1
 current_start="$GATLING_MAX_START_USERS"
 highest_passing_level=""
+
+print_test_parameters
 
 if [ "$GATLING_MAX_SINGLE_LEVEL_MODE" = true ]; then
   current_start="$GATLING_MAX_BASE_USERS"

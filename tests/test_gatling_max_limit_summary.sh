@@ -84,6 +84,7 @@ assert_not_contains() {
 }
 
 assert_contains "---- Global Information"
+assert_contains "tested range: 10-30 virtual users | step: 10 virtual users | duration: 5s per level"
 assert_contains "Max-limit test summary:"
 assert_contains "  tested range: 10-30 virtual users"
 assert_contains "  step: 10 virtual users"
@@ -184,6 +185,18 @@ if printf '%s\n' "$RUNNER_OUTPUT" | grep -Fq "Gatling summary:"; then
   exit 1
 fi
 
+if printf '%s\n' "$RUNNER_OUTPUT" | grep -Fq "Gatling evidence:"; then
+  printf '%s\n' "$RUNNER_OUTPUT"
+  printf '%s\n' "expected final max-limit native summary without evidence path noise" >&2
+  exit 1
+fi
+
+if printf '%s\n' "$RUNNER_OUTPUT" | grep -Fq "Gatling exited with status"; then
+  printf '%s\n' "$RUNNER_OUTPUT"
+  printf '%s\n' "expected final max-limit native summary without normalization status noise" >&2
+  exit 1
+fi
+
 set +e
 PASSING_MAX_OUTPUT=$(
   GATLING_DOCKER_PIPELINE=1 \
@@ -206,6 +219,12 @@ fi
 if printf '%s\n' "$PASSING_MAX_OUTPUT" | grep -Fq -- "---- Global Information"; then
   printf '%s\n' "$PASSING_MAX_OUTPUT"
   printf '%s\n' "expected passing max-limit step summary to stay out of the console" >&2
+  exit 1
+fi
+
+if printf '%s\n' "$PASSING_MAX_OUTPUT" | grep -Fq "Gatling evidence:"; then
+  printf '%s\n' "$PASSING_MAX_OUTPUT"
+  printf '%s\n' "expected passing max-limit step evidence paths to stay out of the console" >&2
   exit 1
 fi
 
