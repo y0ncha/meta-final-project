@@ -3,6 +3,7 @@ set -eu
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 RUNNER="$SCRIPT_DIR/run-gatling-container"
+APP_BASE_URL="${APP_BASE_URL:-http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/}"
 
 positive_int() {
   name="$1"
@@ -73,6 +74,7 @@ print_test_summary() {
   first_failing="$3"
 
   final_summary_log "Max-limit test summary:"
+  final_summary_log "  app base URL: ${APP_BASE_URL}"
   final_summary_log "  tested range: ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} virtual users"
   final_summary_log "  step: ${GATLING_MAX_STEP_USERS} virtual users"
   final_summary_log "  duration: ${GATLING_MAX_DURATION_SECONDS}s per level"
@@ -97,6 +99,7 @@ print_test_summary() {
 run_gatling_staircase() {
   env \
     GATLING_RUN_TYPE=max-limit \
+    APP_BASE_URL="$APP_BASE_URL" \
     GATLING_MAX_DISCOVERY_WRAPPER=1 \
     GATLING_MAX_BASE_USERS="$GATLING_MAX_BASE_USERS" \
     GATLING_MAX_STEP_USERS="$GATLING_MAX_STEP_USERS" \
@@ -130,7 +133,7 @@ write_level_schedule() {
 }
 
 summary_log "max limit staircase started : ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} virtual users | step: ${GATLING_MAX_STEP_USERS} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s per level"
-summary_log "command parameters: GATLING_RUN_TYPE=max-limit GATLING_MAX_BASE_USERS=${GATLING_MAX_BASE_USERS} GATLING_MAX_STEP_USERS=${GATLING_MAX_STEP_USERS} GATLING_MAX_LIMIT_USERS=${GATLING_MAX_LIMIT_USERS} GATLING_MAX_DURATION_SECONDS=${GATLING_MAX_DURATION_SECONDS}"
+summary_log "command parameters: GATLING_RUN_TYPE=max-limit APP_BASE_URL=${APP_BASE_URL} GATLING_MAX_BASE_USERS=${GATLING_MAX_BASE_USERS} GATLING_MAX_STEP_USERS=${GATLING_MAX_STEP_USERS} GATLING_MAX_LIMIT_USERS=${GATLING_MAX_LIMIT_USERS} GATLING_MAX_DURATION_SECONDS=${GATLING_MAX_DURATION_SECONDS}"
 write_level_schedule
 
 set +e

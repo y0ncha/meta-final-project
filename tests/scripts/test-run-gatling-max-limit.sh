@@ -19,18 +19,20 @@ set -eu
 : "${GATLING_MAX_STEP_USERS:?}"
 : "${GATLING_MAX_LIMIT_USERS:?}"
 : "${GATLING_MAX_DURATION_SECONDS:?}"
+: "${APP_BASE_URL:?}"
 
 if [ "$GATLING_RUN_TYPE" != "max-limit" ]; then
   printf 'expected max-limit run type, got %s\n' "$GATLING_RUN_TYPE" >&2
   exit 1
 fi
 
-printf '%s|%s|%s|%s|%s\n' \
+printf '%s|%s|%s|%s|%s|%s\n' \
   "$GATLING_RUN_TYPE" \
   "$GATLING_MAX_BASE_USERS" \
   "$GATLING_MAX_STEP_USERS" \
   "$GATLING_MAX_LIMIT_USERS" \
-  "$GATLING_MAX_DURATION_SECONDS" >> "$CALL_LOG"
+  "$GATLING_MAX_DURATION_SECONDS" \
+  "$APP_BASE_URL" >> "$CALL_LOG"
 
 mkdir -p output/gatling/max-limit
 printf '<!doctype html><title>staircase</title>\n' > output/gatling/max-limit/index.html
@@ -57,6 +59,7 @@ EOF
 (
   cd "$TEST_ROOT"
   CALL_LOG="$CALL_LOG" \
+  APP_BASE_URL=http://example.test/meta/ \
   GATLING_MAX_BASE_USERS=10 \
   GATLING_MAX_STEP_USERS=10 \
   GATLING_MAX_DURATION_SECONDS=1 \
@@ -64,12 +67,13 @@ EOF
     "$SCRIPT_DIR/run-gatling-max-limit" >/dev/null
 )
 
-assert_file_equals "max-limit|10|10|30|1" "$CALL_LOG"
+assert_file_equals "max-limit|10|10|30|1|http://example.test/meta/" "$CALL_LOG"
 
 : > "$CALL_LOG"
 (
   cd "$TEST_ROOT"
   CALL_LOG="$CALL_LOG" \
+  APP_BASE_URL=http://example.test/meta/ \
   FAIL_STAIRCASE=1 \
   GATLING_MAX_BASE_USERS=5 \
   GATLING_MAX_STEP_USERS=5 \
@@ -78,12 +82,13 @@ assert_file_equals "max-limit|10|10|30|1" "$CALL_LOG"
     "$SCRIPT_DIR/run-gatling-max-limit" >/dev/null
 )
 
-assert_file_equals "max-limit|5|5|20|1" "$CALL_LOG"
+assert_file_equals "max-limit|5|5|20|1|http://example.test/meta/" "$CALL_LOG"
 
 : > "$CALL_LOG"
 (
   cd "$TEST_ROOT"
   CALL_LOG="$CALL_LOG" \
+  APP_BASE_URL=http://example.test/meta/ \
   FAIL_STAIRCASE=1 \
   GATLING_MAX_BASE_USERS=100 \
   GATLING_MAX_STEP_USERS=25 \
@@ -93,7 +98,7 @@ assert_file_equals "max-limit|5|5|20|1" "$CALL_LOG"
     "$SCRIPT_DIR/run-gatling-max-limit" > "$TEST_ROOT/single-level.log"
 )
 
-assert_file_equals "max-limit|100|25|175|7" "$CALL_LOG"
+assert_file_equals "max-limit|100|25|175|7|http://example.test/meta/" "$CALL_LOG"
 
 if ! grep -Fq 'Max-limit test summary:' "$TEST_ROOT/single-level.log"; then
   printf '%s\n' 'wrapper summary should print to stdout' >&2
@@ -116,7 +121,8 @@ if grep -Fq 'max limit level finished :' "$TEST_ROOT/single-level.log"; then
   exit 1
 fi
 grep -Fq 'max limit staircase started : 100-175 virtual users | step: 25 virtual users | duration: 7s per level' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
-grep -Fq 'command parameters: GATLING_RUN_TYPE=max-limit GATLING_MAX_BASE_USERS=100 GATLING_MAX_STEP_USERS=25 GATLING_MAX_LIMIT_USERS=175 GATLING_MAX_DURATION_SECONDS=7' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
+grep -Fq 'command parameters: GATLING_RUN_TYPE=max-limit APP_BASE_URL=http://example.test/meta/ GATLING_MAX_BASE_USERS=100 GATLING_MAX_STEP_USERS=25 GATLING_MAX_LIMIT_USERS=175 GATLING_MAX_DURATION_SECONDS=7' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
+grep -Fq '  app base URL: http://example.test/meta/' "$TEST_ROOT/single-level.log"
 grep -Fq 'level schedule: 100 virtual users | report time window: 0-7s' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
 grep -Fq 'level schedule: 125 virtual users | report time window: 7-14s' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
 grep -Fq 'level schedule: 150 virtual users | report time window: 14-21s' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
@@ -132,6 +138,7 @@ fi
 (
   cd "$TEST_ROOT"
   CALL_LOG="$CALL_LOG" \
+  APP_BASE_URL=http://example.test/meta/ \
   GATLING_MAX_BASE_USERS=10 \
   GATLING_MAX_STEP_USERS=6 \
   GATLING_MAX_DURATION_SECONDS=2 \
