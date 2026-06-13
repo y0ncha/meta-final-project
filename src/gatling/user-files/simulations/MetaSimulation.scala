@@ -49,16 +49,13 @@ class MetaSimulation extends Simulation {
         .check(status.is(200), substring("Please enter a name before MeTA Corporate schedules a meeting about the empty box."))
     )
 
-  private def scenarioFor(durationSeconds: Int) =
-    scenario("Meta JSP HAR-derived flow")
-      .during(durationSeconds.seconds) {
-        harDerivedFlow
-      }
+  private val scn = scenario("Meta JSP HAR-derived flow")
+    .exec(harDerivedFlow)
 
   runType match {
     case "load-5m" =>
       setUp(
-        scenarioFor(300).inject(
+        scn.inject(
           constantConcurrentUsers(intEnv("GATLING_LOAD_USERS", 5)).during(300.seconds)
         )
       )
@@ -69,7 +66,7 @@ class MetaSimulation extends Simulation {
 
     case "stress-5m" =>
       setUp(
-        scenarioFor(300).inject(
+        scn.inject(
           rampConcurrentUsers(intEnv("GATLING_STRESS_START_USERS", 5))
             .to(intEnv("GATLING_STRESS_TARGET_USERS", 50))
             .during(300.seconds)
@@ -82,7 +79,7 @@ class MetaSimulation extends Simulation {
 
     case "max-limit" =>
       setUp(
-        scenarioFor(intEnv("GATLING_MAX_DURATION_SECONDS", 30)).inject(
+        scn.inject(
           constantConcurrentUsers(intEnv("GATLING_MAX_USERS", 5))
             .during(intEnv("GATLING_MAX_DURATION_SECONDS", 30).seconds)
         )

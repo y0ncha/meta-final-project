@@ -52,17 +52,54 @@ find "$OUTPUT_DIR" -mindepth 1 -maxdepth 1 ! -name raw -exec rm -rf {} +
 print_log_summary() {
   printf '%s\n' "Gatling console mode: summary. Full log saved to $LOG_FILE"
   awk '
-    /^---- Global Information/ {
-      block = $0 ORS
-      capture = 1
+    function metric_value(line) {
+      sub(/^.*[[:space:]]/, "", line)
+      sub(/[[:space:]]*\(.*$/, "", line)
+      return line
+    }
+    /^> request count/ {
+      requests = $4
+      if (match($0, /OK=[0-9]+/)) {
+        ok = substr($0, RSTART + 3, RLENGTH - 3)
+      }
+      if (match($0, /KO=[0-9]+/)) {
+        ko = substr($0, RSTART + 3, RLENGTH - 3)
+      }
+    }
+    /^> max response time/ {
+      max = $5
+    }
+    /^> mean response time/ {
+      mean = $5
+    }
+    /^> response time 95th percentile/ {
+      p95 = $6
+    }
+    /^> response time 99th percentile/ {
+      p99 = $6
+    }
+    /^> mean requests\/sec/ {
+      rps = $4
+    }
+    /^> failed/ {
+      failed = $3
+    }
+    /^---- Errors/ {
+      in_errors = 1
       next
     }
-    capture {
-      block = block $0 ORS
+    /^=+/ {
+      in_errors = 0
+    }
+    in_errors && /^> / && top_error == "" {
+      top_error = $0
     }
     END {
-      if (block != "") {
-        printf "%s", block
+      if (requests != "") {
+        printf "Gatling summary: requests=%s OK=%s KO=%s p95=%sms p99=%sms max=%sms mean=%sms rps=%s failed=%s\n", requests, ok, ko, p95, p99, max, mean, rps, failed
+        if (top_error != "") {
+          printf "Gatling top error: %s\n", top_error
+        }
       } else {
         exit 1
       }
@@ -82,7 +119,9 @@ run_and_log() {
       cat "$LOG_FILE"
       ;;
     summary)
-      print_log_summary
+      if [ "$GATLING_RUN_TYPE" != "max-limit" ] || [ "$status" -ne 0 ]; then
+        print_log_summary
+      fi
       ;;
   esac
   return "$status"

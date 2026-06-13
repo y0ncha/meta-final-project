@@ -22,6 +22,7 @@ assert_not_contains() {
 }
 
 assert_contains 'global.failedRequests.count.lt(1)'
+assert_contains 'private val scn = scenario("Meta JSP HAR-derived flow")'
 assert_contains 'constantConcurrentUsers(intEnv("GATLING_LOAD_USERS", 5)).during(300.seconds)'
 assert_contains 'rampConcurrentUsers(intEnv("GATLING_STRESS_START_USERS", 5))'
 assert_contains 'constantConcurrentUsers(intEnv("GATLING_MAX_USERS", 5))'
@@ -32,6 +33,8 @@ assert_not_contains 'global.responseTime.percentile3.lte(2000)'
 assert_not_contains 'constantUsersPerSec'
 assert_not_contains 'rampUsersPerSec'
 assert_not_contains 'incrementUsersPerSec'
+assert_not_contains 'scenarioFor(300)'
+assert_not_contains '.during(durationSeconds.seconds)'
 
 if [ ! -s "$REFERENCE_SIMULATION" ]; then
   printf 'Expected HAR converter reference simulation at %s\n' "$REFERENCE_SIMULATION" >&2
