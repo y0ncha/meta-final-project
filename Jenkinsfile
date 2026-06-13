@@ -11,11 +11,11 @@ pipeline {
 
   parameters {
     booleanParam(name: 'RUN_GATLING_TESTS', defaultValue: false, description: 'Run Gatling max-limit, load, and stress tests for performance evidence')
-    string(name: 'APP_BASE_URL', defaultValue: 'http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/', description: 'Application base URL for Tomcat verification, Playwright, and Gatling')
-    string(name: 'GATLING_MAX_BASE_USERS', defaultValue: '50', description: 'First virtual-user level for Gatling max-limit discovery')
-    string(name: 'GATLING_MAX_STEP_USERS', defaultValue: '50', description: 'Virtual-user increase between Gatling max-limit levels')
-    string(name: 'GATLING_MAX_DURATION_SECONDS', defaultValue: '30', description: 'Seconds to hold each Gatling max-limit virtual-user level')
-    string(name: 'GATLING_MAX_LIMIT_USERS', defaultValue: '1000', description: 'Highest virtual-user level to test before reporting a lower bound')
+    choice(name: 'APP_BASE_URL', choices: ['http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/', 'http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/'], description: 'Application base URL for Tomcat verification, Playwright, and Gatling')
+    string(name: 'GATLING_MAX_BASE_USERS', defaultValue: '8000', description: 'First virtual-user level for Gatling max-limit discovery')
+    string(name: 'GATLING_MAX_STEP_USERS', defaultValue: '20', description: 'Virtual-user increase between Gatling max-limit levels')
+    string(name: 'GATLING_MAX_DURATION_SECONDS', defaultValue: '10', description: 'Seconds to hold each Gatling max-limit virtual-user level')
+    string(name: 'GATLING_MAX_LIMIT_USERS', defaultValue: '12000', description: 'Highest virtual-user level to test before reporting a lower bound')
     choice(name: 'GATLING_CONSOLE_MODE', choices: ['summary', 'full'], description: 'Use summary to keep Gatling console output compact while preserving full run logs as artifacts')
   }
 

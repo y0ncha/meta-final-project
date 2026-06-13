@@ -20,10 +20,11 @@ assert_not_contains() {
   fi
 }
 
-assert_contains "string(name: 'GATLING_MAX_BASE_USERS', defaultValue: '50'"
-assert_contains "string(name: 'GATLING_MAX_STEP_USERS', defaultValue: '50'"
-assert_contains "string(name: 'GATLING_MAX_DURATION_SECONDS', defaultValue: '30'"
-assert_contains "string(name: 'GATLING_MAX_LIMIT_USERS', defaultValue: '1000'"
+assert_contains "choice(name: 'APP_BASE_URL', choices: ['http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/', 'http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/']"
+assert_contains "string(name: 'GATLING_MAX_BASE_USERS', defaultValue: '8000'"
+assert_contains "string(name: 'GATLING_MAX_STEP_USERS', defaultValue: '20'"
+assert_contains "string(name: 'GATLING_MAX_DURATION_SECONDS', defaultValue: '10'"
+assert_contains "string(name: 'GATLING_MAX_LIMIT_USERS', defaultValue: '12000'"
 assert_contains "choice(name: 'GATLING_CONSOLE_MODE', choices: ['summary', 'full']"
 
 assert_contains 'GATLING_MAX_BASE_USERS = "${params.GATLING_MAX_BASE_USERS}"'

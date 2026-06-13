@@ -29,7 +29,8 @@ assert_file_contains scripts/deploy-war "TOMCAT_CONTEXT=\"\${TOMCAT_CONTEXT:-$EX
 assert_file_contains scripts/deploy-war "WAR_SOURCE=\"\${WAR_SOURCE:-target/$EXPECTED_CONTEXT.war}\""
 assert_file_contains scripts/deploy-war 'MeTA.war'
 assert_file_contains scripts/deploy-war 'meta.war'
-assert_file_contains Jenkinsfile "APP_BASE_URL = '$EXPECTED_DOCKER_URL'"
+assert_file_contains Jenkinsfile "choice(name: 'APP_BASE_URL', choices: ['$EXPECTED_DOCKER_URL'"
+assert_file_contains Jenkinsfile 'APP_BASE_URL = "${params.APP_BASE_URL}"'
 assert_file_contains Jenkinsfile "TOMCAT_CONTEXT = '$EXPECTED_CONTEXT'"
 assert_file_contains Jenkinsfile "target/$EXPECTED_CONTEXT.war"
 assert_file_contains playwright.config.js "$EXPECTED_LOCAL_URL"

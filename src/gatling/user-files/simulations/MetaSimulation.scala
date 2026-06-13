@@ -134,8 +134,7 @@ class MetaSimulation extends Simulation {
           if (maxVisualIncrementCount == 0) {
             setUp(
               scn.inject(
-                constantConcurrentUsers(maxUsers).during(maxDurationSeconds.seconds),
-                rampConcurrentUsers(maxUsers).to(0).during(10.seconds)
+                constantConcurrentUsers(maxUsers).during(maxDurationSeconds.seconds)
               )
             )
               .protocols(httpProtocol)
@@ -149,8 +148,7 @@ class MetaSimulation extends Simulation {
                   .times(maxVisualIncrementCount)
                   .eachLevelLasting(maxDurationSeconds.seconds)
                   .separatedByRampsLasting(0.seconds)
-                  .startingFrom(maxBaseUsers),
-                rampConcurrentUsers(maxUsers).to(0).during(10.seconds)
+                  .startingFrom(maxBaseUsers)
               )
             )
               .protocols(httpProtocol)
