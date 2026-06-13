@@ -160,7 +160,7 @@ has_gatling_report() {
 generate_visual_report() {
   users="$1"
 
-  summary_log "max limit visual report started : ${GATLING_MAX_BASE_USERS}-${users} virtual users | step: ${GATLING_MAX_STEP_USERS} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s per level"
+  summary_log "max limit visual report started : ${GATLING_MAX_BASE_USERS}-${users} virtual users | all discovery levels | step: ${GATLING_MAX_STEP_USERS} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s per level"
 
   set +e
   run_gatling_visual_report "$users"

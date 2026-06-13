@@ -100,7 +100,7 @@ print_test_parameters() {
       if [ "${GATLING_MAX_DISCOVERY_WRAPPER:-0}" != "1" ]; then
         case "$GATLING_MAX_PROFILE_MODE" in
           visual)
-            printf '%s\n' "max limit visual report started : ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_USERS} virtual users | step: ${GATLING_MAX_STEP_USERS} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s per level"
+            printf '%s\n' "max limit visual report started : ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_USERS} virtual users | all discovery levels | step: ${GATLING_MAX_STEP_USERS} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s per level"
             ;;
           single)
             printf '%s\n' "max limit test started : ${GATLING_MAX_USERS} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s"

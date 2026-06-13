@@ -4,7 +4,7 @@ Status: stale after Gatling profile changes. The packaged PDFs in this folder we
 
 ## Max Limit
 
-Update this section after rerunning the max-limit wrapper and exporting the new PDF. Explain the final visual Gatling report from the PDF: the stepped virtual-user levels, the first level where failures appear, the total requests, successful responses, failed responses, and response-time percentiles. The max-limit result remains the previous tested level with `KO=0`, even if the visual PDF includes the first failing level.
+Update this section after rerunning the max-limit wrapper and exporting the new PDF. Explain the final visual Gatling report from the PDF: every discovered stepped virtual-user level, the first level where failures appear, the total requests, successful responses, failed responses, and response-time percentiles. The max-limit result remains the previous tested level with `KO=0`, even if the visual PDF includes the first failing level.
 
 ## Load 5m
 

@@ -125,7 +125,7 @@ grep -Fq 'max limit level finished : 100 virtual users | duration: 7s | passed' 
 grep -Fq 'max limit level finished : 125 virtual users | duration: 7s | passed' "$TEST_ROOT/single-level.log"
 grep -Fq '  first failing tested level: 150 virtual users' "$TEST_ROOT/single-level.log"
 grep -Fq '  highest passing tested level: 125 virtual users' "$TEST_ROOT/single-level.log"
-grep -Fq 'max limit visual report started : 100-150 virtual users | step: 25 virtual users | duration: 7s per level' "$TEST_ROOT/single-level.log"
+grep -Fq 'max limit visual report started : 100-150 virtual users | all discovery levels | step: 25 virtual users | duration: 7s per level' "$TEST_ROOT/single-level.log"
 grep -Fq 'max limit visual report ready : output/gatling/max-limit/index.html' "$TEST_ROOT/single-level.log"
 
 printf '%s\n' 'run-gatling-max-limit discovery checks passed'

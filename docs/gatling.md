@@ -40,7 +40,7 @@ The maintained simulation uses closed virtual-user profiles:
 
 - Load: 60 seconds ramping from 0 to `GATLING_LOAD_USERS`, 180 seconds holding that level, then 60 seconds ramping back down to 0.
 - Stress: five 60-second staircase levels from `GATLING_STRESS_START_USERS` to `GATLING_STRESS_TARGET_USERS`. Defaults are `10`, `20`, `30`, `40`, and `50` virtual users.
-- Max-limit: single-level discovery runs plus a final visual stepped report when the wrapper finds a failing level.
+- Max-limit: single-level discovery runs plus a final visual stepped report over all discovered levels when the wrapper finds a failing level.
 
 For max-limit discovery, raise or bound the search with environment variables:
 
@@ -56,7 +56,7 @@ GATLING_MAX_LIMIT_USERS=1000 \
 
 The max-limit wrapper runs one virtual-user level at a time until a Gatling assertion failure is found or the configured upper bound is reached. This lets the wrapper report both the highest passing tested virtual-user level and the first failing tested level.
 
-Boundary discovery always uses `GATLING_MAX_PROFILE_MODE=single`, which holds exactly one tested level for `GATLING_MAX_DURATION_SECONDS`. When discovery finds the first failing level and Gatling produced a usable report, the wrapper immediately runs one final native Gatling visual report with `GATLING_MAX_PROFILE_MODE=visual`. That report steps from `GATLING_MAX_BASE_USERS` up to the first failing level using `GATLING_MAX_STEP_USERS`, then ramps down. The visual report can include the failing level; the max-limit number remains the previous tested level with `KO=0`.
+Boundary discovery always uses `GATLING_MAX_PROFILE_MODE=single`, which holds exactly one tested level for `GATLING_MAX_DURATION_SECONDS`. When discovery finds the first failing level and Gatling produced a usable report, the wrapper immediately runs one final native Gatling visual report with `GATLING_MAX_PROFILE_MODE=visual`. That report plots every discovered level from `GATLING_MAX_BASE_USERS` through the first failing level using `GATLING_MAX_STEP_USERS`, then ramps down. The visual report can include the failing level; the max-limit number remains the previous tested level with `KO=0`.
 
 The class PDFs show Gatling evidence in terms of users, successes, failures, and graphs. They do not define a `p95 <= 2000 ms` service-level rule. For this project, max-limit pass/fail therefore follows the course-facing rule: a tested level passes only when Gatling reports `KO=0`. Response-time percentiles remain graph evidence for explaining degradation, but latency alone does not define the max-limit failure point.
 
@@ -68,7 +68,7 @@ The main controls are:
 - `GATLING_MAX_LIMIT_USERS`: highest virtual-user level to test before reporting a lower bound.
 - `GATLING_MAX_PROFILE_MODE`: internal runner mode, `single` for one boundary level or `visual` for the stepped report.
 
-With Jenkins defaults, max-limit discovery tests `50`, `100`, `150`, and so on through `1000` virtual users unless a Gatling assertion threshold is crossed earlier. Each tested discovery level lasts `30` seconds. If a failing level is found, the final normalized max-limit report is the stepped visual report through that failing level.
+With Jenkins defaults, max-limit discovery tests `50`, `100`, `150`, and so on through `1000` virtual users unless a Gatling assertion threshold is crossed earlier. Each tested discovery level lasts `30` seconds. If a failing level is found, the final normalized max-limit report is the stepped visual report through every discovered level up to that failing level.
 
 Legacy users/sec-named variables are accepted by the shell wrappers only as compatibility aliases for older local commands. The Jenkins UI and current documentation use virtual-user terminology.
 
@@ -130,7 +130,7 @@ Local `./scripts/export-gatling-pdfs` remains strict and requires all three Gatl
 
 ### Max Limit
 
-The current packaged max-limit evidence must be refreshed after profile changes. When a failing level is found, the refreshed max-limit PDF is the final visual report from the wrapper: stepped levels from the configured base level through the first failing tested level, followed by a ramp down. The max-limit conclusion must name the highest tested virtual-user level with `KO=0` and the first tested virtual-user level where Gatling reports any KO.
+The current packaged max-limit evidence must be refreshed after profile changes. When a failing level is found, the refreshed max-limit PDF is the final visual report from the wrapper: every discovered stepped level from the configured base level through the first failing tested level, followed by a ramp down. The max-limit conclusion must name the highest tested virtual-user level with `KO=0` and the first tested virtual-user level where Gatling reports any KO.
 
 ### Load 5m
 
