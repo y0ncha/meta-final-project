@@ -38,6 +38,7 @@ GATLING_MAX_SINGLE_LEVEL_MODE="${GATLING_MAX_SINGLE_LEVEL_MODE:-true}"
 GATLING_MAX_DISCOVERY_ATTEMPTS="${GATLING_MAX_DISCOVERY_ATTEMPTS:-3}"
 GATLING_MAX_LEVEL_COUNT="${GATLING_MAX_LEVEL_COUNT:-10}"
 GATLING_MAX_START_USERS="${GATLING_MAX_START_USERS:-${GATLING_MAX_START_USERS_PER_SEC:-$GATLING_MAX_BASE_USERS}}"
+GATLING_CONSOLE_MODE="${GATLING_CONSOLE_MODE:-full}"
 
 positive_int GATLING_MAX_BASE_USERS "$GATLING_MAX_BASE_USERS"
 positive_int GATLING_MAX_STEP_USERS "$GATLING_MAX_STEP_USERS"
@@ -47,6 +48,13 @@ positive_int GATLING_MAX_DISCOVERY_ATTEMPTS "$GATLING_MAX_DISCOVERY_ATTEMPTS"
 positive_int GATLING_MAX_START_USERS "$GATLING_MAX_START_USERS"
 positive_int GATLING_MAX_STEP_USERS "$GATLING_MAX_STEP_USERS"
 positive_int GATLING_MAX_LEVEL_COUNT "$GATLING_MAX_LEVEL_COUNT"
+case "$GATLING_CONSOLE_MODE" in
+  full|summary) ;;
+  *)
+    printf '%s\n' 'GATLING_CONSOLE_MODE must be full or summary' >&2
+    exit 2
+    ;;
+esac
 
 if [ -z "${GATLING_MAX_LIMIT_USERS:-}" ]; then
   GATLING_MAX_LIMIT_USERS="${GATLING_MAX_LIMIT_USERS_PER_SEC:-}"
@@ -67,8 +75,45 @@ DISCOVERY_LOG="$OUTPUT_DIR/raw/max-limit-discovery.log"
 mkdir -p "$OUTPUT_DIR/raw"
 : > "$DISCOVERY_LOG"
 
-log() {
+write_discovery_log() {
+  printf '%s\n' "$*" >> "$DISCOVERY_LOG"
+}
+
+progress_log() {
+  write_discovery_log "$*"
+  if [ "$GATLING_CONSOLE_MODE" = full ]; then
+    printf '%s\n' "$*"
+  fi
+}
+
+summary_log() {
   printf '%s\n' "$*" | tee -a "$DISCOVERY_LOG"
+}
+
+print_test_summary() {
+  result="$1"
+  highest_passing="$2"
+  first_failing="$3"
+
+  summary_log "Max-limit test summary:"
+  summary_log "  tested range: ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} virtual users"
+  summary_log "  step: ${GATLING_MAX_STEP_USERS} virtual users"
+  summary_log "  duration: ${GATLING_MAX_DURATION_SECONDS}s per level"
+  if [ -n "$highest_passing" ]; then
+    summary_log "  highest passing tested level: ${highest_passing} virtual users"
+  else
+    summary_log "  highest passing tested level: none"
+  fi
+  if [ -n "$first_failing" ]; then
+    summary_log "  first failing tested level: ${first_failing} virtual users"
+  else
+    summary_log "  first failing tested level: not found"
+  fi
+  summary_log "  result: $result"
+  if [ -s "$OUTPUT_DIR/index.html" ]; then
+    summary_log "  Gatling report: $OUTPUT_DIR/index.html"
+  fi
+  summary_log "  full discovery log: $DISCOVERY_LOG"
 }
 
 run_gatling_level() {
@@ -91,10 +136,10 @@ highest_passing_level=""
 
 if [ "$GATLING_MAX_SINGLE_LEVEL_MODE" = true ]; then
   current_start="$GATLING_MAX_BASE_USERS"
-  log "Max-limit single-level discovery: ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} virtual users, step ${GATLING_MAX_STEP_USERS}, duration ${GATLING_MAX_DURATION_SECONDS}s"
+  progress_log "Max-limit single-level discovery: ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} virtual users, step ${GATLING_MAX_STEP_USERS}, duration ${GATLING_MAX_DURATION_SECONDS}s"
 
   while [ "$current_start" -le "$GATLING_MAX_LIMIT_USERS" ]; do
-    log "Max-limit testing level ${current_start} virtual users."
+    progress_log "Max-limit testing level ${current_start} virtual users."
 
     set +e
     run_gatling_level "$current_start"
@@ -103,34 +148,28 @@ if [ "$GATLING_MAX_SINGLE_LEVEL_MODE" = true ]; then
 
     if [ "$status" -eq 0 ]; then
       highest_passing_level="$current_start"
-      log "Max-limit level ${current_start} virtual users passed."
+      progress_log "Max-limit level ${current_start} virtual users passed."
       current_start=$((current_start + GATLING_MAX_STEP_USERS))
       continue
     fi
 
     if has_gatling_report; then
-      if [ -n "$highest_passing_level" ]; then
-        log "Max-limit highest passing tested level: ${highest_passing_level} virtual users."
-      else
-        log "No passing tested level found before first failure."
-      fi
-      log "Max-limit first failing tested level: ${current_start} virtual users."
-      log "Treating this assertion failure as successful max-limit discovery evidence."
+      print_test_summary "failure boundary found" "$highest_passing_level" "$current_start"
       exit 0
     fi
 
-    log "Max-limit level ${current_start} virtual users failed before a usable Gatling report was created."
+    summary_log "Max-limit level ${current_start} virtual users failed before a usable Gatling report was created."
     exit "$status"
   done
 
-  log "No failing threshold found. Result is a tested lower bound through ${highest_passing_level} virtual users."
+  print_test_summary "tested lower bound; no failing level found" "$highest_passing_level" ""
   exit 0
 fi
 
 while [ "$attempt" -le "$GATLING_MAX_DISCOVERY_ATTEMPTS" ]; do
   highest_level=$((current_start + (GATLING_MAX_STEP_USERS * (GATLING_MAX_LEVEL_COUNT - 1))))
 
-  log "Max-limit attempt $attempt/$GATLING_MAX_DISCOVERY_ATTEMPTS: ${current_start}-${highest_level} virtual users"
+  progress_log "Max-limit attempt $attempt/$GATLING_MAX_DISCOVERY_ATTEMPTS: ${current_start}-${highest_level} virtual users"
 
   set +e
   run_gatling_level "$current_start"
@@ -138,9 +177,10 @@ while [ "$attempt" -le "$GATLING_MAX_DISCOVERY_ATTEMPTS" ]; do
   set -e
 
   if [ "$status" -eq 0 ]; then
-    log "Max-limit attempt $attempt passed through ${current_start} virtual users."
+    highest_passing_level="$current_start"
+    progress_log "Max-limit attempt $attempt passed through ${current_start} virtual users."
     if [ "$attempt" -eq "$GATLING_MAX_DISCOVERY_ATTEMPTS" ]; then
-      log "No failing threshold found. Result is a tested lower bound through ${current_start} virtual users."
+      print_test_summary "tested lower bound; no failing level found" "$highest_passing_level" ""
       exit 0
     fi
     current_start=$((current_start + GATLING_MAX_STEP_USERS))
@@ -149,11 +189,10 @@ while [ "$attempt" -le "$GATLING_MAX_DISCOVERY_ATTEMPTS" ]; do
   fi
 
   if has_gatling_report; then
-    log "Max-limit attempt $attempt crossed a Gatling threshold at ${current_start} virtual users."
-    log "Treating this assertion failure as successful max-limit discovery evidence."
+    print_test_summary "failure boundary found" "$highest_passing_level" "$current_start"
     exit 0
   fi
 
-  log "Max-limit attempt $attempt failed before a usable Gatling report was created."
+  summary_log "Max-limit attempt $attempt failed before a usable Gatling report was created."
   exit "$status"
 done

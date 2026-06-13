@@ -49,76 +49,28 @@ LOG_FILE="$OUTPUT_DIR/${GATLING_RUN_TYPE}-run.log"
 mkdir -p "$OUTPUT_DIR" "$RAW_DIR" output/gatling/screenshots
 find "$OUTPUT_DIR" -mindepth 1 -maxdepth 1 ! -name raw -exec rm -rf {} +
 
-print_log_summary() {
+print_gatling_log_excerpt() {
   printf '%s\n' "Gatling console mode: summary. Full log saved to $LOG_FILE"
-  case "$GATLING_RUN_TYPE" in
-    max-limit)
-      summary_profile="level=${GATLING_MAX_USERS} duration=${GATLING_MAX_DURATION_SECONDS}s"
-      ;;
-    load-5m)
-      summary_profile="users=${GATLING_LOAD_USERS} duration=300s"
-      ;;
-    stress-5m)
-      summary_profile="users=${GATLING_STRESS_START_USERS}->${GATLING_STRESS_TARGET_USERS} duration=300s"
-      ;;
-  esac
+  grep -E '^(Simulation|Parsing log file|Generating reports|Reports generated|Assertions|All assertions|Please open)' "$LOG_FILE" || {
+    printf '%s\n' "No Gatling summary lines matched; inspect $LOG_FILE"
+  }
+}
 
-  awk -v run_type="$GATLING_RUN_TYPE" -v profile="$summary_profile" -v status="${1:-0}" '
-    /^> request count/ {
-      requests = $4
-      if (match($0, /OK=[0-9]+/)) {
-        ok = substr($0, RSTART + 3, RLENGTH - 3)
-      }
-      if (match($0, /KO=[0-9]+/)) {
-        ko = substr($0, RSTART + 3, RLENGTH - 3)
-      }
+print_default_gatling_summary() {
+  printf '%s\n' "Gatling console mode: summary. Full log saved to $LOG_FILE"
+  awk '
+    /^---- Global Information/ {
+      printing = 1
     }
-    /^> max response time/ {
-      max = $5
-    }
-    /^> mean response time/ {
-      mean = $5
-    }
-    /^> response time 95th percentile/ {
-      p95 = $6
-    }
-    /^> response time 99th percentile/ {
-      p99 = $6
-    }
-    /^> mean requests\/sec/ {
-      rps = $4
-    }
-    /^> failed/ {
-      failed = $3
-    }
-    /^---- Errors/ {
-      in_errors = 1
-      next
-    }
-    /^=+/ {
-      in_errors = 0
-    }
-    in_errors && /^> / && top_error == "" {
-      top_error = $0
+    printing {
+      print
     }
     END {
-      if (requests != "") {
-        if (ok == "") ok = 0
-        if (ko == "") ko = 0
-        if (failed == "") failed = 0
-        result = status == 0 ? "PASSED" : "FAILED"
-        ko_rate = requests > 0 ? (ko * 100.0 / requests) : 0
-        printf "Gatling summary: run=%s %s result=%s requests=%s OK=%s KO=%s KO-rate=%.2f%% p95=%sms p99=%sms max=%sms mean=%sms rps=%s failed=%s\n", run_type, profile, result, requests, ok, ko, ko_rate, p95, p99, max, mean, rps, failed
-        if (top_error != "") {
-          printf "Gatling top error: %s\n", top_error
-        }
-      } else {
+      if (!printing) {
         exit 1
       }
     }
-  ' "$LOG_FILE" || grep -E '^(Simulation|Generating reports|Reports generated|Assertions|All assertions|Please open)' "$LOG_FILE" || {
-    printf '%s\n' "No Gatling summary lines matched; inspect $LOG_FILE"
-  }
+  ' "$LOG_FILE"
 }
 
 run_and_log() {
@@ -132,7 +84,7 @@ run_and_log() {
       ;;
     summary)
       if [ "$GATLING_RUN_TYPE" != "max-limit" ] || [ "$status" -ne 0 ]; then
-        print_log_summary "$status"
+        print_default_gatling_summary || print_gatling_log_excerpt
       fi
       ;;
   esac
