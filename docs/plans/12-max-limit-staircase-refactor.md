@@ -112,7 +112,7 @@ This is a refactor of the already implemented Gatling container evidence flow fr
 | TASK-028 | Update `tests/scripts/test-run-gatling-max-limit.sh` to assert that `GATLING_MAX_LIMIT_USERS` is passed to `scripts/run-gatling-container`. | Yes | 2026-06-14 |
 | TASK-029 | Update `tests/scripts/test-run-gatling-max-limit.sh` to assert that a non-zero Gatling result with a usable report still exits `0`. | Yes | 2026-06-14 |
 | TASK-030 | Update `tests/test_gatling_max_limit_summary.sh` to check for `staircase Gatling report` wording and the `KO=0` cutoff rule. | Yes | 2026-06-14 |
-| TASK-031 | Update `tests/scripts/test-gatling-assertions.sh` to verify `MetaSimulation.scala` contains `steppedLevels`, `nothingFor`, `constantConcurrentUsers(level)`, and `GATLING_MAX_LIMIT_USERS`. | Yes | 2026-06-14 |
+| TASK-031 | Update `tests/scripts/test-gatling-assertions.sh` to verify `MetaSimulation.scala` contains `steppedLevels`, `staircaseProfile`, `constantConcurrentUsers(level)`, and `GATLING_MAX_LIMIT_USERS`, while rejecting delayed `nothingFor` scheduling. | Yes | 2026-06-14 |
 | TASK-032 | Update `docs/gatling.md` to describe max-limit as one staircase simulation with a configured upper ceiling, not a no-time-limit infinite run. | Yes | 2026-06-14 |
 | TASK-033 | Update `docs/gatling.md` to explain that Gatling assertions are evaluated after a run; the staircase must be bounded by a safe `GATLING_MAX_LIMIT_USERS` value. | Yes | 2026-06-14 |
 | TASK-034 | Update `docs/gatling.md` to keep the load/stress internal oscillation explanation unchanged and acceptable. | Yes | 2026-06-14 |
