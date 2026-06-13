@@ -39,7 +39,7 @@ APP_BASE_URL=http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ ./sc
 The maintained simulation uses closed virtual-user profiles:
 
 - Load: 60 seconds ramping from 0 to `GATLING_LOAD_USERS`, 180 seconds holding that level, then 60 seconds ramping back down to 0.
-- Stress: five 60-second staircase levels from `GATLING_STRESS_START_USERS` to `GATLING_STRESS_TARGET_USERS`. Defaults are `10`, `20`, `30`, `40`, and `50` virtual users.
+- Stress: five 60-second staircase levels from `GATLING_STRESS_START_USERS` to `GATLING_STRESS_TARGET_USERS`. Jenkins defaults run from `5` to `50` virtual users, rounded across five levels.
 - Max-limit: single-level discovery runs until the first failing level or configured upper bound.
 
 For max-limit discovery, raise or bound the search with environment variables:

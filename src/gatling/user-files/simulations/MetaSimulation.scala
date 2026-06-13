@@ -24,12 +24,9 @@ class MetaSimulation extends Simulation {
     if (targetUsers < startUsers) {
       throw new IllegalArgumentException(s"${name}_TARGET_USERS must be greater than or equal to ${name}_START_USERS")
     }
-    if ((targetUsers - startUsers) % 4 != 0) {
-      throw new IllegalArgumentException(s"${name}_TARGET_USERS minus ${name}_START_USERS must divide evenly into four staircase steps")
+    (0 to 4).map { level =>
+      startUsers + math.round((targetUsers - startUsers).toDouble * level / 4.0).toInt
     }
-
-    val stepUsers = (targetUsers - startUsers) / 4
-    (0 to 4).map(level => startUsers + (stepUsers * level))
   }
 
   private val httpProtocol = http
