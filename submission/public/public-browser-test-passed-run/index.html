@@ -39,6 +39,27 @@
           </tbody>
         </table>
       </div>
+
+      <h2>Course Rationale Map</h2>
+      <div class="panel">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Playwright validation</th>
+              <th>Class rationale</th>
+              <th>Validation type</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>Open app and assert page title</td><td>Assert the app identity before trusting later evidence.</td><td>Positive assert</td></tr>
+            <tr><td>2</td><td>Verify required link, button, and text box are present</td><td>Verify assignment-required UI elements are present, like Selenium IDE <code>verifyElementPresent</code>.</td><td>Positive verify</td></tr>
+            <tr><td>3</td><td>Click the about link and verify about text is present</td><td>Verify independent navigation/text behavior, like Selenium IDE <code>click</code> plus <code>verifyTextPresent</code>.</td><td>Positive verify</td></tr>
+            <tr><td>4</td><td>Positive scenario: type a name, submit, and assert success text</td><td>Assert the final success outcome because a wrong success message means the positive path failed.</td><td>Positive assert plus verify</td></tr>
+            <tr><td>5</td><td>Negative scenario: submit empty input and verify the error text</td><td>Verify the error message, matching the lecture's negative-test rationale.</td><td>Negative verify</td></tr>
+          </tbody>
+        </table>
+      </div>
     </main>
   </div>
 </body>

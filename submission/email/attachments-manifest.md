@@ -13,9 +13,9 @@
 | g | `submission/local/g-browser-test-passed-run/` | `output/playwright/` | ready | log contains `1 passed` | Includes log, JUnit, screenshots, report, explanation. |
 | h | `submission/local/h-har-scenario/scenario-description.md` | `docs/har-scenario.md` | ready | review text | Written HAR scenario. |
 | i | `submission/local/i-har-file/meta-functional-flow.har` | `output/har/meta-functional-flow.har` | partial | validate and sensitivity-review HAR | HAR packaged; review before sending. |
-| j | `submission/local/j-gatling-max-limit/` | `output/gatling/max-limit/` | partial | inspect max-limit log/report | Current result is a tested lower bound, not a proven true maximum. |
+| j | `submission/local/j-gatling-max-limit/` | `output/gatling/max-limit/` | partial | rerun after HAR-derived simulation update | Current result is stale; refresh and report highest passing virtual-user level plus first failing level if found. |
 | k | `submission/local/k-gatling-cmd-screenshots/` | manual capture required | partial | add `max-limit-terminal.png` and `load-5m-terminal.png` | Stress CMD screenshot is packaged; max-limit and load screenshots are still missing. |
-| l | `submission/local/l-gatling-result-pdfs/` | `output/gatling/` | ready | verify three PDFs open | Includes three PDFs and graph explanations. |
+| l | `submission/local/l-gatling-result-pdfs/` | `output/gatling/` | partial | rerun and verify three PDFs open | Existing PDFs are stale after the HAR-derived simulation update. |
 
 ## Optional Public-IP Bonus Evidence
 

@@ -25,7 +25,9 @@ Attached are the 12 required items for the MTA 2026 Semester B DevOps final proj
 
 Browser automation note: the assignment names Selenium IDE `.side`; this project uses Playwright as the Selenium IDE or similar browser automation tool, with the test file and passed-run evidence attached.
 
-Max-limit note: the current max-limit evidence is a tested lower bound unless a later run captures a passing level followed by a failing level.
+Gatling/HAR note: the HAR records the browser scenario. Gatling HAR Converter generated a reference Scala simulation, and the maintained `MetaSimulation.scala` is the cleaned HAR-derived version used for repeatable max-limit, load, and stress runs. Gatling does not load the HAR file at runtime.
+
+Max-limit note: the current max-limit evidence is stale after the HAR-derived simulation update. Refresh before sending and report the highest virtual-user level with `KO=0` plus the first failing level, if found.
 
 Optional public-IP bonus evidence, if submitted, is kept separately under `submission/public/` and uses:
 

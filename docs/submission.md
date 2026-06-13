@@ -51,7 +51,7 @@ These questions were sent to clarify assignment interpretation before final evid
    - Browser automation: `./scripts/run-playwright-container`
    - HAR capture: `./scripts/capture-har`
    - HAR validation: `./scripts/validate-har output/har/meta-functional-flow.har`
-   - Gatling max-limit, load, and stress commands from `docs/gatling.md`.
+   - Gatling max-limit, load, and stress commands from `docs/gatling.md`; these run the cleaned HAR-derived `MetaSimulation.scala`, not the HAR file directly.
    - Jenkins CI/CD build after `meta-container-ci-cd` points at the public GitHub repo.
    - Jenkins scheduled monitoring build after `meta-monitoring` points at the public GitHub repo.
 2. Capture manual screenshots where browser chrome or third-party UI must be visible:
@@ -65,7 +65,7 @@ These questions were sent to clarify assignment interpretation before final evid
    - 5-minute stress-test report PDF.
 4. Write the email body with the required explanations:
    - Browser validation types and why each validation is useful.
-   - HAR scenario steps.
+   - HAR scenario steps and the HAR Converter reference relationship.
    - Max-limit result, why it is the limit, and how it was found.
    - Gatling graph explanations and what likely happened in the system.
 5. Attach every evidence file listed in the submission evidence checklist below.
@@ -77,16 +77,16 @@ These are the required services, features, and pipeline capabilities that must w
 | Deliverable | Functional requirement | How to prove it | Current status |
 |---|---|---|---|
 | JSP web application | A simple JSP application with at least one link, one button, and one text input. | Source file, GitHub screenshot, Tomcat screenshot, Playwright validations. | Ready |
-| Git/GitHub source control | Application and automation code are stored in Git and the public GitHub repository. | Public repository link and GitHub screenshot showing the JSP/app. | Needs final public accessibility check and screenshot |
+| Git/GitHub source control | Application and automation code are stored in Git and the public GitHub repository. | Public repository link and GitHub screenshot showing the JSP/app. | Screenshot packaged; public accessibility check is still manual |
 | Tomcat production deployment | Jenkins deploys the WAR into the Tomcat container and the app is reachable at `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`. | Jenkins build log, `./scripts/deploy-war` output, Tomcat screenshot with address bar visible. | Ready for packaged screenshot; recapture after final deploy only if the app changes |
 | Jenkins CI/CD pipeline | Jenkins builds, deploys, verifies, and triggers the required automation flows from source control. | `meta-container-ci-cd` SCM/manual build log, Jenkins job configuration, archived/published reports. | Partial; needs final SCM-backed evidence after all stages exist |
-| Monitoring | A separate Jenkins Freestyle job checks the application every 5 minutes and official monitor evidence shows the target is up. | Monitor passed screenshot plus `meta-monitoring` scheduled build log. | Missing official monitor screenshot and final scheduled Jenkins evidence |
+| Monitoring | A separate Jenkins Freestyle job checks the application every 5 minutes and official monitor evidence shows the target is up. | Monitor passed screenshot plus `meta-monitoring` scheduled build log. | Ready for public target: UptimeRobot screenshot plus timer-started `meta-monitoring` evidence are packaged |
 | Browser functional automation | Browser automation validates 5 application behaviors and is triggerable from Jenkins. | Playwright test file, passed run log/report, screenshots, validation explanation. | Ready with Playwright override risk |
 | HAR scenario capture | A browser scenario is described and the actual HAR file is captured. | `docs/har-scenario.md`, `output/har/meta-functional-flow.har`, HAR validation log. | Ready |
-| Gatling max-limit test | Gatling discovers the app's tested max limit or a documented lower bound. | Max-limit run log, terminal screenshot, HTML/PDF report, written max-limit conclusion. | Needs fresh evidence after class-aligned zero-KO max-limit rule; terminal screenshot deferred |
-| Gatling 5-minute load test | Gatling runs a 5-minute load test through Jenkins. | Jenkins/terminal log, screenshot, HTML/PDF report, graph explanation. | Reports/logs ready; terminal screenshot deferred |
-| Gatling 5-minute stress test | Gatling runs a 5-minute stress test through Jenkins. | Jenkins/terminal log, screenshot, HTML/PDF report, graph explanation. | Reports/logs ready; terminal screenshot deferred |
-| Final submission package | The final email contains all 12 required evidence items and written explanations. | Completed A-L evidence checklist with no missing rows. | Not ready until final screenshots, monitor evidence, GitHub accessibility, and Jenkins live build evidence are captured |
+| Gatling max-limit test | Gatling discovers the app's tested max virtual-user level or a documented lower bound. | Max-limit run log, terminal screenshot, HTML/PDF report, written max-limit conclusion. | Needs fresh evidence after HAR-derived simulation and virtual-user terminology update; terminal screenshot deferred |
+| Gatling 5-minute load test | Gatling runs a 5-minute fixed virtual-user load test through Jenkins. | Jenkins/terminal log, screenshot, HTML/PDF report, graph explanation. | Stale until refreshed after HAR-derived simulation update; terminal screenshot deferred |
+| Gatling 5-minute stress test | Gatling runs a 5-minute increasing virtual-user stress test through Jenkins. | Jenkins/terminal log, screenshot, HTML/PDF report, graph explanation. | Stale until refreshed after HAR-derived simulation update; terminal screenshot deferred |
+| Final submission package | The final email contains all 12 required evidence items and written explanations. | Completed A-L evidence checklist with no missing rows. | Not ready until remaining Gatling CMD screenshots, GitHub accessibility check, and unresolved partial rows are closed |
 
 ## Submission Evidence Checklist
 
@@ -95,17 +95,17 @@ These are the 12 items that `docs/final-project.txt` says to send by email.
 | Item | Assignment requirement | Evidence to submit | Current project evidence | Status |
 |---|---|---|---|---|
 | a | The JSP file used | `src/main/webapp/index.jsp` | `src/main/webapp/index.jsp` | Ready |
-| b | Screenshot of GitHub with the application/JSP in it | Manual screenshot of GitHub showing the repo and JSP/app file | Public repo URL is documented as `https://github.com/y0ncha/meta-final-project`; screenshot still must be captured | Missing screenshot |
+| b | Screenshot of GitHub with the application/JSP in it | Manual screenshot of GitHub showing the repo and JSP/app file | `submission/local/b-github-screenshot/github-jsp.png` shows the repo path `src/main/webapp/index.jsp`; recapture only if the latest commit timestamp must be visible | Ready |
 | c | Screenshot of the app in Tomcat with `localhost:8080/...` visible | Manual browser screenshot with address bar visible at `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` | `submission/local/c-tomcat-local-screenshot/tomcat-local-url.png` shows browser chrome and the localhost URL | Ready |
 | d | Link to public GitHub repo | `https://github.com/y0ncha/meta-final-project` | Git remote is expected to be that repository | Needs final accessibility check |
-| e | Monitor tool name, monitored target, and passed monitor screenshot | UptimeRobot or approved monitor name, target URL, interval, and passed/up screenshot | Jenkins Freestyle job `meta-monitoring` runs `./scripts/run-monitoring-check` on schedule `H/5 * * * *`; official monitor screenshot is not present | Missing |
+| e | Monitor tool name, monitored target, and passed monitor screenshot | UptimeRobot or approved monitor name, target URL, interval, and passed/up screenshot | `submission/public/public-monitoring-evidence/uptimerobot-dashboard.png` shows UptimeRobot monitoring the public Tomcat URL every 5 minutes with status up; Jenkins `meta-monitoring` screenshots prove the required 5-minute Jenkins trigger | Ready for public-target evidence |
 | f | Selenium IDE file `.side` | Playwright substitute: `tests/playwright/meta-functional.spec.js` | Playwright override documented in `rules/compliance.md` and `docs/playwright.md` | Ready with override risk |
 | g | Selenium/automation passed-run screenshot plus validation explanation | Playwright test file, run log, screenshots, report, and written validation explanation | `output/playwright/playwright-run.log`, `output/playwright/junit.xml`, `output/playwright/playwright-report/index.html`, `output/playwright/screenshots/valid-submit.png`, `output/playwright/screenshots/empty-submit.png`, `docs/playwright.md` | Ready |
 | h | Written HAR scenario | Scenario text in email or attached document | `docs/har-scenario.md` | Ready |
 | i | HAR file | `output/har/meta-functional-flow.har` | `output/har/meta-functional-flow.har` and `output/har/har-capture.log` | Ready |
-| j | Written max-limit result and explanation | Max-limit number, how it was found, and why it is the limit | `docs/gatling.md`, `output/gatling/max-limit/max-limit-run.log`, `output/gatling/max-limit/index.html` | Partial; refresh after the zero-KO max-limit rule and report highest `KO=0` level plus first KO level |
+| j | Written max-limit result and explanation | Max-limit number, how it was found, and why it is the limit | `docs/gatling.md`, `output/gatling/max-limit/max-limit-run.log`, `output/gatling/max-limit/index.html` | Partial; refresh after the HAR-derived simulation update and report highest virtual-user level with `KO=0` plus first KO level |
 | k | Three screenshots of Gatling CMD summaries: max limit, load, stress | Terminal/CMD screenshots for all three Gatling runs | `submission/local/k-gatling-cmd-screenshots/stress-5m-terminal.png` is packaged; max-limit and load CMD screenshots are still pending | Partial; capture max-limit and load before final email |
-| l | Three Gatling result PDFs with graph explanations | Max-limit, load, and stress PDF reports plus written graph explanations | `output/gatling/max-limit/max-limit-report.pdf`, `output/gatling/load-5m/load-5m-report.pdf`, `output/gatling/stress-5m/stress-5m-report.pdf`, `docs/gatling.md` | Partial; refresh the max-limit PDF after the zero-KO rule, then attach all three freshly validated PDFs |
+| l | Three Gatling result PDFs with graph explanations | Max-limit, load, and stress PDF reports plus written graph explanations | `output/gatling/max-limit/max-limit-report.pdf`, `output/gatling/load-5m/load-5m-report.pdf`, `output/gatling/stress-5m/stress-5m-report.pdf`, `docs/gatling.md` | Partial; refresh all three PDFs after the HAR-derived simulation update, then attach all three freshly validated PDFs |
 
 ## Evidence Paths To Attach
 
@@ -154,8 +154,8 @@ Bonus evidence is claimable only when all public-target rows below are real and 
 | Bonus item | Public target | Required evidence | Status |
 |---|---|---|---|
 | Public Tomcat URL | `http://<EC2_PUBLIC_IP>:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` or AWS public DNS equivalent | Browser screenshot from outside the EC2 instance with address bar visible. | Pending EC2 public URL validation |
-| Availability monitor | Same `PUBLIC_APP_BASE_URL` | UptimeRobot or approved monitor screenshot showing up/pass state, cadence, and public URL. | Pending public monitor evidence |
-| Jenkins monitoring | `APP_BASE_URL=<PUBLIC_APP_BASE_URL>` | `meta-monitoring` build log and archived `output/monitoring/latest-check.txt`. | Pending public-target Jenkins evidence |
+| Availability monitor | Same `PUBLIC_APP_BASE_URL` | UptimeRobot or approved monitor screenshot showing up/pass state, cadence, and public URL. | Packaged under `submission/public/public-monitoring-evidence/`; re-check live target before claiming bonus |
+| Jenkins monitoring | `APP_BASE_URL=<PUBLIC_APP_BASE_URL>` | `meta-monitoring` build log and archived `output/monitoring/latest-check.txt`. | Packaged under `submission/public/public-monitoring-evidence/` and `submission/public/public-jenkins-monitoring-check/`; re-check live target before claiming bonus |
 | Browser automation | `APP_BASE_URL=<PUBLIC_APP_BASE_URL>` | Playwright passed-run log/report/screenshots from the public target. | Packaged under `submission/public/public-browser-test-passed-run/`; re-check target before claiming bonus |
 | Gatling max-limit | `APP_BASE_URL=<PUBLIC_APP_BASE_URL>` | Max-limit log, HTML report, PDF, and terminal or Jenkins-console screenshot. | Pending user-run public evidence |
 | Gatling load 5m | `APP_BASE_URL=<PUBLIC_APP_BASE_URL>` | Load-test log, HTML report, PDF, and terminal or Jenkins-console screenshot. | Pending user-run public evidence |
@@ -170,7 +170,7 @@ Plan 11 (`docs/plans/11-submission-package.md`) owns the selected evidence rows,
 - Confirm `meta-container-ci-cd` uses script path `Jenkinsfile`.
 - Confirm `meta-monitoring` is a Freestyle project, runs `./scripts/run-monitoring-check` every 5 minutes, archives `output/monitoring/**/*`, and does not run Maven, deploy, Playwright, or Gatling commands.
 - Confirm the Playwright override is explained clearly because the assignment text names Selenium IDE specifically.
-- Confirm all Gatling numbers and graph explanations come from real generated reports, and define max limit as the highest tested users/sec with `KO=0`.
+- Confirm all Gatling numbers and graph explanations come from real generated reports, and define max limit as the highest tested virtual-user level with `KO=0`.
 - If claiming the public-IP bonus, confirm the selected public app exposure path has a real public URL, monitor evidence, Playwright evidence, Gatling max/load/stress evidence, and no pending rows for bullets 6-10.
 - Capture the three Gatling terminal/CMD summary screenshots before sending; Plan 08 intentionally leaves those screenshot files deferred.
 - Confirm the email has exactly the required subject: `Final Exercise from: <yournames>`.

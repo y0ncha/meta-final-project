@@ -31,6 +31,8 @@ Follow-up update on 2026-06-11: the optional Jenkins `Gatling Max Limit` stage n
 
 Follow-up update on 2026-06-12: Jenkins now exposes one evidence-run toggle, `RUN_GATLING_TESTS`, instead of the max-limit-only `RUN_GATLING_MAX_LIMIT` parameter. `RUN_GATLING_TESTS=false` skips `Gatling Max Limit`, `Gatling Load Test`, and `Gatling Stress Test` for normal CI/CD runs. `RUN_GATLING_TESTS=true` runs all three Gatling stages when their runner scripts exist, so final performance evidence is collected intentionally in one Jenkins build.
 
+Follow-up update on 2026-06-13: Gatling Recorder's HAR Converter now generates `src/gatling/user-files/simulations/reference/RecordedSimulationFromHar.scala` from `output/har/meta-functional-flow.har` for traceability. The maintained `MetaSimulation.scala` is the cleaned HAR-derived simulation used by Jenkins/local runners. Gatling evidence now uses virtual-user level terminology instead of users/sec terminology for max-limit, load, and stress explanations.
+
 ## 1. Requirements & Constraints
 
 - **REQ-001**: Run Gatling through Docker only; do not require host `gatling`, host Scala, host sbt, or host Java for Gatling execution.
@@ -48,7 +50,7 @@ Follow-up update on 2026-06-12: Jenkins now exposes one evidence-run toggle, `RU
 - **REQ-012**: The 5-minute load profile must run for exactly `300` seconds.
 - **REQ-013**: The 5-minute stress profile must run for exactly `300` seconds.
 - **REQ-014**: The max-limit profile must use deterministic stepped load levels and must not claim an exact maximum unless the generated Gatling evidence shows a failing threshold after a passing threshold.
-- **REQ-015**: Use deterministic default load values: `GATLING_LOAD_USERS_PER_SEC=5`, `GATLING_STRESS_START_USERS_PER_SEC=5`, `GATLING_STRESS_TARGET_USERS_PER_SEC=50`, `GATLING_MAX_DISCOVERY_ATTEMPTS=3`, `GATLING_MAX_START_USERS_PER_SEC=5`, `GATLING_MAX_STEP_USERS_PER_SEC=5`, `GATLING_MAX_LEVEL_COUNT=10`, `GATLING_MAX_LEVEL_SECONDS=30`, and `GATLING_MAX_RAMP_SECONDS=10`.
+- **REQ-015**: Use deterministic default virtual-user values: `GATLING_LOAD_USERS=5`, `GATLING_STRESS_START_USERS=5`, `GATLING_STRESS_TARGET_USERS=50`, `GATLING_MAX_BASE_USERS=50`, `GATLING_MAX_STEP_USERS=50`, `GATLING_MAX_DURATION_SECONDS=30`, and `GATLING_MAX_LIMIT_USERS=1000`.
 - **REQ-016**: Use the class-aligned max-limit pass criterion: a tested load level passes only when Gatling reports zero failed requests/checks/timeouts (`KO=0`). Response-time percentiles remain report evidence for graph explanation, not the max-limit pass/fail rule.
 - **REQ-017**: Normalize every Gatling report so `index.html` exists directly at `output/gatling/max-limit/index.html`, `output/gatling/load-5m/index.html`, and `output/gatling/stress-5m/index.html`.
 - **REQ-018**: Preserve raw Gatling run directories under `output/gatling/<run-type>/raw/`.

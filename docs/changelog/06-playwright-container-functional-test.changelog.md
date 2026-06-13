@@ -104,6 +104,14 @@ Plan 06 satisfies the browser automation deliverable from `final-project.pdf` us
 - Updated `docs/playwright.md` to explain why each validation uses hard assert or soft verify semantics.
 - Updated `docs/plans/06-playwright-container-functional-test.md` so the completed plan reflects the current assert/verify strategy.
 
+## 2026-06-13 Course-Material Compliance Follow-Up
+
+- Reviewed `classes/DevOps_Lecture7_Automation_dev.pdf` and `classes/DevOps_Lecture8_seleniumIDE_loginTest_MTA.pdf`.
+- Kept the Playwright test focused on the JSP app's own flow instead of copying the Lecture 8 login-site exercise.
+- Renamed and reordered the five Playwright `test.step` blocks so they explain the Lecture 8 assert/verify rationale: assert critical app identity and positive final outcome, verify independent UI, navigation, typed-value, and negative error-message evidence.
+- Added a course rationale map to `scripts/generate-playwright-jenkins-report` so Jenkins evidence explains when each Playwright validation uses `expect(...)` versus `expect.soft(...)`.
+- Updated `docs/playwright.md` to prioritize instructor terminology and explain the Playwright override as a Selenium-like substitute.
+
 ## Remaining Risks And Follow-Up
 
 - `final-project.pdf` names Selenium IDE `.side`; Playwright remains an explicit accepted override and should be explained during defense if asked.

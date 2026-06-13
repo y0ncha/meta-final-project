@@ -150,6 +150,19 @@ Skipped validation:
 
 - Gatling execution was not run by the agent. Current project instructions require asking the user to run Gatling validation and provide the output or artifacts.
 
+## 2026-06-13 HAR-Derived Virtual-User Follow-Up
+
+- Generated `src/gatling/user-files/simulations/reference/RecordedSimulationFromHar.scala` with Gatling Recorder HAR Converter from `output/har/meta-functional-flow.har`.
+- Updated `src/gatling/user-files/simulations/MetaSimulation.scala` to run the cleaned HAR-derived flow: GET app root, valid submit, GET app root, empty submit.
+- Changed maintained Gatling profiles from users/sec injectors to concurrent virtual-user profiles for max-limit, 5-minute load, and 5-minute stress.
+- Renamed preferred Jenkins and runner variables from users/sec terminology to virtual-user terminology: `GATLING_MAX_BASE_USERS`, `GATLING_MAX_STEP_USERS`, `GATLING_MAX_LIMIT_USERS`, `GATLING_LOAD_USERS`, `GATLING_STRESS_START_USERS`, and `GATLING_STRESS_TARGET_USERS`.
+- Updated docs and submission wording to state that Gatling does not load the HAR at runtime; the HAR is converted into a reference simulation and the cleaned `MetaSimulation.scala` is used for repeatable evidence runs.
+- Marked existing Gatling evidence stale until max-limit, load, stress, screenshots, and PDFs are refreshed from real runs.
+
+Validation:
+
+- Pending in current implementation turn; see final response for executed checks.
+
 ## 2026-06-11 Pipeline Report Rendering Follow-Up
 
 - Reworked `scripts/generate-pipeline-report` to generate CSP-friendly external CSS for Jenkins HTML Publisher.

@@ -1,55 +1,103 @@
 const { test, expect } = require("@playwright/test");
 
 test("JSP app supports the required functional flow", async ({ page }) => {
-  await test.step("page shell is visible", async () => {
+  // Business scenario: the browser must open the MeTA app before any form behavior is meaningful.
+  await test.step("open app and assert page title", async () => {
     await page.goto("./");
-    // Hard assert: without the expected title, the app did not load correctly.
+    // Type: strict (assert)
+    // What test: the browser tab title identifies the loaded app as MeTA.
+    // Why this type: if the wrong page loaded, every downstream check is invalid.
+    await expect(page).toHaveTitle("MeTA");
+
+    // Type: strict (assert)
+    // What test: the visible page heading identifies the business page as MeTA.
+    // Why this type: if the app shell is wrong, the form flow cannot be trusted.
     await expect(page.locator("#pageTitle")).toHaveText("MeTA");
-    // Soft verifies: these are supporting page-text checks, so a wording change should be reported without hiding later control and form checks.
-    await expect
-      .soft(page.locator("main > p").first())
-      .toContainText("opened a ticket for DevOps two weeks ago");
-    await expect
-      .soft(page.locator("main > p").first())
-      .toContainText("AI won't replace half of the company");
-    // Hard asserts: the button and text box are assignment-required controls, so continuing without them is misleading.
-    await expect(page.locator("#submitButton")).toBeVisible();
+  });
+
+  // Business scenario: the user must have the controls needed to learn about the page and submit the form.
+  await test.step("verify page controls are present", async () => {
+    // Type: soft (verify)
+    // What test: the informational About link is visible to the user.
+    // Why this type: a missing About link is a defect, but it does not block form submission.
+    await expect.soft(page.locator("#aboutLink")).toBeVisible();
+
+    // Type: strict (assert)
+    // What test: the name input is visible so the user can enter form data.
+    // Why this type: without the input, the core form flow is unusable.
     await expect(page.locator("#nameInput")).toBeVisible();
+
+    // Type: strict (assert)
+    // What test: the submit button is visible so the user can send the form.
+    // Why this type: without the button, the core form flow is unusable.
+    await expect(page.locator("#submitButton")).toBeVisible();
   });
 
-  await test.step("about link navigates to the about section", async () => {
-    await page.locator("#aboutLink").click();
-    // Soft verifies: link behavior is independent, and the next step reloads the app to avoid cascading failures.
-    await expect.soft(page).toHaveURL(/#about$/);
-    await expect.soft(page.locator("#about")).toContainText("About");
+  // Business scenario: the About link should navigate to supporting page information.
+  await test.step("click about link and verify text is present", async () => {
+    const aboutLink = page.locator("#aboutLink");
+    if (await aboutLink.isVisible()) {
+      await aboutLink.click();
+
+      // Type: soft (verify)
+      // What test: clicking About moves the browser to the About section anchor.
+      // Why this type: broken informational navigation should be reported but should not hide form-flow results.
+      await expect.soft(page).toHaveURL(/#about$/);
+
+      // Type: soft (verify)
+      // What test: the About section contains the expected About text.
+      // Why this type: missing supporting text is a page-content defect, not a blocker for name submission.
+      await expect.soft(page.locator("#about")).toContainText("About");
+    }
   });
 
-  await test.step("text input accepts typed text", async () => {
+  // Business scenario: submitting a valid name should produce the approved business response.
+  await test.step("positive scenario: type name, submit, assert success text", async () => {
     await page.goto("./");
     await page.locator("#nameInput").fill("Yonatan");
-    // Hard assert: the text box accepting typed input is a core required interaction.
-    await expect(page.locator("#nameInput")).toHaveValue("Yonatan");
-  });
 
-  await test.step("valid submit shows success message", async () => {
+    // Type: soft (verify)
+    // What test: the name input contains the value typed by the user.
+    // Why this type: this is setup evidence; the final success message proves whether submission worked.
+    await expect.soft(page.locator("#nameInput")).toHaveValue("Yonatan");
+
     await page.locator("#submitButton").click();
-    // Hard assert: a wrong success message means the valid form path failed.
+
+    // Type: strict (assert)
+    // What test: a valid submit shows the expected success message.
+    // Why this type: this is the core business result of the positive form flow.
     await expect(page.locator("#resultMessage")).toHaveText(
       "Hello, Yonatan. MeTA Corporate reviewed your form, opened a committee, and somehow approved it.",
     );
+
+    // Type: soft (verify)
+    // What test: the submit button remains visible after a successful submit.
+    // Why this type: post-submit visibility is supporting UI evidence, not the main business result.
+    await expect.soft(page.locator("#submitButton")).toBeVisible();
     await page.screenshot({
       path: "output/playwright/screenshots/valid-submit.png",
       fullPage: true,
     });
   });
 
-  await test.step("empty submit shows validation feedback", async () => {
+  // Business scenario: submitting an empty name should show validation instead of accepting the form.
+  await test.step("negative scenario: submit empty form and verify error text", async () => {
     await page.goto("./");
     await page.locator("#submitButton").click();
-    // Hard assert: the negative validation path must reject an empty submission.
-    await expect(page.locator("#validationMessage")).toHaveText(
-      "Please enter a name before MeTA Corporate schedules a meeting about the empty box.",
-    );
+
+    // Type: soft (verify)
+    // What test: the empty-name validation message becomes visible.
+    // Why this type: validation failure is important evidence, but should not hide screenshots or prior flow results.
+    await expect.soft(page.locator("#validationMessage")).toBeVisible();
+
+    // Type: soft (verify)
+    // What test: the empty-name validation message has the expected business text.
+    // Why this type: wrong validation text is a defect, but the page can still be documented for evidence.
+    await expect
+      .soft(page.locator("#validationMessage"))
+      .toHaveText(
+        "Please enter a name before MeTA Corporate schedules a meeting about the empty box.",
+      );
     await page.screenshot({
       path: "output/playwright/screenshots/empty-submit.png",
       fullPage: true,

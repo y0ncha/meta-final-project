@@ -12,10 +12,10 @@ pipeline {
   parameters {
     booleanParam(name: 'RUN_GATLING_TESTS', defaultValue: false, description: 'Run Gatling max-limit, load, and stress tests for performance evidence')
     string(name: 'APP_BASE_URL', defaultValue: 'http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/', description: 'Application base URL for Tomcat verification, Playwright, and Gatling')
-    string(name: 'GATLING_MAX_BASE_USERS_PER_SEC', defaultValue: '50', description: 'First users/sec rate for Gatling max-limit discovery')
-    string(name: 'GATLING_MAX_STEP_USERS_PER_SEC', defaultValue: '50', description: 'Users/sec increase between Gatling max-limit levels')
-    string(name: 'GATLING_MAX_DURATION_SECONDS', defaultValue: '30', description: 'Seconds to hold each Gatling max-limit rate')
-    string(name: 'GATLING_MAX_LIMIT_USERS_PER_SEC', defaultValue: '1000', description: 'Highest users/sec rate to test before reporting a lower bound')
+    string(name: 'GATLING_MAX_BASE_USERS', defaultValue: '50', description: 'First virtual-user level for Gatling max-limit discovery')
+    string(name: 'GATLING_MAX_STEP_USERS', defaultValue: '50', description: 'Virtual-user increase between Gatling max-limit levels')
+    string(name: 'GATLING_MAX_DURATION_SECONDS', defaultValue: '30', description: 'Seconds to hold each Gatling max-limit virtual-user level')
+    string(name: 'GATLING_MAX_LIMIT_USERS', defaultValue: '1000', description: 'Highest virtual-user level to test before reporting a lower bound')
   }
 
   triggers {
@@ -29,14 +29,13 @@ pipeline {
     PLAYWRIGHT_IMAGE = 'mcr.microsoft.com/playwright:v1.60.0-noble'
     GATLING_IMAGE = 'denvazh/gatling:3.2.1'
     GATLING_PLATFORM = 'linux/amd64'
-    GATLING_LOAD_USERS_PER_SEC = '5'
-    GATLING_STRESS_START_USERS_PER_SEC = '5'
-    GATLING_STRESS_TARGET_USERS_PER_SEC = '50'
-    GATLING_MAX_BASE_USERS_PER_SEC = "${params.GATLING_MAX_BASE_USERS_PER_SEC}"
-    GATLING_MAX_STEP_USERS_PER_SEC = "${params.GATLING_MAX_STEP_USERS_PER_SEC}"
+    GATLING_LOAD_USERS = '5'
+    GATLING_STRESS_START_USERS = '5'
+    GATLING_STRESS_TARGET_USERS = '50'
+    GATLING_MAX_BASE_USERS = "${params.GATLING_MAX_BASE_USERS}"
+    GATLING_MAX_STEP_USERS = "${params.GATLING_MAX_STEP_USERS}"
     GATLING_MAX_DURATION_SECONDS = "${params.GATLING_MAX_DURATION_SECONDS}"
-    GATLING_MAX_LIMIT_USERS_PER_SEC = "${params.GATLING_MAX_LIMIT_USERS_PER_SEC}"
-    GATLING_MAX_RAMP_SECONDS = '10'
+    GATLING_MAX_LIMIT_USERS = "${params.GATLING_MAX_LIMIT_USERS}"
   }
 
   stages {
@@ -109,7 +108,7 @@ NODE'''
       }
       steps {
         script {
-          def gatlingArgs = "--platform ${env.GATLING_PLATFORM} --entrypoint= --network meta --volumes-from meta-jenkins -w ${env.WORKSPACE} -e WORKSPACE=${env.WORKSPACE} -e APP_BASE_URL=${env.APP_BASE_URL} -e GATLING_RUN_TYPE=max-limit -e GATLING_LOAD_USERS_PER_SEC=${env.GATLING_LOAD_USERS_PER_SEC} -e GATLING_STRESS_START_USERS_PER_SEC=${env.GATLING_STRESS_START_USERS_PER_SEC} -e GATLING_STRESS_TARGET_USERS_PER_SEC=${env.GATLING_STRESS_TARGET_USERS_PER_SEC} -e GATLING_MAX_BASE_USERS_PER_SEC=${env.GATLING_MAX_BASE_USERS_PER_SEC} -e GATLING_MAX_STEP_USERS_PER_SEC=${env.GATLING_MAX_STEP_USERS_PER_SEC} -e GATLING_MAX_DURATION_SECONDS=${env.GATLING_MAX_DURATION_SECONDS} -e GATLING_MAX_LIMIT_USERS_PER_SEC=${env.GATLING_MAX_LIMIT_USERS_PER_SEC} -e GATLING_MAX_RAMP_SECONDS=${env.GATLING_MAX_RAMP_SECONDS}"
+          def gatlingArgs = "--platform ${env.GATLING_PLATFORM} --entrypoint= --network meta --volumes-from meta-jenkins -w ${env.WORKSPACE} -e WORKSPACE=${env.WORKSPACE} -e APP_BASE_URL=${env.APP_BASE_URL} -e GATLING_RUN_TYPE=max-limit -e GATLING_LOAD_USERS=${env.GATLING_LOAD_USERS} -e GATLING_STRESS_START_USERS=${env.GATLING_STRESS_START_USERS} -e GATLING_STRESS_TARGET_USERS=${env.GATLING_STRESS_TARGET_USERS} -e GATLING_MAX_BASE_USERS=${env.GATLING_MAX_BASE_USERS} -e GATLING_MAX_STEP_USERS=${env.GATLING_MAX_STEP_USERS} -e GATLING_MAX_DURATION_SECONDS=${env.GATLING_MAX_DURATION_SECONDS} -e GATLING_MAX_LIMIT_USERS=${env.GATLING_MAX_LIMIT_USERS}"
           docker.image(env.GATLING_IMAGE).inside(gatlingArgs) {
             sh 'pwd'
             sh 'test "$PWD" = "$WORKSPACE"'
@@ -130,7 +129,7 @@ NODE'''
       }
       steps {
         script {
-          def gatlingArgs = "--platform ${env.GATLING_PLATFORM} --entrypoint= --network meta --volumes-from meta-jenkins -w ${env.WORKSPACE} -e WORKSPACE=${env.WORKSPACE} -e APP_BASE_URL=${env.APP_BASE_URL} -e GATLING_RUN_TYPE=load-5m -e GATLING_LOAD_USERS_PER_SEC=${env.GATLING_LOAD_USERS_PER_SEC} -e GATLING_STRESS_START_USERS_PER_SEC=${env.GATLING_STRESS_START_USERS_PER_SEC} -e GATLING_STRESS_TARGET_USERS_PER_SEC=${env.GATLING_STRESS_TARGET_USERS_PER_SEC}"
+          def gatlingArgs = "--platform ${env.GATLING_PLATFORM} --entrypoint= --network meta --volumes-from meta-jenkins -w ${env.WORKSPACE} -e WORKSPACE=${env.WORKSPACE} -e APP_BASE_URL=${env.APP_BASE_URL} -e GATLING_RUN_TYPE=load-5m -e GATLING_LOAD_USERS=${env.GATLING_LOAD_USERS} -e GATLING_STRESS_START_USERS=${env.GATLING_STRESS_START_USERS} -e GATLING_STRESS_TARGET_USERS=${env.GATLING_STRESS_TARGET_USERS}"
           docker.image(env.GATLING_IMAGE).inside(gatlingArgs) {
             sh 'pwd'
             sh 'test "$PWD" = "$WORKSPACE"'
@@ -151,7 +150,7 @@ NODE'''
       }
       steps {
         script {
-          def gatlingArgs = "--platform ${env.GATLING_PLATFORM} --entrypoint= --network meta --volumes-from meta-jenkins -w ${env.WORKSPACE} -e WORKSPACE=${env.WORKSPACE} -e APP_BASE_URL=${env.APP_BASE_URL} -e GATLING_RUN_TYPE=stress-5m -e GATLING_LOAD_USERS_PER_SEC=${env.GATLING_LOAD_USERS_PER_SEC} -e GATLING_STRESS_START_USERS_PER_SEC=${env.GATLING_STRESS_START_USERS_PER_SEC} -e GATLING_STRESS_TARGET_USERS_PER_SEC=${env.GATLING_STRESS_TARGET_USERS_PER_SEC}"
+          def gatlingArgs = "--platform ${env.GATLING_PLATFORM} --entrypoint= --network meta --volumes-from meta-jenkins -w ${env.WORKSPACE} -e WORKSPACE=${env.WORKSPACE} -e APP_BASE_URL=${env.APP_BASE_URL} -e GATLING_RUN_TYPE=stress-5m -e GATLING_LOAD_USERS=${env.GATLING_LOAD_USERS} -e GATLING_STRESS_START_USERS=${env.GATLING_STRESS_START_USERS} -e GATLING_STRESS_TARGET_USERS=${env.GATLING_STRESS_TARGET_USERS}"
           docker.image(env.GATLING_IMAGE).inside(gatlingArgs) {
             sh 'pwd'
             sh 'test "$PWD" = "$WORKSPACE"'

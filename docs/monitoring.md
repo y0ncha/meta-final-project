@@ -51,6 +51,18 @@ Use UptimeRobot as the preferred official monitor evidence. SiteMonitorLite is a
 
 For local-only evidence, the Jenkins Freestyle job checks `http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` from inside the Docker network. For public-IP bonus evidence, the official monitor target must be the real public Tomcat URL and the bonus must not be claimed unless that public evidence exists.
 
+## Class Material Alignment
+
+The Lecture 5 monitoring slides define monitoring as a preventive measure and a process of continuous scanning. The project maps that directly to a scheduled availability check every 5 minutes.
+
+The lecture demo shows UptimeRobot and SiteMonitorLite with these operations: create monitor, choose HTTP/Ping, set timeout, run, and edit. The course-facing evidence should therefore name UptimeRobot or SiteMonitorLite when available, show the monitored URL, show the 5-minute cadence, and show an up/passed state. Jenkins is the assignment-required trigger for the 5-minute check; it should not be presented as a replacement for the UptimeRobot/SiteMonitorLite screenshot when that screenshot is available.
+
+Current evidence split:
+
+- Jenkins `meta-monitoring`: proves the assignment's Jenkins-triggered 5-minute monitoring cadence.
+- UptimeRobot screenshot: proves the lecture-demo monitor tool, HTTP monitor target, 5-minute check interval, and up status for the public Tomcat URL.
+- SiteMonitorLite: remains an acceptable fallback only if UptimeRobot cannot be used and the reason is documented.
+
 ## Defense Checklist
 
 - Show Jenkins has two jobs: `meta-container-ci-cd` and `meta-monitoring`.

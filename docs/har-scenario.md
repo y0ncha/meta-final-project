@@ -18,7 +18,7 @@ flowchart LR
   G --> H["Verify validation message"]
 ```
 
-This HAR documents the network traffic for the same browser journey covered by the Playwright functional test: page load, link navigation, valid form submission, and empty-submit validation. It proves that the deployed Tomcat app can serve the JSP page and handle both the successful and rejected form submissions used by the browser automation scenario.
+This HAR documents the recorded browser journey used as Gatling scenario evidence: page load, link navigation, valid form submission, and empty-submit validation. Gatling does not load this HAR at runtime. Instead, Gatling Recorder's HAR Converter generated `src/gatling/user-files/simulations/reference/RecordedSimulationFromHar.scala` from this HAR, and the maintained `src/gatling/user-files/simulations/MetaSimulation.scala` is the cleaned, parameterized version used for repeatable max-limit, load, and stress runs.
 
 Expected network behavior:
 
@@ -28,7 +28,7 @@ Expected network behavior:
 4. Tomcat returns an HTTP `200` response containing the success message `Hello, Yonatan. MeTA Corporate reviewed your form, opened a committee, and somehow approved it.`
 5. Browser reloads the application page, submits the form with an empty `nameInput`, and Tomcat returns an HTTP `200` response containing the validation message `Please enter a name before MeTA Corporate schedules a meeting about the empty box.`
 
-This HAR does not test Jenkins scheduling, Gatling performance limits, public-IP availability, or monitor uptime. Those are separate final-project evidence items.
+This HAR does not test Jenkins scheduling, Gatling performance limits, public-IP availability, or monitor uptime. Those are separate final-project evidence items that run the HAR-derived Gatling simulation and other project checks.
 
 ## Capture Command
 
@@ -39,6 +39,14 @@ Run the default Dockerized capture from the project root:
 ```
 
 `scripts/capture-har` does not call `scripts/run-playwright-container`. Both scripts use the same official Playwright image, but `capture-har` launches a separate disposable container so the HAR validation cannot inherit browser or filesystem state from the functional Playwright test.
+
+After capture, the HAR Converter reference can be regenerated with the pinned Gatling image:
+
+```sh
+docker run --rm --platform linux/amd64 --entrypoint sh \
+  -v "$PWD:/work" -w /work denvazh/gatling:3.2.1 \
+  -lc '/opt/gatling/bin/recorder.sh --headless true --mode Har --har-file /work/output/har/meta-functional-flow.har --simulations-folder /work/src/gatling/user-files/simulations/reference --resources-folder /work/src/gatling/user-files/resources --class-name RecordedSimulationFromHar --encoding UTF-8 --follow-redirect false --automatic-referer false --infer-html-resources false'
+```
 
 The disposable HAR capture container name is configurable with `HAR_CONTAINER_NAME`. By default local runs use `meta-har-local` and Jenkins-triggered runs use `meta-har-<build-number>`.
 
@@ -59,7 +67,7 @@ The validator must print `Validated HAR: output/har/meta-functional-flow.har ent
 
 ## Submission Notes
 
-Attach `output/har/meta-functional-flow.har` as the HAR file for the final submission package. Use the Mermaid flow in `What This HAR Tests` as the written HAR scenario description.
+Attach `output/har/meta-functional-flow.har` as the HAR file for the final submission package. Use the Mermaid flow in `What This HAR Tests` as the written HAR scenario description, and explain that Gatling runs the cleaned HAR-derived `MetaSimulation.scala` rather than reading the HAR file during the performance run.
 
 ## Sensitivity Review
 

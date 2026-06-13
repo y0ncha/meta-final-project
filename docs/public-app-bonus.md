@@ -57,7 +57,7 @@ The EC2 VM must run only the Tomcat application service:
 | Field | Value |
 |------|-------|
 | PUBLIC_APP_BASE_URL | `http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` |
-| monitor_tool | Pending official UptimeRobot or SiteMonitorLite UI evidence; local `meta-monitoring` script check passed |
+| monitor_tool | UptimeRobot UI evidence packaged; Jenkins `meta-monitoring` public-target script check passed |
 | monitor_target | `http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` |
 | playwright_target | `http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` |
 | gatling_target | Pending user-run public Gatling evidence against `PUBLIC_APP_BASE_URL` |
@@ -125,6 +125,7 @@ Run these only after the EC2 instance exists and `PUBLIC_APP_BASE_URL` is known:
 
 ## Remaining Host And Submission Blockers
 
-- Plan 11 still needs the public-hosted browser screenshot, official monitor UI screenshot, user-run public Gatling artifacts, and final evidence classification.
+- Plan 11 still needs final public-hosted evidence classification and user-run public Gatling artifacts.
+- Public-hosted Tomcat, UptimeRobot monitor UI, Jenkins monitoring, and Playwright evidence are packaged, but should be re-checked against the live `PUBLIC_APP_BASE_URL` before claiming the bonus.
 - Terminate AWS resources after Plan 11 public-hosted evidence capture is complete.
 - Record cleanup verification so Plan 11 can close the public-hosted bonus section honestly.

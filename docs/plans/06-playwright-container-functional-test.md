@@ -29,6 +29,8 @@ Follow-up update on 2026-06-11: Jenkins now publishes a static Playwright eviden
 
 Follow-up update on 2026-06-11: The Playwright functional test now uses both hard `expect(...)` assertions and verify-style `expect.soft(...)` assertions. Hard assertions guard flow prerequisites and final outcomes; soft assertions report independent validation failures without stopping the rest of the five-validation flow immediately.
 
+Follow-up update on 2026-06-13: The Playwright functional test and Jenkins-safe evidence report now keep the JSP app's own flow while explaining the Lecture 8 assert/verify rationale for each validation.
+
 ## 1. Requirements & Constraints
 
 - **REQ-001**: Implement browser automation for the JSP app served at `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` from the host and `http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` from Docker network `meta`.
@@ -42,6 +44,7 @@ Follow-up update on 2026-06-11: The Playwright functional test now uses both har
 - **REQ-009**: Ensure Jenkins-triggered browser automation runs inside Docker by having Jenkins start the official Playwright container through Docker Pipeline.
 - **REQ-010**: Keep local developer execution in the official Playwright container image `mcr.microsoft.com/playwright:v1.60.0-noble` unless `PLAYWRIGHT_IMAGE` overrides it.
 - **REQ-011**: Publish `output/playwright/junit.xml` through Jenkins JUnit reporting and publish Jenkins-safe static HTML at `output/playwright/jenkins-report/index.html` through HTML Publisher when those files exist. Keep the native Playwright report archived at `output/playwright/playwright-report/index.html`.
+- **REQ-012**: Keep the Playwright test explanation aligned with Lecture 8 Selenium IDE rationale: use fail-fast `expect(...)` for critical gates and final outcomes, and use verify-style `expect.soft(...)` for independent evidence that should be collected without stopping immediately.
 - **SEC-001**: Do not commit Jenkins credentials, API tokens, browser cookies, HAR content, private keys, `.env`, or generated traces containing sensitive values.
 - **SEC-002**: Mount `/var/run/docker.sock` into Jenkins for this coursework stack only so Jenkins can run disposable test containers. Do not use Docker socket access to deploy Tomcat artifacts.
 - **CON-001**: Read and obey `contribution.md` before implementation; keep this work on branch `feature/06-playwright-container-functional-test`.
@@ -142,6 +145,17 @@ Follow-up update on 2026-06-11: The Playwright functional test now uses both har
 | TASK-043 | Add `scripts/generate-playwright-jenkins-report` to summarize JUnit results and link Jenkins-safe evidence without inline JavaScript. | ✅ | 2026-06-11 |
 | TASK-044 | Update `scripts/run-playwright-container` to generate the static report after a successful Playwright run. | ✅ | 2026-06-11 |
 | TASK-045 | Update Jenkins post-build publishing to publish `output/playwright/jenkins-report/index.html` as `Playwright Report`. | ✅ | 2026-06-11 |
+
+### Implementation Phase 7
+
+- GOAL-007: Align Playwright evidence wording and validation order with Lecture 7 and Lecture 8 course material.
+
+| Task | Description | Completed | Date |
+|------|-------------|-----------|------|
+| TASK-046 | Review `classes/DevOps_Lecture7_Automation_dev.pdf` and `classes/DevOps_Lecture8_seleniumIDE_loginTest_MTA.pdf` before changing Playwright evidence. | ✅ | 2026-06-13 |
+| TASK-047 | Rename and reorder the five Playwright steps to keep the app-specific flow while explaining the class assert/verify rationale. | ✅ | 2026-06-13 |
+| TASK-048 | Add a course rationale map to the Jenkins-safe Playwright evidence report. | ✅ | 2026-06-13 |
+| TASK-049 | Update `docs/playwright.md` so the defense explanation prioritizes the instructor's Selenium IDE terminology over generic Playwright best practices. | ✅ | 2026-06-13 |
 
 ## 3. Alternatives
 

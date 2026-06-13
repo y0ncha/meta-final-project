@@ -20,20 +20,11 @@ class MetaSimulation extends Simulation {
     value
   }
 
-  private def doubleEnv(name: String, defaultValue: Double): Double = {
-    val value = sys.env.get(name).map(_.trim).filter(_.nonEmpty).map(_.toDouble).getOrElse(defaultValue)
-    if (value <= 0.0) {
-      throw new IllegalArgumentException(s"$name must be greater than 0")
-    }
-    value
-  }
-
   private val httpProtocol = http
     .acceptHeader("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
     .userAgentHeader("meta-final-project-gatling")
 
-  private val scn = scenario("Meta JSP flow")
-    .exec(
+  private val harDerivedFlow = exec(
       http("GET /yonatan-csasznik-yoed-halberstam-niv-levin/")
         .get(appRootUrl)
         .check(status.is(200), substring("MeTA"))
@@ -45,12 +36,30 @@ class MetaSimulation extends Simulation {
         .formParam("nameInput", "Yonatan")
         .check(status.is(200), substring("Hello, Yonatan. MeTA Corporate reviewed your form, opened a committee, and somehow approved it."))
     )
+    .exec(
+      http("GET /yonatan-csasznik-yoed-halberstam-niv-levin/ reload before empty submit")
+        .get(appRootUrl)
+        .check(status.is(200), substring("MeTA"))
+    )
+    .pause(1.second)
+    .exec(
+      http("POST /yonatan-csasznik-yoed-halberstam-niv-levin/index.jsp submit empty name")
+        .post(appSubmitUrl)
+        .formParam("nameInput", "")
+        .check(status.is(200), substring("Please enter a name before MeTA Corporate schedules a meeting about the empty box."))
+    )
+
+  private def scenarioFor(durationSeconds: Int) =
+    scenario("Meta JSP HAR-derived flow")
+      .during(durationSeconds.seconds) {
+        harDerivedFlow
+      }
 
   runType match {
     case "load-5m" =>
       setUp(
-        scn.inject(
-          constantUsersPerSec(doubleEnv("GATLING_LOAD_USERS_PER_SEC", 5.0)).during(300.seconds)
+        scenarioFor(300).inject(
+          constantConcurrentUsers(intEnv("GATLING_LOAD_USERS", 5)).during(300.seconds)
         )
       )
         .protocols(httpProtocol)
@@ -60,9 +69,9 @@ class MetaSimulation extends Simulation {
 
     case "stress-5m" =>
       setUp(
-        scn.inject(
-          rampUsersPerSec(doubleEnv("GATLING_STRESS_START_USERS_PER_SEC", 5.0))
-            .to(doubleEnv("GATLING_STRESS_TARGET_USERS_PER_SEC", 50.0))
+        scenarioFor(300).inject(
+          rampConcurrentUsers(intEnv("GATLING_STRESS_START_USERS", 5))
+            .to(intEnv("GATLING_STRESS_TARGET_USERS", 50))
             .during(300.seconds)
         )
       )
@@ -73,12 +82,9 @@ class MetaSimulation extends Simulation {
 
     case "max-limit" =>
       setUp(
-        scn.inject(
-          incrementUsersPerSec(doubleEnv("GATLING_MAX_STEP_USERS_PER_SEC", 5.0))
-            .times(intEnv("GATLING_MAX_LEVEL_COUNT", 10))
-            .eachLevelLasting(intEnv("GATLING_MAX_LEVEL_SECONDS", 30).seconds)
-            .separatedByRampsLasting(intEnv("GATLING_MAX_RAMP_SECONDS", 10).seconds)
-            .startingFrom(doubleEnv("GATLING_MAX_START_USERS_PER_SEC", 5.0))
+        scenarioFor(intEnv("GATLING_MAX_DURATION_SECONDS", 30)).inject(
+          constantConcurrentUsers(intEnv("GATLING_MAX_USERS", 5))
+            .during(intEnv("GATLING_MAX_DURATION_SECONDS", 30).seconds)
         )
       )
         .protocols(httpProtocol)

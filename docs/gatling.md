@@ -8,11 +8,14 @@
 - Default Gatling target from Docker: `http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`
 - Host evidence URL: `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`
 - Simulation source: `src/gatling/user-files/simulations/MetaSimulation.scala`
+- HAR Converter reference: `src/gatling/user-files/simulations/reference/RecordedSimulationFromHar.scala`
 - Shared runner: `scripts/run-gatling-container`
 - Local container runner: direct disposable `docker run`
 - Jenkins container runner: Jenkins Docker Pipeline using `docker.image(env.GATLING_IMAGE).inside(...)`
 
 Gatling runs as a disposable container. Local scripts use direct `docker run`; Jenkins starts the same image through Docker Pipeline and runs the shared script body inside that container. Gatling is not installed on the host, it is not a long-running Compose service, and `/var/run/docker.sock` is not mounted into the Gatling container. The image is pinned to `denvazh/gatling:3.2.1` because the originally planned `gatlingcorp/gatling:3.15.0` image is not a public Docker Hub repository.
+
+The HAR records the browser scenario. Gatling Recorder's HAR Converter generated the reference Scala simulation from `output/har/meta-functional-flow.har`; the maintained `MetaSimulation.scala` is the cleaned version used for repeatable max-limit, load, and stress runs. Gatling does not load the HAR file at runtime.
 
 Each Gatling wrapper clears its stable output directory before starting a new run, preserves raw run directories under `raw/`, and normalizes the newest generated `index.html` into the stable path even when Gatling exits non-zero after producing an assertion-failure report. Jenkins also clears generated evidence directories at the start of non-timer builds so published artifacts come from the current build.
 
@@ -36,33 +39,33 @@ APP_BASE_URL=http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ ./sc
 For max-limit discovery, raise or bound the search with environment variables:
 
 ```sh
-GATLING_MAX_BASE_USERS_PER_SEC=50 \
-GATLING_MAX_STEP_USERS_PER_SEC=50 \
+GATLING_MAX_BASE_USERS=50 \
+GATLING_MAX_STEP_USERS=50 \
 GATLING_MAX_DURATION_SECONDS=30 \
-GATLING_MAX_LIMIT_USERS_PER_SEC=1000 \
+GATLING_MAX_LIMIT_USERS=1000 \
 ./scripts/run-gatling-max-limit
 ```
 
 ## Max-Limit Method
 
-The max-limit wrapper runs one users/sec rate at a time until a Gatling assertion failure is found or the configured upper bound is reached. This lets the wrapper report both the highest passing tested level and the first failing tested level.
+The max-limit wrapper runs one virtual-user level at a time until a Gatling assertion failure is found or the configured upper bound is reached. This lets the wrapper report both the highest passing tested virtual-user level and the first failing tested level.
 
 The class PDFs show Gatling evidence in terms of users, successes, failures, and graphs. They do not define a `p95 <= 2000 ms` service-level rule. For this project, max-limit pass/fail therefore follows the course-facing rule: a tested level passes only when Gatling reports `KO=0`. Response-time percentiles remain graph evidence for explaining degradation, but latency alone does not define the max-limit failure point.
 
 The main controls are:
 
-- `GATLING_MAX_BASE_USERS_PER_SEC`: first users/sec rate to test.
-- `GATLING_MAX_STEP_USERS_PER_SEC`: increment after each passing rate.
-- `GATLING_MAX_DURATION_SECONDS`: how long each rate is held.
-- `GATLING_MAX_LIMIT_USERS_PER_SEC`: highest rate to test before reporting a lower bound.
+- `GATLING_MAX_BASE_USERS`: first virtual-user level to test.
+- `GATLING_MAX_STEP_USERS`: virtual-user increment after each passing level.
+- `GATLING_MAX_DURATION_SECONDS`: how long each virtual-user level is held.
+- `GATLING_MAX_LIMIT_USERS`: highest virtual-user level to test before reporting a lower bound.
 
-With Jenkins defaults, max-limit discovery tests `50`, `100`, `150`, and so on through `1000` users/sec unless a Gatling assertion threshold is crossed earlier. Each tested rate lasts `30` seconds.
+With Jenkins defaults, max-limit discovery tests `50`, `100`, `150`, and so on through `1000` virtual users unless a Gatling assertion threshold is crossed earlier. Each tested level lasts `30` seconds.
 
-Legacy variables (`GATLING_MAX_START_USERS_PER_SEC`, `GATLING_MAX_LEVEL_SECONDS`, `GATLING_MAX_LEVEL_COUNT`, `GATLING_MAX_DISCOVERY_ATTEMPTS`, and `GATLING_MAX_SINGLE_LEVEL_MODE=false`) are still accepted for older local commands, but the Jenkins UI uses the clearer base/step/duration/limit model.
+Legacy users/sec-named variables are accepted by the shell wrappers only as compatibility aliases for older local commands. The Jenkins UI and current documentation use virtual-user terminology.
 
 A tested level is treated as passing only when Gatling reports zero failed requests/checks/timeouts.
 
-The max limit is the highest tested level that passes before the first tested level that fails. If a run fails after a report is normalized, the wrapper treats that assertion failure as successful discovery evidence, prints the exact first failing tested users/sec level, and preserves the failing report under `output/gatling/max-limit/`. If no tested level fails, the result is a tested lower bound, not the true application maximum.
+The max limit is the highest tested virtual-user level that passes before the first tested level that fails. If a run fails after a report is normalized, the wrapper treats that assertion failure as successful discovery evidence, prints the exact first failing tested virtual-user level, and preserves the failing report under `output/gatling/max-limit/`. If no tested level fails, the result is a tested lower bound, not the true application maximum.
 
 ## Evidence Files
 
@@ -97,12 +100,12 @@ After this Jenkinsfile change is merged, run or reload the Pipeline once so Jenk
 
 For Jenkins max-limit discovery, the build parameters expose the main discovery bounds:
 
-- `GATLING_MAX_BASE_USERS_PER_SEC=50`
-- `GATLING_MAX_STEP_USERS_PER_SEC=50`
+- `GATLING_MAX_BASE_USERS=50`
+- `GATLING_MAX_STEP_USERS=50`
 - `GATLING_MAX_DURATION_SECONDS=30`
-- `GATLING_MAX_LIMIT_USERS_PER_SEC=1000`
+- `GATLING_MAX_LIMIT_USERS=1000`
 
-With those defaults, Jenkins tests single levels from 50 through 1000 users/sec in 50 users/sec steps unless a Gatling assertion threshold is crossed earlier. When a threshold is crossed, the console log reports the highest passing tested level and the first failing tested level.
+With those defaults, Jenkins tests single levels from 50 through 1000 virtual users in 50-user steps unless a Gatling assertion threshold is crossed earlier. When a threshold is crossed, the console log reports the highest passing tested level and the first failing tested level.
 
 Monitoring is handled by the separate Jenkins Freestyle job `meta-monitoring`, which runs `./scripts/run-monitoring-check`; the Gatling stages are not part of that scheduled job. Jenkins publishes Gatling HTML/PDF evidence through HTML Publisher when `index.html` exists under `output/gatling/max-limit/`, `output/gatling/load-5m/`, or `output/gatling/stress-5m/`.
 
@@ -114,15 +117,15 @@ Local `./scripts/export-gatling-pdfs` remains strict and requires all three Gatl
 
 ### Max Limit
 
-The current packaged max-limit evidence was produced before the class-aligned zero-KO max-limit rule was adopted. It recorded 21,450 requests, 21,450 successful responses, 0 failed responses, and a 95th percentile response time of 10 ms, so it remains useful graph evidence, but it should be refreshed with `RUN_GATLING_TESTS=true` before final submission. Under the current rule, the max-limit conclusion must name the highest tested users/sec with `KO=0` and the first tested users/sec where Gatling reports any KO.
+The current packaged max-limit evidence was produced before the HAR-derived scenario and virtual-user terminology were adopted. It remains historical graph evidence only. Refresh with `RUN_GATLING_TESTS=true` before final submission. Under the current rule, the max-limit conclusion must name the highest tested virtual-user level with `KO=0` and the first tested virtual-user level where Gatling reports any KO.
 
 ### Load 5m
 
-The 5-minute load test held the default steady rate and completed with 3,000 successful requests and 0 failures. The 95th percentile response time was 20 ms and all requests were below 800 ms, so the graph should appear flat and stable with no visible saturation under this light sustained load.
+The 5-minute load test holds the default fixed virtual-user level for 300 seconds. After refreshing evidence, explain the active-users graph as a stable concurrent-user level, the request-rate graph as resulting throughput, and the response-time/KO graphs as system behavior under that load.
 
 ### Stress 5m
 
-The 5-minute stress test ramped from 5 to 50 users per second and completed with 16,500 successful requests and 0 failures. The 95th percentile response time was 14 ms, the 99th percentile was 117 ms, and all requests stayed below 800 ms. The request-rate graph should rise with the ramp while response-time graphs remain low, which indicates the local Tomcat container handled the configured ramp without visible bottlenecking.
+The 5-minute stress test ramps concurrent virtual users from the configured start level to the target level over 300 seconds. After refreshing evidence, explain the active-users graph as the configured ramp, the request-rate graph as resulting throughput, and the response-time/KO graphs as the system response while load increases.
 
 ## Submission Notes
 
