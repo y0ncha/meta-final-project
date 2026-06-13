@@ -1,6 +1,6 @@
-<testsuites id="" name="" tests="1" failures="0" skipped="0" errors="0" time="1.559384">
-<testsuite name="meta-functional.spec.js" timestamp="2026-06-12T13:29:54.538Z" hostname="chromium" tests="1" failures="0" skipped="0" time="0.857" errors="0">
-<testcase name="JSP app supports the required functional flow" classname="meta-functional.spec.js" time="0.857">
+<testsuites id="" name="" tests="1" failures="0" skipped="0" errors="0" time="1.271384">
+<testsuite name="meta-functional.spec.js" timestamp="2026-06-13T20:35:56.765Z" hostname="chromium" tests="1" failures="0" skipped="0" time="0.621" errors="0">
+<testcase name="JSP app supports the required functional flow" classname="meta-functional.spec.js" time="0.621">
 </testcase>
 </testsuite>
 </testsuites>

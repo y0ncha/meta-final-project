@@ -1,5 +1,0 @@
-status=up
-target=http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/
-checked_at=2026-06-12T09:47:36Z
-job=meta-monitoring
-build=public-ec2-restart-policy

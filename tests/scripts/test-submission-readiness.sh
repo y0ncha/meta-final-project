@@ -20,8 +20,18 @@ assert_not_contains() {
   fi
 }
 
-assert_contains '| j | Written max-limit result and explanation | Max-limit number, how it was found, and why it is the limit | `docs/gatling.md`, `output/gatling/max-limit/max-limit-run.log`, `output/gatling/max-limit/index.html` | Partial; refresh after the HAR-derived simulation update and report highest virtual-user level with `KO=0` plus first KO level |'
-assert_contains '| l | Three Gatling result PDFs with graph explanations | Max-limit, load, and stress PDF reports plus written graph explanations | `output/gatling/max-limit/max-limit-report.pdf`, `output/gatling/load-5m/load-5m-report.pdf`, `output/gatling/stress-5m/stress-5m-report.pdf`, `docs/gatling.md` | Partial; refresh all three PDFs after the HAR-derived simulation update, then attach all three freshly validated PDFs |'
-assert_not_contains '| l | Three Gatling result PDFs with graph explanations | Max-limit, load, and stress PDF reports plus written graph explanations | `output/gatling/max-limit/max-limit-report.pdf`, `output/gatling/load-5m/load-5m-report.pdf`, `output/gatling/stress-5m/stress-5m-report.pdf`, `docs/gatling.md` | Ready |'
+assert_contains 'Local Jenkins build `#248` is the base submission evidence.'
+assert_contains '| g | Browser automation passed-run screenshot and validation explanation | `submission/local/g-browser-test-passed-run/` | ready for screenshot/PDF capture |'
+assert_contains '- Native Playwright HTML report: `submission/local/g-browser-test-passed-run/playwright-run-report.html`'
+assert_contains '- Jenkins-safe Playwright HTML report: `submission/local/g-browser-test-passed-run/index.html`'
+assert_contains '| Public Playwright | `submission/public/public-browser-test-passed-run/` | Jenkins public build `#249` | ready for screenshot/PDF capture |'
+assert_contains '- Highest passing tested level: `8440` virtual users'
+assert_contains '- First failing tested level: `8460` virtual users'
+assert_contains '- Public max-limit: `8280` virtual users passed with `KO=0`; `8300` was the first failing tested level with `KO=47`.'
+assert_contains '- Public load 5m: `2252 OK`, `0 KO`.'
+assert_contains '- Public stress 5m: `15624 OK`, `0 KO`.'
+assert_contains 'Public HTML/log artifacts were intentionally removed.'
+assert_not_contains 'Local Jenkins build `#224`'
+assert_not_contains 'Jenkins public build `#225`'
 
 printf '%s\n' 'submission readiness checks passed'

@@ -2,9 +2,9 @@
 
 - Status: ready
 - Assignment item: `g) Selenium IDE screenshot of passed run, explain what kind of validation you used and why`
-- Packaged files: `playwright-run.log`, `playwright-run-report.html`, `playwright-run-report.png`, `validation-explanation.md`, `screenshots/valid-submit.png`, `screenshots/empty-submit.png`
+- Packaged files: `playwright-run.log`, `junit.xml`, `playwright-run-report.html`, `index.html`, `playwright-jenkins-report.css`, `validation-explanation.md`, `screenshots/valid-submit.png`, `screenshots/empty-submit.png`
 - Tested target: `http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`
-- Source folder: `output/playwright/`
-- Freshness check: `submission/local/g-browser-test-passed-run/playwright-run.log` contains `1 passed`, and `playwright-run-report.html` / `playwright-run-report.png` show the native Playwright passed-run report.
+- Source: Jenkins `MeTA/meta-ci-cd` build `#248`, archived from `output/playwright/`
+- Freshness check: `submission/local/g-browser-test-passed-run/playwright-run.log` contains `1 passed`. `playwright-run-report.html` is the native Playwright HTML report, and `index.html` is the Jenkins-safe HTML report for screenshot/PDF capture.
 
 The packaged explanation documents the five validations and the Playwright assert/verify mapping.

@@ -27,7 +27,7 @@ Attached are the 12 required items for the MTA 2026 Semester B DevOps final proj
 7. Browser automation passed-run evidence and validation explanation: `submission/local/g-browser-test-passed-run/`
 8. HAR scenario description: `submission/local/h-har-scenario/scenario-description.md`
 9. HAR file: `submission/local/i-har-file/meta-functional-flow.har`
-10. Max-limit result and email explanation: `submission/local/j-gatling-max-limit/email-max-limit-text.md` (`8400` virtual users passed; `8420` was the first failing tested level)
+10. Max-limit result and explanation: `submission/local/j-gatling-max-limit/max-limit-explanation.md` (`8440` virtual users passed; `8460` was the first failing tested level)
 11. Gatling CMD summary screenshots: `submission/local/k-gatling-cmd-screenshots/`
 12. Gatling result PDFs and graph explanations: `submission/local/l-gatling-result-pdfs/`
 
@@ -35,13 +35,13 @@ Browser automation note: the assignment names Selenium IDE `.side`; this project
 
 Gatling/HAR note: the HAR records the browser scenario. Gatling HAR Converter generated a reference Scala simulation, and the maintained `MetaSimulation.scala` is the cleaned HAR-derived version used for repeatable max-limit, load, and stress runs. Gatling does not load the HAR file at runtime.
 
-Max-limit note: local Jenkins build `#224` tested `8000` to `12000` virtual users in `20`-user steps. `8400` passed with `KO=0`; `8420` failed with `61` connection-timeout errors. Under the project rule, the local tested max limit is `8400` virtual users.
+Max-limit note: Gatling tested the local Tomcat target from `8100` to `12000` virtual users in `20`-user steps. `8440` passed with `KO=0`; `8460` failed with `33` connection-timeout errors. Under the project rule, the local tested max limit is `8440` virtual users.
 
 Optional public-IP bonus evidence, if submitted, is kept separately under `submission/public/` and uses:
 
 `http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`
 
-Public Gatling bonus note: Jenkins build `#225` targeted the public URL. Public max-limit evidence shows `8060` virtual users passed and `8080` was the first failing tested level; public load and stress evidence both completed with `0 KO`.
+Public Gatling bonus note: the public-target Gatling evidence shows `8280` virtual users passed and `8300` was the first failing tested level; public load and stress evidence both completed with `0 KO`.
 
 Regards,
 
@@ -59,10 +59,10 @@ These are the 12 items requested by `docs/final-project.txt`.
 | d | Link to public GitHub repo | `submission/local/d-github-public-link/github-public-repo.link` | ready, final browser check recommended | Link file contains `https://github.com/y0ncha/meta-final-project`; open once without authentication before sending. |
 | e | Monitor tool name, monitored target, and passed monitor screenshot | `submission/local/e-monitoring-evidence/` | ready | Jenkins `meta-monitoring` screenshots show scheduled monitoring evidence. Public UptimeRobot bonus evidence is under `submission/public/public-monitoring-evidence/`. |
 | f | Selenium IDE file `.side` | `submission/local/f-browser-test-file/meta-functional.spec.js` | ready with approved substitute risk | The project uses Playwright as the browser automation substitute; keep the substitution note in the email. |
-| g | Browser automation passed-run screenshot and validation explanation | `submission/local/g-browser-test-passed-run/` | ready | Includes run log, native Playwright HTML report, passed-report screenshot, app screenshots, and `validation-explanation.md`. |
+| g | Browser automation passed-run screenshot and validation explanation | `submission/local/g-browser-test-passed-run/` | ready for screenshot/PDF capture | Includes run log, native Playwright HTML report, Jenkins-safe HTML report, app screenshots, and `validation-explanation.md`. Capture the final passed-report screenshot/PDF from the HTML report before sending. |
 | h | Written HAR scenario | `submission/local/h-har-scenario/scenario-description.md` | ready | Describes the browser scenario in words. |
 | i | HAR file | `submission/local/i-har-file/meta-functional-flow.har` | packaged; sensitivity review recommended | HAR validation passed, but the file contains local `JSESSIONID` cookie evidence. Review before external sharing. |
-| j | Max-limit result, why it is the limit, and how it was found | `submission/local/j-gatling-max-limit/` | ready | Email-ready text is in `email-max-limit-text.md`. Local build `#224`: `8400` passed with `KO=0`; `8420` first failed. |
+| j | Max-limit result, why it is the limit, and how it was found | `submission/local/j-gatling-max-limit/` | ready | Explanation is in `max-limit-explanation.md`. `8440` passed with `KO=0`; `8460` first failed. |
 | k | Three Gatling CMD summary screenshots | `submission/local/k-gatling-cmd-screenshots/` | ready | Contains max-limit, load, and stress summary screenshots. |
 | l | Three Gatling result PDFs with graph explanations | `submission/local/l-gatling-result-pdfs/` | ready | Contains max-limit, load, and stress PDFs plus `graph-explanations.md`. |
 
@@ -74,8 +74,8 @@ The browser automation evidence is packaged under `submission/local/g-browser-te
 
 Passed-run evidence:
 
-- Native Playwright report: `submission/local/g-browser-test-passed-run/playwright-run-report.html`
-- Passed-report screenshot: `submission/local/g-browser-test-passed-run/playwright-run-report.png`
+- Native Playwright HTML report: `submission/local/g-browser-test-passed-run/playwright-run-report.html`
+- Jenkins-safe Playwright HTML report: `submission/local/g-browser-test-passed-run/index.html`
 - Console log: `submission/local/g-browser-test-passed-run/playwright-run.log`
 - Screenshots: `submission/local/g-browser-test-passed-run/screenshots/valid-submit.png` and `submission/local/g-browser-test-passed-run/screenshots/empty-submit.png`
 
@@ -101,14 +101,14 @@ The HAR was used as the recording/reference source for the Gatling scenario. Gat
 
 ### Local Gatling Max Limit
 
-Local Jenkins build `#224` is the base submission evidence.
+The local Gatling max-limit run is the base submission evidence.
 
-- Tested range: `8000` to `12000` virtual users
+- Tested range: `8100` to `12000` virtual users
 - Step: `20` virtual users
 - Passing rule: `KO=0`
-- Highest passing tested level: `8400` virtual users
-- First failing tested level: `8420` virtual users
-- Conclusion: the local tested max limit is `8400` virtual users
+- Highest passing tested level: `8440` virtual users
+- First failing tested level: `8460` virtual users
+- Conclusion: the local tested max limit is `8440` virtual users
 
 A failed tested level is not the max limit. The max limit is the previous tested level that still had `KO=0`.
 
@@ -116,9 +116,9 @@ A failed tested level is not the max limit. The max limit is the previous tested
 
 The local graph explanations are packaged in `submission/local/l-gatling-result-pdfs/graph-explanations.md`.
 
-- Max-limit graphs show the system approaching the failure boundary; failures begin at `8420`.
-- Load-test graphs show behavior under a fixed 5-minute load.
-- Stress-test graphs show behavior while virtual users increase over 5 minutes.
+- Max-limit graphs show the system approaching the failure boundary; failures begin at `8460`.
+- Load-test graphs show a fixed 5-minute run with `2356 OK` and `0 KO`.
+- Stress-test graphs show a 5-minute ramp with `16036 OK` and `0 KO`.
 
 ## Optional Public-IP Bonus Evidence
 
@@ -129,23 +129,23 @@ Public evidence is optional and does not replace the required local evidence.
 | Public Tomcat URL | `submission/public/public-tomcat-screenshot/` | Manual browser screenshot | ready | Screenshot was visually inspected and shows the public EC2 URL in the browser address bar. |
 | Public monitor UI | `submission/public/public-monitoring-evidence/` | UptimeRobot and Jenkins screenshots | ready | Shows UptimeRobot monitoring the public Tomcat URL and Jenkins `meta-monitoring` evidence. |
 | Public script check | `submission/public/public-jenkins-monitoring-check/` | `output/public-app/monitoring/`, `output/monitoring/` | ready | Script checks show `status=up` for the public URL. |
-| Public Playwright | `submission/public/public-browser-test-passed-run/` | `output/public-app/playwright/` | ready | Packaged log shows `1 passed`; target is the public EC2 URL. |
-| Public Gatling max-limit | `submission/public/public-gatling-max-limit/` | Jenkins public build `#225` | ready | Includes screenshot, run log, discovery log, HTML report, PDF, and graph explanation. |
-| Public Gatling load 5m | `submission/public/public-gatling-load-5m/` | Jenkins public build `#225` | ready | Includes screenshot, run log, HTML report, PDF, and graph explanation. |
-| Public Gatling stress 5m | `submission/public/public-gatling-stress-5m/` | Jenkins public build `#225` | ready | Includes screenshot, run log, HTML report, PDF, and graph explanation. |
+| Public Playwright | `submission/public/public-browser-test-passed-run/` | Public-target Jenkins artifacts | ready for screenshot/PDF capture | Packaged log shows `1 passed`; target is the public EC2 URL. Includes native and Jenkins-safe HTML reports. |
+| Public Gatling max-limit | `submission/public/public-gatling-max-limit/` | Public-target Jenkins artifacts | ready | Includes screenshot, PDF report, and graph explanation. Public HTML/log artifacts were intentionally removed. |
+| Public Gatling load 5m | `submission/public/public-gatling-load-5m/` | Public-target Jenkins artifacts | ready | Includes screenshot, PDF report, and graph explanation. Public HTML/log artifacts were intentionally removed. |
+| Public Gatling stress 5m | `submission/public/public-gatling-stress-5m/` | Public-target Jenkins artifacts | ready | Includes screenshot, PDF report, and graph explanation. Public HTML/log artifacts were intentionally removed. |
 | AWS cleanup | `submission/public/aws-cleanup-verification/` | Manual verification after review | deferred | Keep EC2 running through the review window; record cleanup after termination. |
 
 ### Public Gatling Results
 
-Jenkins public build `#225` targeted:
+The public-target Gatling run targeted:
 
 `http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`
 
 Results:
 
-- Public max-limit: `8060` virtual users passed with `KO=0`; `8080` was the first failing tested level with `KO=2`.
-- Public load 5m: `2780 OK`, `0 KO`.
-- Public stress 5m: `15592 OK`, `0 KO`.
+- Public max-limit: `8280` virtual users passed with `KO=0`; `8300` was the first failing tested level with `KO=47`.
+- Public load 5m: `2252 OK`, `0 KO`.
+- Public stress 5m: `15624 OK`, `0 KO`.
 
 ## Final Checks Before Sending
 
