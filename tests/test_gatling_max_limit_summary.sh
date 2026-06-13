@@ -236,10 +236,10 @@ if [ "$NO_SUMMARY_STATUS" -ne 1 ]; then
   exit 1
 fi
 
-summary_header_count=$(printf '%s\n' "$NO_SUMMARY_OUTPUT" | grep -Fc "Gatling console mode: summary.")
-if [ "$summary_header_count" -ne 1 ]; then
+summary_header_count=$(printf '%s\n' "$NO_SUMMARY_OUTPUT" | grep -Fc "Gatling console mode: summary." || true)
+if [ "$summary_header_count" -ne 0 ]; then
   printf '%s\n' "$NO_SUMMARY_OUTPUT"
-  printf '%s\n' "expected one summary-mode header, got $summary_header_count" >&2
+  printf '%s\n' "expected no summary-mode wrapper header, got $summary_header_count" >&2
   exit 1
 fi
 
@@ -310,6 +310,12 @@ if printf '%s\n' "$LOAD_OUTPUT" | grep -Fq -- "load test started"; then
   exit 1
 fi
 
+if printf '%s\n' "$LOAD_OUTPUT" | grep -Fq "Gatling console mode: summary."; then
+  printf '%s\n' "$LOAD_OUTPUT"
+  printf '%s\n' "expected load summary mode to omit wrapper header" >&2
+  exit 1
+fi
+
 if printf '%s\n' "$LOAD_OUTPUT" | grep -Fq "Gatling summary:"; then
   printf '%s\n' "$LOAD_OUTPUT"
   printf '%s\n' "expected native Gatling summary for load, not compact custom summary" >&2
@@ -344,6 +350,12 @@ fi
 if printf '%s\n' "$STRESS_OUTPUT" | grep -Fq -- "stress test started"; then
   printf '%s\n' "$STRESS_OUTPUT"
   printf '%s\n' "expected stress summary mode to omit wrapper start line" >&2
+  exit 1
+fi
+
+if printf '%s\n' "$STRESS_OUTPUT" | grep -Fq "Gatling console mode: summary."; then
+  printf '%s\n' "$STRESS_OUTPUT"
+  printf '%s\n' "expected stress summary mode to omit wrapper header" >&2
   exit 1
 fi
 

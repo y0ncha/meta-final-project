@@ -59,7 +59,6 @@ print_gatling_log_excerpt() {
 }
 
 print_default_gatling_summary() {
-  printf '%s\n' "Gatling console mode: summary. Full log saved to $LOG_FILE"
   awk '
     /^---- Global Information/ {
       found = 1
