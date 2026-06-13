@@ -51,12 +51,19 @@ find "$OUTPUT_DIR" -mindepth 1 -maxdepth 1 ! -name raw -exec rm -rf {} +
 
 print_log_summary() {
   printf '%s\n' "Gatling console mode: summary. Full log saved to $LOG_FILE"
-  awk '
-    function metric_value(line) {
-      sub(/^.*[[:space:]]/, "", line)
-      sub(/[[:space:]]*\(.*$/, "", line)
-      return line
-    }
+  case "$GATLING_RUN_TYPE" in
+    max-limit)
+      summary_profile="level=${GATLING_MAX_USERS} duration=${GATLING_MAX_DURATION_SECONDS}s"
+      ;;
+    load-5m)
+      summary_profile="users=${GATLING_LOAD_USERS} duration=300s"
+      ;;
+    stress-5m)
+      summary_profile="users=${GATLING_STRESS_START_USERS}->${GATLING_STRESS_TARGET_USERS} duration=300s"
+      ;;
+  esac
+
+  awk -v run_type="$GATLING_RUN_TYPE" -v profile="$summary_profile" -v status="${1:-0}" '
     /^> request count/ {
       requests = $4
       if (match($0, /OK=[0-9]+/)) {
@@ -96,7 +103,12 @@ print_log_summary() {
     }
     END {
       if (requests != "") {
-        printf "Gatling summary: requests=%s OK=%s KO=%s p95=%sms p99=%sms max=%sms mean=%sms rps=%s failed=%s\n", requests, ok, ko, p95, p99, max, mean, rps, failed
+        if (ok == "") ok = 0
+        if (ko == "") ko = 0
+        if (failed == "") failed = 0
+        result = status == 0 ? "PASSED" : "FAILED"
+        ko_rate = requests > 0 ? (ko * 100.0 / requests) : 0
+        printf "Gatling summary: run=%s %s result=%s requests=%s OK=%s KO=%s KO-rate=%.2f%% p95=%sms p99=%sms max=%sms mean=%sms rps=%s failed=%s\n", run_type, profile, result, requests, ok, ko, ko_rate, p95, p99, max, mean, rps, failed
         if (top_error != "") {
           printf "Gatling top error: %s\n", top_error
         }
@@ -120,7 +132,7 @@ run_and_log() {
       ;;
     summary)
       if [ "$GATLING_RUN_TYPE" != "max-limit" ] || [ "$status" -ne 0 ]; then
-        print_log_summary
+        print_log_summary "$status"
       fi
       ;;
   esac

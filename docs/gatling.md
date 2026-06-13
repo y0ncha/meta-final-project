@@ -98,6 +98,8 @@ Generated evidence remains ignored by Git under `output/`.
 - `GATLING_CONSOLE_MODE=summary` keeps the Jenkins console compact while preserving the complete Gatling run log under `output/gatling/<run-type>/`. For max-limit discovery, passing levels print only the wrapper pass/fail lines; Gatling metrics are printed when a failing level is reached.
 - `GATLING_CONSOLE_MODE=full` prints the complete Gatling run log to the Jenkins console.
 
+Summary mode prints one compact Gatling metrics line with the run type, tested profile, pass/fail result, request counts, KO rate, p95, p99, max/mean response time, request rate, and top error when present.
+
 After this Jenkinsfile change is merged, run or reload the Pipeline once so Jenkins refreshes the Build with Parameters form. The old `RUN_GATLING_MAX_LIMIT` parameter is obsolete and should not be used for new evidence runs.
 
 For Jenkins max-limit discovery, the build parameters expose the main discovery bounds:

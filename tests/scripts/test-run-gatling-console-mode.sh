@@ -66,7 +66,7 @@ chmod +x "$SCRIPT_DIR/run-gatling-container" "$FAKE_GATLING"
 )
 
 grep -Fq -- 'Gatling console mode: summary. Full log saved to output/gatling/load-5m/load-5m-run.log' "$TEST_ROOT/summary.out"
-grep -Fq -- 'Gatling summary: requests=10 OK=8 KO=2 p95=15728ms p99=16412ms max=18446ms mean=12844ms rps=440.96 failed=2' "$TEST_ROOT/summary.out"
+grep -Fq -- 'Gatling summary: run=load-5m users=5 duration=300s result=PASSED requests=10 OK=8 KO=2 KO-rate=20.00% p95=15728ms p99=16412ms max=18446ms mean=12844ms rps=440.96 failed=2' "$TEST_ROOT/summary.out"
 grep -Fq -- 'Gatling top error: > j.i.IOException: Premature close                                    2 (100.0%)' "$TEST_ROOT/summary.out"
 if grep -Fq -- '---- Global Information' "$TEST_ROOT/summary.out"; then
   printf '%s\n' 'Summary mode printed the full Gatling summary block' >&2
@@ -155,6 +155,6 @@ if [ "${status:-0}" -ne 2 ]; then
   printf 'Expected max-limit failing fake Gatling status 2, got %s\n' "${status:-0}" >&2
   exit 1
 fi
-grep -Fq -- 'Gatling summary: requests=10 OK=8 KO=2 p95=15728ms p99=16412ms max=18446ms mean=12844ms rps=440.96 failed=2' "$TEST_ROOT/max-limit-fail.out"
+grep -Fq -- 'Gatling summary: run=max-limit level=5 duration=30s result=FAILED requests=10 OK=8 KO=2 KO-rate=20.00% p95=15728ms p99=16412ms max=18446ms mean=12844ms rps=440.96 failed=2' "$TEST_ROOT/max-limit-fail.out"
 
 printf '%s\n' 'run-gatling-container console mode checks passed'
