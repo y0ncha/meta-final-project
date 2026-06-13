@@ -15,7 +15,9 @@ set -eu
 
 : "${CALL_LOG:?}"
 : "${GATLING_RUN_TYPE:?}"
-: "${GATLING_MAX_USERS:?}"
+: "${GATLING_MAX_BASE_USERS:?}"
+: "${GATLING_MAX_STEP_USERS:?}"
+: "${GATLING_MAX_LIMIT_USERS:?}"
 : "${GATLING_MAX_DURATION_SECONDS:?}"
 
 if [ "$GATLING_RUN_TYPE" != "max-limit" ]; then
@@ -23,25 +25,18 @@ if [ "$GATLING_RUN_TYPE" != "max-limit" ]; then
   exit 1
 fi
 
-line_count=0
-if [ -f "$CALL_LOG" ]; then
-  line_count=$(wc -l < "$CALL_LOG" | tr -d ' ')
-fi
-attempt=$((line_count + 1))
-
-printf '%s|%s|%s|%s|%s|%s\n' \
-  "$GATLING_MAX_USERS" \
-  "$GATLING_MAX_DURATION_SECONDS" \
+printf '%s|%s|%s|%s|%s\n' \
   "$GATLING_RUN_TYPE" \
-  "${GATLING_MAX_BASE_USERS:-unset}" \
-  "${GATLING_MAX_STEP_USERS:-unset}" \
-  "${GATLING_MAX_LEVEL_COUNT:-unset}" >> "$CALL_LOG"
+  "$GATLING_MAX_BASE_USERS" \
+  "$GATLING_MAX_STEP_USERS" \
+  "$GATLING_MAX_LIMIT_USERS" \
+  "$GATLING_MAX_DURATION_SECONDS" >> "$CALL_LOG"
 
 mkdir -p output/gatling/max-limit
-printf '<!doctype html><title>attempt %s</title>\n' "$attempt" > output/gatling/max-limit/index.html
-printf 'attempt=%s\n' "$attempt" > output/gatling/max-limit/max-limit-run.log
+printf '<!doctype html><title>staircase</title>\n' > output/gatling/max-limit/index.html
+printf 'staircase\n' > output/gatling/max-limit/max-limit-run.log
 
-if [ "${FAIL_ON_ATTEMPT:-}" = "$attempt" ]; then
+if [ "${FAIL_STAIRCASE:-}" = "1" ]; then
   exit 1
 fi
 SH
@@ -62,7 +57,6 @@ EOF
 (
   cd "$TEST_ROOT"
   CALL_LOG="$CALL_LOG" \
-  GATLING_MAX_DISCOVERY_ATTEMPTS=3 \
   GATLING_MAX_BASE_USERS=10 \
   GATLING_MAX_STEP_USERS=10 \
   GATLING_MAX_DURATION_SECONDS=1 \
@@ -70,15 +64,13 @@ EOF
     "$SCRIPT_DIR/run-gatling-max-limit" >/dev/null
 )
 
-assert_file_equals "10|1|max-limit|10|10|unset
-20|1|max-limit|10|10|unset
-30|1|max-limit|10|10|unset" "$CALL_LOG"
+assert_file_equals "max-limit|10|10|30|1" "$CALL_LOG"
 
 : > "$CALL_LOG"
 (
   cd "$TEST_ROOT"
   CALL_LOG="$CALL_LOG" \
-  FAIL_ON_ATTEMPT=2 \
+  FAIL_STAIRCASE=1 \
   GATLING_MAX_BASE_USERS=5 \
   GATLING_MAX_STEP_USERS=5 \
   GATLING_MAX_DURATION_SECONDS=1 \
@@ -86,14 +78,13 @@ assert_file_equals "10|1|max-limit|10|10|unset
     "$SCRIPT_DIR/run-gatling-max-limit" >/dev/null
 )
 
-assert_file_equals "5|1|max-limit|5|5|unset
-10|1|max-limit|5|5|unset" "$CALL_LOG"
+assert_file_equals "max-limit|5|5|20|1" "$CALL_LOG"
 
 : > "$CALL_LOG"
 (
   cd "$TEST_ROOT"
   CALL_LOG="$CALL_LOG" \
-  FAIL_ON_ATTEMPT=3 \
+  FAIL_STAIRCASE=1 \
   GATLING_MAX_BASE_USERS=100 \
   GATLING_MAX_STEP_USERS=25 \
   GATLING_MAX_DURATION_SECONDS=7 \
@@ -102,33 +93,34 @@ assert_file_equals "5|1|max-limit|5|5|unset
     "$SCRIPT_DIR/run-gatling-max-limit" > "$TEST_ROOT/single-level.log"
 )
 
-assert_file_equals "100|7|max-limit|100|25|unset
-125|7|max-limit|100|25|unset
-150|7|max-limit|100|25|unset" "$CALL_LOG"
+assert_file_equals "max-limit|100|25|175|7" "$CALL_LOG"
 
 if ! grep -Fq 'Max-limit test summary:' "$TEST_ROOT/single-level.log"; then
   printf '%s\n' 'wrapper summary should print to stdout' >&2
   exit 1
 fi
-if ! grep -Fq '  highest passing tested level: 125 virtual users' "$TEST_ROOT/single-level.log"; then
-  printf '%s\n' 'highest passing level should print to stdout' >&2
+if ! grep -Fq '  staircase Gatling report: output/gatling/max-limit/index.html' "$TEST_ROOT/single-level.log"; then
+  printf '%s\n' 'staircase report should print to stdout' >&2
   exit 1
 fi
-if ! grep -Fq '  first failing tested level: 150 virtual users' "$TEST_ROOT/single-level.log"; then
-  printf '%s\n' 'first failing level should print to stdout' >&2
+if ! grep -Fq '  highest passing tested level: inspect staircase report' "$TEST_ROOT/single-level.log"; then
+  printf '%s\n' 'honest fallback highest passing summary should print to stdout' >&2
   exit 1
 fi
-if grep -Fq 'max limit level finished : 100 virtual users | duration: 7s | passed' "$TEST_ROOT/single-level.log"; then
+if ! grep -Fq '  first failing tested level: inspect staircase report' "$TEST_ROOT/single-level.log"; then
+  printf '%s\n' 'honest fallback first failing summary should print to stdout' >&2
+  exit 1
+fi
+if grep -Fq 'max limit level finished :' "$TEST_ROOT/single-level.log"; then
   printf '%s\n' 'passing-level progress should not print to summary stdout' >&2
   exit 1
 fi
-grep -Fq 'max limit tests started : 100-175 virtual users | step: 25 virtual users | duration: 7s per level' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
-grep -Fq 'max limit level finished : 100 virtual users | duration: 7s | passed' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
-grep -Fq 'max limit level finished : 125 virtual users | duration: 7s | passed' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
-grep -Fq '  first failing tested level: 150 virtual users' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
-grep -Fq '  highest passing tested level: 125 virtual users' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
-if grep -Fq 'max limit visual report started' "$TEST_ROOT/single-level.log"; then
-  printf '%s\n' 'visual report phase should not run during max-limit discovery' >&2
+grep -Fq 'max limit staircase started : 100-175 virtual users | step: 25 virtual users | duration: 7s per level' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
+grep -Fq 'command parameters: GATLING_RUN_TYPE=max-limit GATLING_MAX_BASE_USERS=100 GATLING_MAX_STEP_USERS=25 GATLING_MAX_LIMIT_USERS=175 GATLING_MAX_DURATION_SECONDS=7' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
+grep -Fq '  first failing tested level: inspect staircase report' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
+grep -Fq '  highest passing tested level: inspect staircase report' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
+if grep -Fq 'Max-limit testing level' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"; then
+  printf '%s\n' 'single-level discovery progress should not be logged' >&2
   exit 1
 fi
 

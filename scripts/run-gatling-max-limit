@@ -19,35 +19,15 @@ positive_int() {
   fi
 }
 
-bool_value() {
-  name="$1"
-  value="$2"
-  case "$value" in
-    true|false) ;;
-    *)
-      printf '%s\n' "$name must be true or false" >&2
-      exit 2
-      ;;
-  esac
-}
-
-GATLING_MAX_BASE_USERS="${GATLING_MAX_BASE_USERS:-${GATLING_MAX_BASE_USERS_PER_SEC:-${GATLING_MAX_START_USERS_PER_SEC:-5}}}"
+GATLING_MAX_USERS="${GATLING_MAX_USERS:-${GATLING_MAX_START_USERS_PER_SEC:-5}}"
+GATLING_MAX_BASE_USERS="${GATLING_MAX_BASE_USERS:-${GATLING_MAX_BASE_USERS_PER_SEC:-${GATLING_MAX_START_USERS_PER_SEC:-$GATLING_MAX_USERS}}}"
 GATLING_MAX_STEP_USERS="${GATLING_MAX_STEP_USERS:-${GATLING_MAX_STEP_USERS_PER_SEC:-5}}"
 GATLING_MAX_DURATION_SECONDS="${GATLING_MAX_DURATION_SECONDS:-${GATLING_MAX_LEVEL_SECONDS:-30}}"
-GATLING_MAX_SINGLE_LEVEL_MODE="${GATLING_MAX_SINGLE_LEVEL_MODE:-true}"
-GATLING_MAX_DISCOVERY_ATTEMPTS="${GATLING_MAX_DISCOVERY_ATTEMPTS:-3}"
-GATLING_MAX_LEVEL_COUNT="${GATLING_MAX_LEVEL_COUNT:-10}"
-GATLING_MAX_START_USERS="${GATLING_MAX_START_USERS:-${GATLING_MAX_START_USERS_PER_SEC:-$GATLING_MAX_BASE_USERS}}"
 GATLING_CONSOLE_MODE="${GATLING_CONSOLE_MODE:-full}"
 
 positive_int GATLING_MAX_BASE_USERS "$GATLING_MAX_BASE_USERS"
 positive_int GATLING_MAX_STEP_USERS "$GATLING_MAX_STEP_USERS"
 positive_int GATLING_MAX_DURATION_SECONDS "$GATLING_MAX_DURATION_SECONDS"
-bool_value GATLING_MAX_SINGLE_LEVEL_MODE "$GATLING_MAX_SINGLE_LEVEL_MODE"
-positive_int GATLING_MAX_DISCOVERY_ATTEMPTS "$GATLING_MAX_DISCOVERY_ATTEMPTS"
-positive_int GATLING_MAX_START_USERS "$GATLING_MAX_START_USERS"
-positive_int GATLING_MAX_STEP_USERS "$GATLING_MAX_STEP_USERS"
-positive_int GATLING_MAX_LEVEL_COUNT "$GATLING_MAX_LEVEL_COUNT"
 case "$GATLING_CONSOLE_MODE" in
   full|summary) ;;
   *)
@@ -60,8 +40,7 @@ if [ -z "${GATLING_MAX_LIMIT_USERS:-}" ]; then
   GATLING_MAX_LIMIT_USERS="${GATLING_MAX_LIMIT_USERS_PER_SEC:-}"
 fi
 if [ -z "$GATLING_MAX_LIMIT_USERS" ]; then
-  total_legacy_levels=$((GATLING_MAX_LEVEL_COUNT * GATLING_MAX_DISCOVERY_ATTEMPTS))
-  GATLING_MAX_LIMIT_USERS=$((GATLING_MAX_BASE_USERS + (GATLING_MAX_STEP_USERS * (total_legacy_levels - 1))))
+  GATLING_MAX_LIMIT_USERS="$GATLING_MAX_BASE_USERS"
 fi
 positive_int GATLING_MAX_LIMIT_USERS "$GATLING_MAX_LIMIT_USERS"
 
@@ -79,13 +58,6 @@ write_discovery_log() {
   printf '%s\n' "$*" >> "$DISCOVERY_LOG"
 }
 
-progress_log() {
-  write_discovery_log "$*"
-  if [ "$GATLING_CONSOLE_MODE" = full ]; then
-    printf '%s\n' "$*"
-  fi
-}
-
 summary_log() {
   write_discovery_log "$*"
 }
@@ -93,15 +65,6 @@ summary_log() {
 final_summary_log() {
   write_discovery_log "$*"
   printf '%s\n' "$*"
-}
-
-print_test_parameters() {
-  summary_log "max limit tests started : ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} virtual users | step: ${GATLING_MAX_STEP_USERS} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s per level"
-}
-
-print_level_success() {
-  users="$1"
-  summary_log "max limit level finished : ${users} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s | passed"
 }
 
 print_test_summary() {
@@ -113,32 +76,31 @@ print_test_summary() {
   final_summary_log "  tested range: ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} virtual users"
   final_summary_log "  step: ${GATLING_MAX_STEP_USERS} virtual users"
   final_summary_log "  duration: ${GATLING_MAX_DURATION_SECONDS}s per level"
+  final_summary_log "  cutoff rule: highest tested level with KO=0; first failing level has KO>0"
   if [ -n "$highest_passing" ]; then
-    final_summary_log "  highest passing tested level: ${highest_passing} virtual users"
+    final_summary_log "  highest passing tested level: $highest_passing"
   else
-    final_summary_log "  highest passing tested level: none"
+    final_summary_log "  highest passing tested level: inspect staircase report"
   fi
   if [ -n "$first_failing" ]; then
-    final_summary_log "  first failing tested level: ${first_failing} virtual users"
+    final_summary_log "  first failing tested level: $first_failing"
   else
-    final_summary_log "  first failing tested level: not found"
+    final_summary_log "  first failing tested level: inspect staircase report"
   fi
   final_summary_log "  result: $result"
   if [ -s "$OUTPUT_DIR/index.html" ]; then
-    final_summary_log "  Gatling report: $OUTPUT_DIR/index.html"
+    final_summary_log "  staircase Gatling report: $OUTPUT_DIR/index.html"
   fi
   final_summary_log "  full discovery log: $DISCOVERY_LOG"
 }
 
-run_gatling_level() {
-  users="$1"
-
+run_gatling_staircase() {
   env \
     GATLING_RUN_TYPE=max-limit \
     GATLING_MAX_DISCOVERY_WRAPPER=1 \
     GATLING_MAX_BASE_USERS="$GATLING_MAX_BASE_USERS" \
     GATLING_MAX_STEP_USERS="$GATLING_MAX_STEP_USERS" \
-    GATLING_MAX_USERS="$users" \
+    GATLING_MAX_LIMIT_USERS="$GATLING_MAX_LIMIT_USERS" \
     GATLING_MAX_DURATION_SECONDS="$GATLING_MAX_DURATION_SECONDS" \
     "$RUNNER"
 }
@@ -147,71 +109,24 @@ has_gatling_report() {
   [ -s "$OUTPUT_DIR/index.html" ] && [ -s "$OUTPUT_DIR/max-limit-run.log" ]
 }
 
-attempt=1
-current_start="$GATLING_MAX_START_USERS"
-highest_passing_level=""
+summary_log "max limit staircase started : ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} virtual users | step: ${GATLING_MAX_STEP_USERS} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s per level"
+summary_log "command parameters: GATLING_RUN_TYPE=max-limit GATLING_MAX_BASE_USERS=${GATLING_MAX_BASE_USERS} GATLING_MAX_STEP_USERS=${GATLING_MAX_STEP_USERS} GATLING_MAX_LIMIT_USERS=${GATLING_MAX_LIMIT_USERS} GATLING_MAX_DURATION_SECONDS=${GATLING_MAX_DURATION_SECONDS}"
 
-print_test_parameters
+set +e
+run_gatling_staircase
+status=$?
+set -e
 
-if [ "$GATLING_MAX_SINGLE_LEVEL_MODE" = true ]; then
-  current_start="$GATLING_MAX_BASE_USERS"
-  progress_log "Max-limit single-level discovery: ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} virtual users, step ${GATLING_MAX_STEP_USERS}, duration ${GATLING_MAX_DURATION_SECONDS}s"
+if [ "$status" -ne 0 ] && ! has_gatling_report; then
+  printf '%s\n' 'Max-limit staircase failed before a usable Gatling report was created.' >&2
+  summary_log 'Max-limit staircase failed before a usable Gatling report was created.'
+  exit "$status"
+fi
 
-  while [ "$current_start" -le "$GATLING_MAX_LIMIT_USERS" ]; do
-    progress_log "Max-limit testing level ${current_start} virtual users."
-
-    set +e
-    run_gatling_level "$current_start"
-    status=$?
-    set -e
-
-    if [ "$status" -eq 0 ]; then
-      highest_passing_level="$current_start"
-      print_level_success "$current_start"
-      current_start=$((current_start + GATLING_MAX_STEP_USERS))
-      continue
-    fi
-
-    if has_gatling_report; then
-      print_test_summary "failure boundary found" "$highest_passing_level" "$current_start"
-      exit 0
-    fi
-
-    summary_log "Max-limit level ${current_start} virtual users failed before a usable Gatling report was created."
-    exit "$status"
-  done
-
-  print_test_summary "tested lower bound; no failing level found" "$highest_passing_level" ""
+if [ "$status" -eq 0 ]; then
+  print_test_summary "tested lower bound; no failing level found" "" ""
   exit 0
 fi
 
-while [ "$attempt" -le "$GATLING_MAX_DISCOVERY_ATTEMPTS" ]; do
-  highest_level=$((current_start + (GATLING_MAX_STEP_USERS * (GATLING_MAX_LEVEL_COUNT - 1))))
-
-  progress_log "Max-limit attempt $attempt/$GATLING_MAX_DISCOVERY_ATTEMPTS: ${current_start}-${highest_level} virtual users"
-
-  set +e
-  run_gatling_level "$current_start"
-  status=$?
-  set -e
-
-  if [ "$status" -eq 0 ]; then
-    highest_passing_level="$current_start"
-    print_level_success "$current_start"
-    if [ "$attempt" -eq "$GATLING_MAX_DISCOVERY_ATTEMPTS" ]; then
-      print_test_summary "tested lower bound; no failing level found" "$highest_passing_level" ""
-      exit 0
-    fi
-    current_start=$((current_start + GATLING_MAX_STEP_USERS))
-    attempt=$((attempt + 1))
-    continue
-  fi
-
-  if has_gatling_report; then
-    print_test_summary "failure boundary found" "$highest_passing_level" "$current_start"
-    exit 0
-  fi
-
-  summary_log "Max-limit attempt $attempt failed before a usable Gatling report was created."
-  exit "$status"
-done
+print_test_summary "inspect staircase report for first KO level" "" ""
+exit 0

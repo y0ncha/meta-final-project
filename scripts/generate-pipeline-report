@@ -498,7 +498,7 @@ write_stage_row "Build WAR" "Archived target/yonatan-csasznik-yoed-halberstam-ni
 write_stage_row "Deploy Tomcat" "Jenkins console log" "Console log" "Deploys yonatan-csasznik-yoed-halberstam-niv-levin.war into the Tomcat webapps volume."
 write_stage_row "Verify Tomcat" "Jenkins console log" "Console log" "Checks http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ after deployment from the Docker network."
 write_stage_row "Playwright Functional Test" "HTML, JUnit XML, screenshots, log" "$playwright_status" "Validates the Playwright container workspace, commit identity, and Tomcat reachability before running the test."
-write_stage_row "Gatling Max Limit" "HTML, PDF, raw report, log" "$gatling_max_status" "Runs bounded full max-limit discovery when RUN_GATLING_TESTS=true."
+write_stage_row "Gatling Max Limit" "HTML, PDF, raw report, log" "$gatling_max_status" "Runs bounded max-limit staircase evidence when RUN_GATLING_TESTS=true."
 write_stage_row "Gatling Load Test" "HTML, PDF, raw report, log" "$gatling_load_status" "Runs the required five-minute load test when RUN_GATLING_TESTS=true."
 write_stage_row "Gatling Stress Test" "HTML, PDF, raw report, log" "$gatling_stress_status" "Runs the required five-minute stress test when RUN_GATLING_TESTS=true."
 write_stage_row "Post-build" "Generated reports and archived output" "Console log" "Jenkins may show this as Declarative: Post Actions because it is implemented with a Declarative post block."

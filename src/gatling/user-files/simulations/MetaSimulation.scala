@@ -12,7 +12,7 @@ class MetaSimulation extends Simulation {
     throw new IllegalArgumentException("GATLING_RUN_TYPE must be max-limit, load-5m, or stress-5m")
   }
 
-  private def intEnv(name: String, defaultValue: Int): Int = {
+  private def intEnv(name: String, defaultValue: => Int): Int = {
     val value = sys.env.get(name).map(_.trim).filter(_.nonEmpty).map(_.toInt).getOrElse(defaultValue)
     if (value <= 0) {
       throw new IllegalArgumentException(s"$name must be greater than 0")
@@ -26,6 +26,18 @@ class MetaSimulation extends Simulation {
     }
     (0 to 4).map { level =>
       startUsers + math.round((targetUsers - startUsers).toDouble * level / 4.0).toInt
+    }
+  }
+
+  private def steppedLevels(baseUsers: Int, limitUsers: Int, stepUsers: Int): Seq[Int] = {
+    if (limitUsers < baseUsers) {
+      throw new IllegalArgumentException("GATLING_MAX_LIMIT_USERS must be greater than or equal to GATLING_MAX_BASE_USERS")
+    }
+    val stepped = baseUsers to limitUsers by stepUsers
+    if (stepped.last == limitUsers) {
+      stepped
+    } else {
+      stepped :+ limitUsers
     }
   }
 
@@ -57,6 +69,8 @@ class MetaSimulation extends Simulation {
         .formParam("nameInput", "")
         .check(status.is(200), substring("Please enter a name before MeTA Corporate schedules a meeting about the empty box."))
     )
+
+  private def levelScenario(level: Int) = scenario(s"Meta JSP HAR-derived flow max-limit ${level} users").exec(harDerivedFlow)
 
   private val scn = scenario("Meta JSP HAR-derived flow")
     .exec(harDerivedFlow)
@@ -97,13 +111,19 @@ class MetaSimulation extends Simulation {
         )
 
     case "max-limit" =>
-      val maxUsers = intEnv("GATLING_MAX_USERS", 5)
+      val maxBaseUsers = intEnv("GATLING_MAX_BASE_USERS", intEnv("GATLING_MAX_USERS", 5))
+      val maxStepUsers = intEnv("GATLING_MAX_STEP_USERS", 5)
+      val maxLimitUsers = intEnv("GATLING_MAX_LIMIT_USERS", maxBaseUsers)
       val maxDurationSeconds = intEnv("GATLING_MAX_DURATION_SECONDS", 30)
-      setUp(
-        scn.inject(
-          constantConcurrentUsers(maxUsers).during(maxDurationSeconds.seconds)
+      val levels = steppedLevels(maxBaseUsers, maxLimitUsers, maxStepUsers)
+      val populations = levels.zipWithIndex.map { case (level, index) =>
+        levelScenario(level).inject(
+          nothingFor((index * maxDurationSeconds).seconds),
+          constantConcurrentUsers(level).during(maxDurationSeconds.seconds)
         )
-      )
+      }
+
+      setUp(populations: _*)
         .protocols(httpProtocol)
         .assertions(
           global.failedRequests.count.lt(1)
