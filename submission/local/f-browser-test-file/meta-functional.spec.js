@@ -85,22 +85,21 @@ test("JSP app supports the required functional flow", async ({ page }) => {
     await page.goto("./");
     await page.locator("#submitButton").click();
 
-    // Type: soft (verify)
-    // What test: the empty-name validation message becomes visible.
-    // Why this type: validation failure is important evidence, but should not hide screenshots or prior flow results.
-    await expect.soft(page.locator("#validationMessage")).toBeVisible();
-
-    // Type: soft (verify)
-    // What test: the empty-name validation message has the expected business text.
-    // Why this type: wrong validation text is a defect, but the page can still be documented for evidence.
-    await expect
-      .soft(page.locator("#validationMessage"))
-      .toHaveText(
-        "Please enter a name before MeTA Corporate schedules a meeting about the empty box.",
-      );
     await page.screenshot({
       path: "output/playwright/screenshots/empty-submit.png",
       fullPage: true,
     });
+
+    // Type: strict (assert)
+    // What test: the empty-name validation message becomes visible.
+    // Why this type: accepting an empty name breaks the negative business flow.
+    await expect(page.locator("#validationMessage")).toBeVisible();
+
+    // Type: strict (assert)
+    // What test: the empty-name validation message has the expected business text.
+    // Why this type: wrong validation text means the rejection behavior is not the expected app behavior.
+    await expect(page.locator("#validationMessage")).toHaveText(
+      "Please enter a name before MeTA Corporate schedules a meeting about the empty box.",
+    );
   });
 });

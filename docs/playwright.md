@@ -26,7 +26,7 @@ The test file is `tests/playwright/meta-functional.spec.js`. It contains one app
 2. Verify page controls are present: softly verifies the informational `#aboutLink`, then strictly asserts `#nameInput` and `#submitButton` because the form is unusable without them.
 3. Click about link and verify text is present: when the About link is visible, clicks it, softly verifies the URL ends with `#about`, and softly verifies `#about` contains `About`.
 4. Positive scenario: types `Yonatan` into `#nameInput`, softly verifies the typed setup value, submits the form, strictly asserts the success message, softly verifies the button remains visible, and captures `output/playwright/screenshots/valid-submit.png`.
-5. Negative scenario: reloads the configured app root, submits an empty form, softly verifies the validation message is visible and has the expected text, and captures `output/playwright/screenshots/empty-submit.png`.
+5. Negative scenario: reloads the configured app root, submits an empty form, captures `output/playwright/screenshots/empty-submit.png`, then strictly asserts the validation message is visible and has the expected text.
 
 ## Course Rationale Mapping
 
@@ -38,7 +38,7 @@ Lecture 8 teaches Selenium IDE through command, target, and value style actions.
 | Verify page controls are present | Verify informational UI and assert controls needed for the form business flow | `expect.soft(...)` for `#aboutLink`; `expect(...)` for `#nameInput` and `#submitButton` | Verify plus assert |
 | Click about link and verify text is present | Verify independent navigation/text behavior, like Selenium IDE `click` plus `verifyTextPresent` | Guarded `click()`, `expect.soft(...).toHaveURL(...)`, `expect.soft(...).toContainText('About')` | Positive verify |
 | Positive scenario | Assert the final success outcome because a wrong success message means the positive path failed | `fill('Yonatan')`, submit, `expect(...).toHaveText(...)`; setup and post-submit UI use `expect.soft(...)` | Positive assert plus verify |
-| Negative scenario | Verify the empty-name guardrail without hiding screenshots or prior flow evidence | Empty submit, `expect.soft(...).toBeVisible()`, `expect.soft(...).toHaveText(...)` | Negative verify |
+| Negative scenario | Assert the empty-name guardrail because accepting invalid input is a business-flow failure | Empty submit, screenshot, `expect(...).toBeVisible()`, `expect(...).toHaveText(...)` | Negative assert |
 
 ## Assert And Verify Strategy
 
@@ -47,7 +47,7 @@ Playwright has both assertion styles needed to explain the assignment requiremen
 - `expect(...)` is equivalent to Selenium IDE `assert`: if it fails, Playwright stops the current test immediately.
 - `expect.soft(...)` is equivalent to Selenium IDE `verify`: if it fails, Playwright records the failure and continues the test, then still fails the test at the end.
 
-This project uses hard assertions when downstream business flow cannot be trusted: the app identity, the name input, the submit button, and the positive success message. It uses soft assertions for Selenium-style verify checks that should be reported without blocking unrelated evidence: informational About behavior, setup typing evidence, post-submit button visibility, and the empty-name validation message. The test reloads the app root before the positive and negative form scenarios so one verification cannot cascade into unrelated evidence.
+This project uses hard assertions when downstream business flow cannot be trusted: the app identity, the name input, the submit button, the positive success message, and the empty-name validation result. It uses soft assertions for Selenium-style verify checks that should be reported without blocking unrelated evidence: informational About behavior, setup typing evidence, and post-submit button visibility. The test captures the empty-submit screenshot before the strict negative assertions so evidence is still available if validation is broken.
 
 Each `expect` in `tests/playwright/meta-functional.spec.js` has a short comment with:
 
