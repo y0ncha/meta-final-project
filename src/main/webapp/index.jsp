@@ -113,6 +113,11 @@
     <p>We opened a ticket for DevOps two weeks ago, but their SLA is 3 weeks. Hopefully AI won't replace half of the company by then.</p>
     <p><a id="aboutLink" href="#about">About this app</a></p>
 
+    <%-- Demo deploy marker: remove the JSP comment wrapper below before pushing to main. --%>
+    <%--
+    <p id="pipelineDemoBanner" class="message">Pipeline demo: this page update was deployed from the main branch.</p>
+    --%>
+
     <form id="nameForm" method="post" action="index.jsp">
       <label for="nameInput">Name</label>
       <input id="nameInput" name="nameInput" type="text" value="<%= escapedName %>" autocomplete="name">
