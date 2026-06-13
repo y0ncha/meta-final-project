@@ -37,6 +37,10 @@ printf '<!doctype html><title>fake gatling report</title>\n' > "$raw_dir/fake-ru
 printf '%s\n' 'VERY NOISY GATLING DETAIL THAT SHOULD BE HIDDEN IN SUMMARY MODE'
 printf '%s\n' '================================================================================'
 printf '%s\n' '---- Global Information --------------------------------------------------------'
+printf '%s\n' '> request count                                      1 (OK=1      KO=0     )'
+printf '%s\n' 'PROGRESS BLOCK THAT SHOULD BE HIDDEN IN SUMMARY MODE'
+printf '%s\n' '================================================================================'
+printf '%s\n' '---- Global Information --------------------------------------------------------'
 printf '%s\n' '> request count                                     10 (OK=10     KO=0     )'
 printf '%s\n' 'Reports generated in 1s.'
 SH
@@ -58,7 +62,12 @@ if grep -Fq -- 'VERY NOISY GATLING DETAIL' "$TEST_ROOT/summary.out"; then
   printf '%s\n' 'Summary mode printed noisy Gatling detail' >&2
   exit 1
 fi
+if grep -Fq -- 'PROGRESS BLOCK THAT SHOULD BE HIDDEN' "$TEST_ROOT/summary.out"; then
+  printf '%s\n' 'Summary mode printed an earlier progress block' >&2
+  exit 1
+fi
 grep -Fq -- 'VERY NOISY GATLING DETAIL' "$TEST_ROOT/output/gatling/load-5m/load-5m-run.log"
+grep -Fq -- 'PROGRESS BLOCK THAT SHOULD BE HIDDEN' "$TEST_ROOT/output/gatling/load-5m/load-5m-run.log"
 
 (
   cd "$TEST_ROOT"

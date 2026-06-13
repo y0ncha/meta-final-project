@@ -51,7 +51,23 @@ find "$OUTPUT_DIR" -mindepth 1 -maxdepth 1 ! -name raw -exec rm -rf {} +
 
 print_log_summary() {
   printf '%s\n' "Gatling console mode: summary. Full log saved to $LOG_FILE"
-  grep -E '^(=+|----|>|Simulation|Generating reports|Reports generated|Assertions|All assertions|Please open)' "$LOG_FILE" || {
+  awk '
+    /^---- Global Information/ {
+      block = $0 ORS
+      capture = 1
+      next
+    }
+    capture {
+      block = block $0 ORS
+    }
+    END {
+      if (block != "") {
+        printf "%s", block
+      } else {
+        exit 1
+      }
+    }
+  ' "$LOG_FILE" || grep -E '^(Simulation|Generating reports|Reports generated|Assertions|All assertions|Please open)' "$LOG_FILE" || {
     printf '%s\n' "No Gatling summary lines matched; inspect $LOG_FILE"
   }
 }
