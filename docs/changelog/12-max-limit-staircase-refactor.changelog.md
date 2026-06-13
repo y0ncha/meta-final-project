@@ -8,8 +8,8 @@ Refactored Gatling max-limit evidence from repeated flat single-level wrapper at
 
 ## Files Changed
 
-- `src/gatling/user-files/simulations/MetaSimulation.scala`: Adds `steppedLevels`, per-level max-limit scenarios, and one delayed population per staircase level while preserving load and stress profiles.
-- `scripts/run-gatling-max-limit`: Removes the repeated discovery loop, validates staircase bounds, writes exact command parameters to `max-limit-discovery.log`, and accepts assertion-failure reports as publishable evidence.
+- `src/gatling/user-files/simulations/MetaSimulation.scala`: Adds `steppedLevels` and one sequential closed max-limit staircase profile while preserving load and stress profiles.
+- `scripts/run-gatling-max-limit`: Removes the repeated discovery loop, validates staircase bounds, writes exact command parameters and level time windows to `max-limit-discovery.log`, and accepts assertion-failure reports as publishable evidence.
 - `scripts/run-gatling-container`: Passes `GATLING_MAX_LIMIT_USERS` through local Docker and Jenkins Docker Pipeline modes and prints staircase parameters for direct max-limit runs.
 - `tests/scripts/test-run-gatling-max-limit.sh`: Verifies one staircase runner invocation, limit propagation, and non-zero-with-report wrapper success.
 - `tests/test_gatling_max_limit_summary.sh`: Verifies staircase report wording, KO cutoff wording, and compact summary behavior.
@@ -30,4 +30,4 @@ Refactored Gatling max-limit evidence from repeated flat single-level wrapper at
 ## Remaining Risks
 
 - The refreshed HTML/PDF evidence still needs a user/Jenkins run to visually confirm the active-users graph shows the intended staircase and is not cropped in PDF export.
-- Exact final max-limit values still need to come from refreshed evidence inspection using the `KO=0` cutoff rule.
+- Exact final max-limit values still need to come from refreshed evidence inspection using the `KO=0` cutoff rule and the discovery-log level schedule when per-level counters are unavailable.

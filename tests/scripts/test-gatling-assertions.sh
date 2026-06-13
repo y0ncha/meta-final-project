@@ -24,7 +24,6 @@ assert_not_contains() {
 assert_contains 'global.failedRequests.count.lt(1)'
 assert_contains 'private def intEnv(name: String, defaultValue: => Int): Int'
 assert_contains 'private val scn = scenario("Meta JSP HAR-derived flow")'
-assert_contains 'private def levelScenario(level: Int) = scenario(s"Meta JSP HAR-derived flow max-limit ${level} users").exec(harDerivedFlow)'
 assert_contains 'rampConcurrentUsers(0).to(loadUsers).during(60.seconds)'
 assert_contains 'constantConcurrentUsers(loadUsers).during(180.seconds)'
 assert_contains 'rampConcurrentUsers(loadUsers).to(0).during(60.seconds)'
@@ -40,9 +39,9 @@ assert_contains 'val maxBaseUsers = intEnv("GATLING_MAX_BASE_USERS", intEnv("GAT
 assert_contains 'val maxStepUsers = intEnv("GATLING_MAX_STEP_USERS", 5)'
 assert_contains 'val maxLimitUsers = intEnv("GATLING_MAX_LIMIT_USERS", maxBaseUsers)'
 assert_contains 'val levels = steppedLevels(maxBaseUsers, maxLimitUsers, maxStepUsers)'
-assert_contains 'nothingFor((index * maxDurationSeconds).seconds)'
+assert_contains 'val staircaseProfile = levels.map { level =>'
 assert_contains 'constantConcurrentUsers(level).during(maxDurationSeconds.seconds)'
-assert_contains 'setUp(populations: _*)'
+assert_contains 'scn.inject(staircaseProfile: _*)'
 assert_not_contains 'GATLING_MAX_PROFILE_MODE'
 assert_not_contains 'case "visual" =>'
 assert_not_contains 'maxVisualIncrementCount'
@@ -61,6 +60,8 @@ assert_not_contains 'incrementUsersPerSec'
 assert_not_contains 'scenarioFor(300)'
 assert_not_contains '.during(durationSeconds.seconds)'
 assert_not_contains 'constantConcurrentUsers(maxUsers).during(maxDurationSeconds.seconds)'
+assert_not_contains 'nothingFor((index * maxDurationSeconds).seconds)'
+assert_not_contains 'setUp(populations: _*)'
 
 if [ ! -s "$REFERENCE_SIMULATION" ]; then
   printf 'Expected HAR converter reference simulation at %s\n' "$REFERENCE_SIMULATION" >&2

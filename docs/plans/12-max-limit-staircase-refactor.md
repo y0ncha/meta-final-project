@@ -16,7 +16,7 @@ tags:
 
 # Introduction
 
-![Status: Planned](https://img.shields.io/badge/status-Planned-blue)
+![Status: Implemented](https://img.shields.io/badge/status-Implemented-green)
 
 This plan changes the max-limit Gatling evidence from repeated flat single-level runs into one staircase max-limit simulation. The published max-limit HTML/PDF report must show active users increasing level by level until the configured failure-search ceiling. The report, console summary, screenshots, and submission text must make the defended cutoff clear: the max limit is the highest tested level with `KO=0`, and the first failing tested level is the first level in the staircase that produces one or more failed requests/checks/timeouts.
 
@@ -62,12 +62,12 @@ This is a refactor of the already implemented Gatling container evidence flow fr
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
 | TASK-001 | In `src/gatling/user-files/simulations/MetaSimulation.scala`, add helper `private def steppedLevels(baseUsers: Int, limitUsers: Int, stepUsers: Int): Seq[Int]` that returns an inclusive ascending sequence and throws `IllegalArgumentException("GATLING_MAX_LIMIT_USERS must be greater than or equal to GATLING_MAX_BASE_USERS")` when `limitUsers < baseUsers`. | Yes | 2026-06-14 |
-| TASK-002 | In `MetaSimulation.scala`, add helper `private def levelScenario(level: Int) = scenario(s"Meta JSP HAR-derived flow max-limit ${level} users").exec(harDerivedFlow)` so report groups identify each tested level. | Yes | 2026-06-14 |
+| TASK-002 | Keep a single `Meta JSP HAR-derived flow` scenario and apply the max-limit staircase as sequential closed injection steps so levels do not overlap as separate populations. | Yes | 2026-06-14 |
 | TASK-003 | In the `case "max-limit"` branch, stop using `GATLING_MAX_USERS` as the primary load value. Keep it only as a backward-compatible fallback for `GATLING_MAX_BASE_USERS` when that variable is not set. | Yes | 2026-06-14 |
 | TASK-004 | In the `case "max-limit"` branch, read `GATLING_MAX_BASE_USERS`, `GATLING_MAX_STEP_USERS`, `GATLING_MAX_LIMIT_USERS`, and `GATLING_MAX_DURATION_SECONDS` with positive-integer validation. | Yes | 2026-06-14 |
 | TASK-005 | In the `case "max-limit"` branch, build `levels = steppedLevels(maxBaseUsers, maxLimitUsers, maxStepUsers)`. | Yes | 2026-06-14 |
-| TASK-006 | In the `case "max-limit"` branch, build one population per level using `levels.zipWithIndex.map { case (level, index) => levelScenario(level).inject(nothingFor((index * maxDurationSeconds).seconds), constantConcurrentUsers(level).during(maxDurationSeconds.seconds)) }`. | Yes | 2026-06-14 |
-| TASK-007 | In the `case "max-limit"` branch, call `setUp(populations: _*)`, apply the existing `httpProtocol`, and keep assertion `global.failedRequests.count.lt(1)`. | Yes | 2026-06-14 |
+| TASK-006 | In the `case "max-limit"` branch, build `staircaseProfile = levels.map { level => constantConcurrentUsers(level).during(maxDurationSeconds.seconds) }` so each level runs sequentially for the configured duration. | Yes | 2026-06-14 |
+| TASK-007 | In the `case "max-limit"` branch, call `setUp(scn.inject(staircaseProfile: _*))`, apply the existing `httpProtocol`, and keep assertion `global.failedRequests.count.lt(1)`. | Yes | 2026-06-14 |
 | TASK-008 | Verify by diff inspection that `load-5m` still uses `rampConcurrentUsers(0).to(loadUsers).during(60.seconds)`, `constantConcurrentUsers(loadUsers).during(180.seconds)`, and `rampConcurrentUsers(loadUsers).to(0).during(60.seconds)`. | Yes | 2026-06-14 |
 | TASK-009 | Verify by diff inspection that `stress-5m` still uses five `60.seconds` levels from `GATLING_STRESS_START_USERS` to `GATLING_STRESS_TARGET_USERS`. | Yes | 2026-06-14 |
 
@@ -79,7 +79,7 @@ This is a refactor of the already implemented Gatling container evidence flow fr
 |------|-------------|-----------|------|
 | TASK-010 | In `scripts/run-gatling-max-limit`, remove the repeated single-level discovery loop as the default execution path. | Yes | 2026-06-14 |
 | TASK-011 | In `scripts/run-gatling-max-limit`, validate `GATLING_MAX_BASE_USERS`, `GATLING_MAX_STEP_USERS`, `GATLING_MAX_DURATION_SECONDS`, and `GATLING_MAX_LIMIT_USERS`. | Yes | 2026-06-14 |
-| TASK-012 | In `scripts/run-gatling-max-limit`, write `output/gatling/max-limit/raw/max-limit-discovery.log` with the tested staircase range, step, duration, and the exact command parameters used. | Yes | 2026-06-14 |
+| TASK-012 | In `scripts/run-gatling-max-limit`, write `output/gatling/max-limit/raw/max-limit-discovery.log` with the tested staircase range, step, duration, level-to-time schedule, and exact command parameters used. | Yes | 2026-06-14 |
 | TASK-013 | In `scripts/run-gatling-max-limit`, call `scripts/run-gatling-container` exactly once with `GATLING_RUN_TYPE=max-limit`, `GATLING_MAX_BASE_USERS`, `GATLING_MAX_STEP_USERS`, `GATLING_MAX_DURATION_SECONDS`, and `GATLING_MAX_LIMIT_USERS`. | Yes | 2026-06-14 |
 | TASK-014 | In `scripts/run-gatling-max-limit`, allow the Gatling command to return non-zero when `output/gatling/max-limit/index.html` and `output/gatling/max-limit/max-limit-run.log` exist, because an assertion failure is expected evidence for the first failing level. | Yes | 2026-06-14 |
 | TASK-015 | In `scripts/run-gatling-max-limit`, if Gatling returns non-zero and no stable report exists, print `Max-limit staircase failed before a usable Gatling report was created.` to stderr and exit with the Gatling status. | Yes | 2026-06-14 |
@@ -94,7 +94,7 @@ This is a refactor of the already implemented Gatling container evidence flow fr
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-020 | Inspect the generated Gatling report structure and identify where per-level scenario/group `OK` and `KO` counts are stored for scenario names matching `Meta JSP HAR-derived flow max-limit <level> users`. | Yes | 2026-06-14 |
+| TASK-020 | Inspect the generated Gatling report structure and identify whether per-level `OK` and `KO` counts are stored in a stable form. | Yes | 2026-06-14 |
 | TASK-021 | If per-level counts are available in a stable generated `js/stats.js` shape, add POSIX-shell parsing in `scripts/run-gatling-max-limit` that derives `highest_passing_level` and `first_failing_level` from those counts. | N/A | 2026-06-14 |
 | TASK-022 | If per-level counts are not stable enough to parse safely, keep the wrapper summary honest: print `highest passing tested level: inspect staircase report` and require the submission docs to name the values from manual report inspection. | Yes | 2026-06-14 |
 | TASK-023 | Do not infer a precise max limit from response-time percentiles. The cutoff remains the first staircase level with `KO > 0`. | Yes | 2026-06-14 |

@@ -106,6 +106,14 @@ if ! grep -Fq "command parameters: GATLING_RUN_TYPE=max-limit GATLING_MAX_BASE_U
   printf '%s\n' "expected exact staircase command parameters in discovery log" >&2
   exit 1
 fi
+if ! grep -Fq "level schedule: 10 virtual users | report time window: 0-5s" output/gatling/max-limit/raw/max-limit-discovery.log; then
+  printf '%s\n' "expected first staircase time window in discovery log" >&2
+  exit 1
+fi
+if ! grep -Fq "level schedule: 30 virtual users | report time window: 10-15s" output/gatling/max-limit/raw/max-limit-discovery.log; then
+  printf '%s\n' "expected final staircase time window in discovery log" >&2
+  exit 1
+fi
 if ! grep -Fq "10|10|30|5" output/gatling/max-limit/raw/calls.log; then
   printf '%s\n' "expected one staircase runner call" >&2
   exit 1
@@ -272,9 +280,9 @@ if [ "$PASSING_MAX_STATUS" -ne 0 ]; then
   exit 1
 fi
 
-if printf '%s\n' "$PASSING_MAX_OUTPUT" | grep -Fq -- "---- Global Information"; then
+if ! printf '%s\n' "$PASSING_MAX_OUTPUT" | grep -Fq -- "---- Global Information"; then
   printf '%s\n' "$PASSING_MAX_OUTPUT"
-  printf '%s\n' "expected passing max-limit step summary to stay out of the console" >&2
+  printf '%s\n' "expected native Gatling summary for passing max-limit run" >&2
   exit 1
 fi
 

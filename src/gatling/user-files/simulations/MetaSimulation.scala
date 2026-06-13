@@ -70,8 +70,6 @@ class MetaSimulation extends Simulation {
         .check(status.is(200), substring("Please enter a name before MeTA Corporate schedules a meeting about the empty box."))
     )
 
-  private def levelScenario(level: Int) = scenario(s"Meta JSP HAR-derived flow max-limit ${level} users").exec(harDerivedFlow)
-
   private val scn = scenario("Meta JSP HAR-derived flow")
     .exec(harDerivedFlow)
 
@@ -116,14 +114,13 @@ class MetaSimulation extends Simulation {
       val maxLimitUsers = intEnv("GATLING_MAX_LIMIT_USERS", maxBaseUsers)
       val maxDurationSeconds = intEnv("GATLING_MAX_DURATION_SECONDS", 30)
       val levels = steppedLevels(maxBaseUsers, maxLimitUsers, maxStepUsers)
-      val populations = levels.zipWithIndex.map { case (level, index) =>
-        levelScenario(level).inject(
-          nothingFor((index * maxDurationSeconds).seconds),
-          constantConcurrentUsers(level).during(maxDurationSeconds.seconds)
-        )
+      val staircaseProfile = levels.map { level =>
+        constantConcurrentUsers(level).during(maxDurationSeconds.seconds)
       }
 
-      setUp(populations: _*)
+      setUp(
+        scn.inject(staircaseProfile: _*)
+      )
         .protocols(httpProtocol)
         .assertions(
           global.failedRequests.count.lt(1)

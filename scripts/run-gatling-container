@@ -108,9 +108,7 @@ run_and_log() {
       cat "$LOG_FILE"
       ;;
     summary)
-      if [ "$GATLING_RUN_TYPE" != "max-limit" ] || [ "$status" -ne 0 ]; then
-        print_default_gatling_summary || print_gatling_log_excerpt
-      fi
+      print_default_gatling_summary || print_gatling_log_excerpt
       ;;
   esac
   return "$status"

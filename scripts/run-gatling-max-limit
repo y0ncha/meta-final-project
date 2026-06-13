@@ -109,8 +109,29 @@ has_gatling_report() {
   [ -s "$OUTPUT_DIR/index.html" ] && [ -s "$OUTPUT_DIR/max-limit-run.log" ]
 }
 
+write_level_schedule() {
+  level="$GATLING_MAX_BASE_USERS"
+  index=0
+  while :; do
+    starts_at=$((index * GATLING_MAX_DURATION_SECONDS))
+    ends_at=$(((index + 1) * GATLING_MAX_DURATION_SECONDS))
+    summary_log "level schedule: ${level} virtual users | report time window: ${starts_at}-${ends_at}s"
+    if [ "$level" -eq "$GATLING_MAX_LIMIT_USERS" ]; then
+      break
+    fi
+    next_level=$((level + GATLING_MAX_STEP_USERS))
+    if [ "$next_level" -gt "$GATLING_MAX_LIMIT_USERS" ]; then
+      level="$GATLING_MAX_LIMIT_USERS"
+    else
+      level="$next_level"
+    fi
+    index=$((index + 1))
+  done
+}
+
 summary_log "max limit staircase started : ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} virtual users | step: ${GATLING_MAX_STEP_USERS} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s per level"
 summary_log "command parameters: GATLING_RUN_TYPE=max-limit GATLING_MAX_BASE_USERS=${GATLING_MAX_BASE_USERS} GATLING_MAX_STEP_USERS=${GATLING_MAX_STEP_USERS} GATLING_MAX_LIMIT_USERS=${GATLING_MAX_LIMIT_USERS} GATLING_MAX_DURATION_SECONDS=${GATLING_MAX_DURATION_SECONDS}"
+write_level_schedule
 
 set +e
 run_gatling_staircase
