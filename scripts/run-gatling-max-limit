@@ -91,7 +91,12 @@ summary_log() {
 }
 
 print_test_parameters() {
-  summary_log "tested range: ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} virtual users | step: ${GATLING_MAX_STEP_USERS} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s per level"
+  summary_log "max limit tests started : ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} virtual users | step: ${GATLING_MAX_STEP_USERS} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s per level"
+}
+
+print_level_success() {
+  users="$1"
+  summary_log "max limit level finished : ${users} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s | passed"
 }
 
 print_test_summary() {
@@ -125,6 +130,7 @@ run_gatling_level() {
 
   env \
     GATLING_RUN_TYPE=max-limit \
+    GATLING_MAX_DISCOVERY_WRAPPER=1 \
     GATLING_MAX_USERS="$users" \
     GATLING_MAX_DURATION_SECONDS="$GATLING_MAX_DURATION_SECONDS" \
     "$RUNNER"
@@ -154,7 +160,7 @@ if [ "$GATLING_MAX_SINGLE_LEVEL_MODE" = true ]; then
 
     if [ "$status" -eq 0 ]; then
       highest_passing_level="$current_start"
-      progress_log "Max-limit level ${current_start} virtual users passed."
+      print_level_success "$current_start"
       current_start=$((current_start + GATLING_MAX_STEP_USERS))
       continue
     fi
@@ -184,7 +190,7 @@ while [ "$attempt" -le "$GATLING_MAX_DISCOVERY_ATTEMPTS" ]; do
 
   if [ "$status" -eq 0 ]; then
     highest_passing_level="$current_start"
-    progress_log "Max-limit attempt $attempt passed through ${current_start} virtual users."
+    print_level_success "$current_start"
     if [ "$attempt" -eq "$GATLING_MAX_DISCOVERY_ATTEMPTS" ]; then
       print_test_summary "tested lower bound; no failing level found" "$highest_passing_level" ""
       exit 0

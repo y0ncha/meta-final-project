@@ -32,6 +32,8 @@ GATLING_STRESS_START_USERS="${GATLING_STRESS_START_USERS:-${GATLING_STRESS_START
 GATLING_STRESS_TARGET_USERS="${GATLING_STRESS_TARGET_USERS:-${GATLING_STRESS_TARGET_USERS_PER_SEC:-50}}"
 GATLING_MAX_USERS="${GATLING_MAX_USERS:-${GATLING_MAX_START_USERS_PER_SEC:-5}}"
 GATLING_MAX_DURATION_SECONDS="${GATLING_MAX_DURATION_SECONDS:-${GATLING_MAX_LEVEL_SECONDS:-30}}"
+GATLING_LOAD_DURATION_SECONDS=300
+GATLING_STRESS_DURATION_SECONDS=300
 SIMULATION_CLASS="${GATLING_SIMULATION_CLASS:-MetaSimulation}"
 
 case "$GATLING_CONSOLE_MODE" in
@@ -60,17 +62,36 @@ print_default_gatling_summary() {
   printf '%s\n' "Gatling console mode: summary. Full log saved to $LOG_FILE"
   awk '
     /^---- Global Information/ {
-      printing = 1
+      found = 1
+      block = $0 ORS
+      next
     }
-    printing {
-      print
+    found {
+      block = block $0 ORS
     }
     END {
-      if (!printing) {
+      if (!found) {
         exit 1
       }
+      printf "%s", block
     }
   ' "$LOG_FILE"
+}
+
+print_test_parameters() {
+  case "$GATLING_RUN_TYPE" in
+    load-5m)
+      printf '%s\n' "load test started : ${GATLING_LOAD_USERS} virtual users | duration: ${GATLING_LOAD_DURATION_SECONDS}s"
+      ;;
+    stress-5m)
+      printf '%s\n' "stress test started : ${GATLING_STRESS_START_USERS}-${GATLING_STRESS_TARGET_USERS} virtual users | duration: ${GATLING_STRESS_DURATION_SECONDS}s"
+      ;;
+    max-limit)
+      if [ "${GATLING_MAX_DISCOVERY_WRAPPER:-0}" != "1" ]; then
+        printf '%s\n' "max limit test started : ${GATLING_MAX_USERS} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s"
+      fi
+      ;;
+  esac
 }
 
 run_and_log() {
@@ -98,6 +119,8 @@ case "$GATLING_DOCKER_PIPELINE" in
     exit 2
     ;;
 esac
+
+print_test_parameters
 
 if [ "$GATLING_DOCKER_PIPELINE" = "1" ]; then
   export APP_BASE_URL

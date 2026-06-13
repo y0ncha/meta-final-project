@@ -66,10 +66,12 @@ chmod +x "$SCRIPT_DIR/run-gatling-container" "$FAKE_GATLING"
 )
 
 grep -Fq -- 'Gatling console mode: summary. Full log saved to output/gatling/load-5m/load-5m-run.log' "$TEST_ROOT/summary.out"
-grep -Fq -- 'Gatling summary: run=load-5m users=5 duration=300s result=PASSED requests=10 OK=8 KO=2 KO-rate=20.00% p95=15728ms p99=16412ms max=18446ms mean=12844ms rps=440.96 failed=2' "$TEST_ROOT/summary.out"
-grep -Fq -- 'Gatling top error: > j.i.IOException: Premature close                                    2 (100.0%)' "$TEST_ROOT/summary.out"
-if grep -Fq -- '---- Global Information' "$TEST_ROOT/summary.out"; then
-  printf '%s\n' 'Summary mode printed the full Gatling summary block' >&2
+grep -Fq -- 'load test started : 5 virtual users | duration: 300s' "$TEST_ROOT/summary.out"
+grep -Fq -- '---- Global Information --------------------------------------------------------' "$TEST_ROOT/summary.out"
+grep -Fq -- '> request count                                     10 (OK=8      KO=2     )' "$TEST_ROOT/summary.out"
+grep -Fq -- '> j.i.IOException: Premature close                                    2 (100.0%)' "$TEST_ROOT/summary.out"
+if grep -Fq -- 'Gatling summary:' "$TEST_ROOT/summary.out"; then
+  printf '%s\n' 'Summary mode printed custom metrics instead of Gatling native summary' >&2
   exit 1
 fi
 if grep -Fq -- 'VERY NOISY GATLING DETAIL' "$TEST_ROOT/summary.out"; then
@@ -78,6 +80,10 @@ if grep -Fq -- 'VERY NOISY GATLING DETAIL' "$TEST_ROOT/summary.out"; then
 fi
 if grep -Fq -- 'PROGRESS BLOCK THAT SHOULD BE HIDDEN' "$TEST_ROOT/summary.out"; then
   printf '%s\n' 'Summary mode printed an earlier progress block' >&2
+  exit 1
+fi
+if grep -Fq -- '> request count                                      1 (OK=1      KO=0     )' "$TEST_ROOT/summary.out"; then
+  printf '%s\n' 'Summary mode printed an earlier Gatling progress summary' >&2
   exit 1
 fi
 grep -Fq -- 'VERY NOISY GATLING DETAIL' "$TEST_ROOT/output/gatling/load-5m/load-5m-run.log"
@@ -108,7 +114,10 @@ if grep -Fq -- 'Gatling summary:' "$TEST_ROOT/max-limit-pass.out"; then
   printf '%s\n' 'Summary mode printed max-limit metrics for a passing level' >&2
   exit 1
 fi
-grep -Fq -- 'Gatling evidence:' "$TEST_ROOT/max-limit-pass.out"
+if grep -Fq -- 'Gatling evidence:' "$TEST_ROOT/max-limit-pass.out"; then
+  printf '%s\n' 'Summary mode printed max-limit evidence path noise for a passing level' >&2
+  exit 1
+fi
 
 cat > "$FAKE_GATLING" <<'SH'
 #!/usr/bin/env sh
@@ -155,6 +164,11 @@ if [ "${status:-0}" -ne 2 ]; then
   printf 'Expected max-limit failing fake Gatling status 2, got %s\n' "${status:-0}" >&2
   exit 1
 fi
-grep -Fq -- 'Gatling summary: run=max-limit level=5 duration=30s result=FAILED requests=10 OK=8 KO=2 KO-rate=20.00% p95=15728ms p99=16412ms max=18446ms mean=12844ms rps=440.96 failed=2' "$TEST_ROOT/max-limit-fail.out"
+grep -Fq -- '---- Global Information --------------------------------------------------------' "$TEST_ROOT/max-limit-fail.out"
+grep -Fq -- '> request count                                     10 (OK=8      KO=2     )' "$TEST_ROOT/max-limit-fail.out"
+if grep -Fq -- 'Gatling summary:' "$TEST_ROOT/max-limit-fail.out"; then
+  printf '%s\n' 'Summary mode printed custom max-limit metrics instead of Gatling native summary' >&2
+  exit 1
+fi
 
 printf '%s\n' 'run-gatling-container console mode checks passed'

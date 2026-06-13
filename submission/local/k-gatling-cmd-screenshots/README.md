@@ -1,8 +1,8 @@
 # Item K - Gatling CMD Screenshots
 
-- Status: partial
+- Status: ready
 - Assignment item: `k) Attach 3 screenshots of: max limit, load and stress gatling run summary (screenshot of the CMD)`
-- Required files: `max-limit-terminal.png`, `load-5m-terminal.png`, `stress-5m-terminal.png`
-- Packaged files: `stress-5m-terminal.png`
+- Packaged files: `gatling-max-limit.png`, `gatling-load-test.png`, `gatling-stress-test.png`
+- Source: user-captured Jenkins console screenshots from local build `#224`
 
-The stress-test CMD screenshot is packaged. The user must still capture `max-limit-terminal.png` and `load-5m-terminal.png` from terminal output or Jenkins console output after running the approved Gatling flows.
+Validated visually: all three screenshots show the command context and Gatling `Global Information` summary for the matching run type. The max-limit screenshot also shows the `8400` passing / `8420` failing boundary.

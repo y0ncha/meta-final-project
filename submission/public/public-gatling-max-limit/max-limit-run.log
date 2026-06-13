@@ -1,0 +1,172 @@
+GATLING_HOME is set to /opt/gatling
+Simulation MetaSimulation started...
+
+================================================================================
+2026-06-13 13:01:03                                           7s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=0      KO=0     )
+
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 8079   / done: 0     
+================================================================================
+
+
+================================================================================
+2026-06-13 13:01:06                                          10s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=81     KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=81     KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 8080   / done: 0     
+================================================================================
+
+
+================================================================================
+2026-06-13 13:01:11                                          15s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=549    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=428    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=73     KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=48     KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 8080   / done: 0     
+================================================================================
+
+
+================================================================================
+2026-06-13 13:01:16                                          20s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=4454   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=3646   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=678    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=81     KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=49     KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 8031   / done: 49    
+================================================================================
+
+13:01:19.532 [WARN ] i.g.h.e.GatlingHttpListener - Request 'GET /yonatan-csasznik-yoed-halberstam-niv-levin/' failed for user 2236
+io.netty.channel.ConnectTimeoutException: connection timed out: /51.84.219.74:8080
+	at io.netty.channel.nio.AbstractNioChannel$AbstractNioUnsafe$1.run(AbstractNioChannel.java:263)
+	at io.netty.util.concurrent.PromiseTask$RunnableAdapter.call(PromiseTask.java:38)
+	at io.netty.util.concurrent.ScheduledFutureTask.run(ScheduledFutureTask.java:127)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:163)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:416)
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:515)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$5.run(SingleThreadEventExecutor.java:918)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+	at java.lang.Thread.run(Thread.java:748)
+
+================================================================================
+2026-06-13 13:01:21                                          25s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=20617  KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=8028   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=6943   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=5427   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=219    KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 7872   / done: 208   
+================================================================================
+
+13:01:23.189 [WARN ] i.g.h.e.r.DefaultStatsProcessor - Request 'GET /yonatan-csasznik-yoed-halberstam-niv-levin/' failed for user 2236: i.n.c.ConnectTimeoutException: connection timed out: /51.84.219.74:8080
+13:01:23.216 [WARN ] i.g.h.e.GatlingHttpListener - Request 'GET /yonatan-csasznik-yoed-halberstam-niv-levin/' failed for user 2572
+io.netty.channel.ConnectTimeoutException: connection timed out: /51.84.219.74:8080
+	at io.netty.channel.nio.AbstractNioChannel$AbstractNioUnsafe$1.run(AbstractNioChannel.java:263)
+	at io.netty.util.concurrent.PromiseTask$RunnableAdapter.call(PromiseTask.java:38)
+	at io.netty.util.concurrent.ScheduledFutureTask.run(ScheduledFutureTask.java:127)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:163)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:416)
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:515)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$5.run(SingleThreadEventExecutor.java:918)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+	at java.lang.Thread.run(Thread.java:748)
+13:01:23.220 [WARN ] i.g.h.e.r.DefaultStatsProcessor - Request 'GET /yonatan-csasznik-yoed-halberstam-niv-levin/' failed for user 2572: i.n.c.ConnectTimeoutException: connection timed out: /51.84.219.74:8080
+
+================================================================================
+2026-06-13 13:01:26                                          30s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=32148  KO=2     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=8042   KO=2     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=8044   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=8039   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=8023   KO=0     )
+---- Errors --------------------------------------------------------------------
+> i.n.c.ConnectTimeoutException: connection timed out: /51.84.21      2 (100.0%)
+9.74:8080
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 57     / done: 8023  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:01:31                                          35s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=32293  KO=2     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=8078   KO=2     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=8073   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=8071   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=8071   KO=0     )
+---- Errors --------------------------------------------------------------------
+> i.n.c.ConnectTimeoutException: connection timed out: /51.84.21      2 (100.0%)
+9.74:8080
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 9      / done: 8071  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:01:34                                          37s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=32318  KO=2     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=8078   KO=2     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=8080   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=8080   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=8080   KO=0     )
+---- Errors --------------------------------------------------------------------
+> i.n.c.ConnectTimeoutException: connection timed out: /51.84.21      2 (100.0%)
+9.74:8080
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 0      / done: 8080  
+================================================================================
+
+Simulation MetaSimulation completed in 38 seconds
+Parsing log file(s)...
+Parsing log file(s) done
+Generating reports...
+
+================================================================================
+---- Global Information --------------------------------------------------------
+> request count                                      32320 (OK=32318  KO=2     )
+> min response time                                      8 (OK=8      KO=17843 )
+> max response time                                  29921 (OK=29921  KO=22321 )
+> mean response time                                  4796 (OK=4795   KO=20082 )
+> std deviation                                       5768 (OK=5767   KO=2239  )
+> response time 50th percentile                       1789 (OK=1788   KO=20082 )
+> response time 75th percentile                       9698 (OK=9689   KO=21202 )
+> response time 95th percentile                      15940 (OK=15940  KO=22097 )
+> response time 99th percentile                      18001 (OK=17997  KO=22276 )
+> mean requests/sec                                850.526 (OK=850.474 KO=0.053 )
+---- Response Time Distribution ------------------------------------------------
+> t < 800 ms                                          8152 ( 25%)
+> 800 ms < t < 1200 ms                                4646 ( 14%)
+> t > 1200 ms                                        19520 ( 60%)
+> failed                                                 2 (  0%)
+---- Errors --------------------------------------------------------------------
+> i.n.c.ConnectTimeoutException: connection timed out: /51.84.21      2 (100.0%)
+9.74:8080
+================================================================================
+
+Reports generated in 1s.
+Please open the following file: /var/jenkins_home/workspace/MeTA/meta-ci-cd/output/gatling/max-limit/raw/metasimulation-20260613130054934/index.html
+Global: count of failed events is less than 1.0 : false

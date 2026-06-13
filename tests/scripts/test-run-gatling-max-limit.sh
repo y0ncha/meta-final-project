@@ -104,9 +104,10 @@ assert_file_equals "100|7|max-limit|25|unset
 125|7|max-limit|25|unset
 150|7|max-limit|25|unset" "$CALL_LOG"
 
-grep -Fq 'Max-limit level 100 virtual users passed.' "$TEST_ROOT/single-level.log"
-grep -Fq 'Max-limit level 125 virtual users passed.' "$TEST_ROOT/single-level.log"
-grep -Fq 'Max-limit first failing tested level: 150 virtual users.' "$TEST_ROOT/single-level.log"
-grep -Fq 'Max-limit highest passing tested level: 125 virtual users.' "$TEST_ROOT/single-level.log"
+grep -Fq 'max limit tests started : 100-175 virtual users | step: 25 virtual users | duration: 7s per level' "$TEST_ROOT/single-level.log"
+grep -Fq 'max limit level finished : 100 virtual users | duration: 7s | passed' "$TEST_ROOT/single-level.log"
+grep -Fq 'max limit level finished : 125 virtual users | duration: 7s | passed' "$TEST_ROOT/single-level.log"
+grep -Fq '  first failing tested level: 150 virtual users' "$TEST_ROOT/single-level.log"
+grep -Fq '  highest passing tested level: 125 virtual users' "$TEST_ROOT/single-level.log"
 
 printf '%s\n' 'run-gatling-max-limit discovery checks passed'

@@ -1,0 +1,883 @@
+GATLING_HOME is set to /opt/gatling
+Simulation MetaSimulation started...
+
+================================================================================
+2026-06-13 13:07:30                                           5s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=45     KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=14     KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=11     KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=11     KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=9      KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 6      / done: 9     
+================================================================================
+
+
+================================================================================
+2026-06-13 13:07:35                                          10s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=105    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=30     KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=26     KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=26     KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=23     KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 7      / done: 23    
+================================================================================
+
+
+================================================================================
+2026-06-13 13:07:40                                          15s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=169    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=44     KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=44     KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=44     KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=37     KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 7      / done: 37    
+================================================================================
+
+
+================================================================================
+2026-06-13 13:07:45                                          20s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=246    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=67     KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=60     KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=60     KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=59     KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 8      / done: 59    
+================================================================================
+
+
+================================================================================
+2026-06-13 13:07:50                                          25s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=315    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=85     KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=77     KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=77     KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=76     KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 9      / done: 76    
+================================================================================
+
+
+================================================================================
+2026-06-13 13:07:55                                          30s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=404    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=105    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=102    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=102    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=95     KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 10     / done: 95    
+================================================================================
+
+
+================================================================================
+2026-06-13 13:08:00                                          35s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=504    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=132    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=125    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=125    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=122    KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 10     / done: 122   
+================================================================================
+
+
+================================================================================
+2026-06-13 13:08:05                                          40s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=595    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=156    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=147    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=147    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=145    KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 11     / done: 145   
+================================================================================
+
+
+================================================================================
+2026-06-13 13:08:10                                          45s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=702    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=179    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=177    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=177    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=169    KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 12     / done: 167   
+================================================================================
+
+
+================================================================================
+2026-06-13 13:08:15                                          50s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=807    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=207    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=203    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=203    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=194    KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 13     / done: 194   
+================================================================================
+
+
+================================================================================
+2026-06-13 13:08:20                                          55s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=937    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=242    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=233    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=233    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=229    KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 13     / done: 229   
+================================================================================
+
+
+================================================================================
+2026-06-13 13:08:25                                          60s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=1040   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=261    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=261    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=261    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=257    KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 14     / done: 257   
+================================================================================
+
+
+================================================================================
+2026-06-13 13:08:30                                          65s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=1173   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=304    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=290    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=290    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=289    KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 15     / done: 289   
+================================================================================
+
+
+================================================================================
+2026-06-13 13:08:35                                          70s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=1320   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=336    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=332    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=332    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=320    KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 16     / done: 320   
+================================================================================
+
+
+================================================================================
+2026-06-13 13:08:40                                          75s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=1476   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=378    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=368    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=368    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=362    KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 16     / done: 362   
+================================================================================
+
+
+================================================================================
+2026-06-13 13:08:45                                          80s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=1622   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=417    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=402    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=402    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=401    KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 16     / done: 401   
+================================================================================
+
+
+================================================================================
+2026-06-13 13:08:50                                          85s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=1789   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=454    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=450    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=449    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=436    KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 18     / done: 436   
+================================================================================
+
+
+================================================================================
+2026-06-13 13:08:55                                          90s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=1969   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=504    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=490    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=490    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=485    KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 19     / done: 485   
+================================================================================
+
+
+================================================================================
+2026-06-13 13:09:00                                          95s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=2133   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=546    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=530    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=530    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=527    KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 19     / done: 527   
+================================================================================
+
+
+================================================================================
+2026-06-13 13:09:05                                         100s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=2328   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=588    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=586    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=585    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=569    KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 20     / done: 569   
+================================================================================
+
+
+================================================================================
+2026-06-13 13:09:10                                         105s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=2513   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=638    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=629    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=629    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=617    KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 21     / done: 617   
+================================================================================
+
+
+================================================================================
+2026-06-13 13:09:15                                         110s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=2708   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=692    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=673    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=673    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=670    KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 22     / done: 670   
+================================================================================
+
+
+================================================================================
+2026-06-13 13:09:20                                         115s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=2916   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=738    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=731    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=731    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=716    KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 22     / done: 716   
+================================================================================
+
+
+================================================================================
+2026-06-13 13:09:25                                         120s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=3129   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=793    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=783    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=783    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=770    KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 23     / done: 770   
+================================================================================
+
+
+================================================================================
+2026-06-13 13:09:30                                         125s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=3344   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=852    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=832    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=832    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=828    KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 24     / done: 828   
+================================================================================
+
+
+================================================================================
+2026-06-13 13:09:35                                         130s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=3585   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=905    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=900    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=900    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=880    KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 25     / done: 880   
+================================================================================
+
+
+================================================================================
+2026-06-13 13:09:40                                         135s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=3824   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=966    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=955    KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=954    KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=949    KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 25     / done: 949   
+================================================================================
+
+
+================================================================================
+2026-06-13 13:09:45                                         140s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=4044   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=1028   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1007   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=1007   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1002   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 26     / done: 1002  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:09:50                                         145s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=4307   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=1086   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1081   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=1081   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1059   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 27     / done: 1059  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:09:55                                         150s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=4526   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=1142   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1135   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=1135   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1114   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 28     / done: 1114  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:10:00                                         155s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=4781   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=1206   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1198   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=1198   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1179   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 28     / done: 1179  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:10:05                                         160s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=5061   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=1281   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1264   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=1264   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1252   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 29     / done: 1252  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:10:10                                         165s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=5348   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=1352   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1337   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=1337   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1322   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 30     / done: 1322  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:10:15                                         170s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=5605   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=1414   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1404   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=1404   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1383   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 31     / done: 1383  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:10:20                                         175s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=5907   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=1493   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1476   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=1476   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1462   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 31     / done: 1462  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:10:25                                         180s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=6206   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=1565   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1554   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=1554   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1533   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 32     / done: 1533  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:10:30                                         185s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=6515   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=1647   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1627   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=1627   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1614   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 33     / done: 1614  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:10:35                                         190s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=6824   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=1726   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1703   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=1703   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1692   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 34     / done: 1692  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:10:40                                         195s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=7138   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=1804   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1782   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=1782   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1770   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 34     / done: 1770  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:10:45                                         200s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=7467   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=1886   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1865   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=1865   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1851   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 35     / done: 1851  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:10:50                                         205s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=7806   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=1971   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1950   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=1950   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=1935   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 36     / done: 1935  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:10:55                                         210s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=8129   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=2054   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=2029   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=2029   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=2017   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 37     / done: 2017  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:11:00                                         215s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=8499   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=2140   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=2128   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=2128   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=2103   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 37     / done: 2103  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:11:05                                         220s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=8857   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=2232   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=2216   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=2215   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=2194   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 38     / done: 2194  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:11:10                                         225s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=9191   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=2320   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=2293   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=2293   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=2285   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 39     / done: 2285  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:11:15                                         230s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=9576   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=2411   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=2397   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=2397   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=2371   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 40     / done: 2371  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:11:20                                         235s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=9956   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=2507   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=2491   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=2491   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=2467   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 40     / done: 2467  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:11:25                                         240s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=10309  KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=2602   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=2573   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=2573   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=2561   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 41     / done: 2561  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:11:30                                         245s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=10720  KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=2697   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=2684   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=2684   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=2655   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 42     / done: 2655  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:11:35                                         250s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=11115  KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=2798   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=2781   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=2781   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=2755   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 43     / done: 2755  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:11:40                                         255s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=11513  KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=2909   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=2869   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=2869   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=2866   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 43     / done: 2866  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:11:45                                         260s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=11928  KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=3000   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=2986   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=2986   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=2956   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 44     / done: 2956  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:11:50                                         265s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=12367  KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=3118   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=3088   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=3088   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=3073   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 45     / done: 3073  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:11:55                                         270s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=12812  KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=3223   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=3206   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=3205   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=3178   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 46     / done: 3178  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:12:00                                         275s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=13220  KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=3318   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=3314   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=3314   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=3274   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 46     / done: 3274  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:12:05                                         280s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=13661  KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=3443   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=3411   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=3411   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=3396   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 47     / done: 3396  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:12:10                                         285s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=14128  KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=3552   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=3536   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=3536   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=3504   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 48     / done: 3504  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:12:15                                         290s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=14607  KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=3680   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=3648   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=3648   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=3631   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 49     / done: 3631  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:12:20                                         295s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=15035  KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=3787   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=3752   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=3752   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=3744   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 49     / done: 3744  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:12:25                                         300s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=15510  KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=3898   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=3882   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=3882   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=3848   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 50     / done: 3848  
+================================================================================
+
+
+================================================================================
+2026-06-13 13:12:27                                         301s elapsed
+---- Requests ------------------------------------------------------------------
+> Global                                                   (OK=15592  KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/         (OK=3898   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=3898   KO=0     )
+> GET /yonatan-csasznik-yoed-halberstam-niv-levin/ relo... (OK=3898   KO=0     )
+> POST /yonatan-csasznik-yoed-halberstam-niv-levin/inde... (OK=3898   KO=0     )
+
+---- Meta JSP HAR-derived flow -------------------------------------------------
+          active: 0      / done: 3898  
+================================================================================
+
+Simulation MetaSimulation completed in 302 seconds
+Parsing log file(s)...
+Parsing log file(s) done
+Generating reports...
+
+================================================================================
+---- Global Information --------------------------------------------------------
+> request count                                      15592 (OK=15592  KO=0     )
+> min response time                                      7 (OK=7      KO=-     )
+> max response time                                    352 (OK=352    KO=-     )
+> mean response time                                    24 (OK=24     KO=-     )
+> std deviation                                         23 (OK=23     KO=-     )
+> response time 50th percentile                         17 (OK=17     KO=-     )
+> response time 75th percentile                         27 (OK=27     KO=-     )
+> response time 95th percentile                         47 (OK=47     KO=-     )
+> response time 99th percentile                        129 (OK=129    KO=-     )
+> mean requests/sec                                 51.629 (OK=51.629 KO=-     )
+---- Response Time Distribution ------------------------------------------------
+> t < 800 ms                                         15592 (100%)
+> 800 ms < t < 1200 ms                                   0 (  0%)
+> t > 1200 ms                                            0 (  0%)
+> failed                                                 0 (  0%)
+================================================================================
+
+Reports generated in 1s.
+Please open the following file: /var/jenkins_home/workspace/MeTA/meta-ci-cd/output/gatling/stress-5m/raw/metasimulation-20260613130724522/index.html
+Global: count of failed events is less than 1.0 : true

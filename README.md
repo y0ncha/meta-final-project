@@ -68,7 +68,7 @@ Do not run Gatling casually; the load and stress tests are intentionally heavier
 ## Documentation Map
 
 - `rules/compliance.md` - operational compliance checklist and approved project overrides.
-- `docs/submission.md` - final email checklist, missing evidence, and package readiness.
+- `docs/submission.md` - consolidated final email, evidence checklist, explanations, and package readiness.
 - `docs/jenkins.md` - Jenkins jobs, stages, schedules, and evidence to capture.
 - `docs/playwright.md` - five browser validations and Playwright override explanation.
 - `docs/gatling.md` - Gatling commands, evidence paths, max-limit method, and graph explanations.

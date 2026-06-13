@@ -84,7 +84,8 @@ assert_not_contains() {
 }
 
 assert_contains "---- Global Information"
-assert_contains "tested range: 10-30 virtual users | step: 10 virtual users | duration: 5s per level"
+assert_contains "max limit tests started : 10-30 virtual users | step: 10 virtual users | duration: 5s per level"
+assert_contains "max limit level finished : 10 virtual users | duration: 5s | passed"
 assert_contains "Max-limit test summary:"
 assert_contains "  tested range: 10-30 virtual users"
 assert_contains "  step: 10 virtual users"
@@ -252,6 +253,12 @@ if ! printf '%s\n' "$LOAD_OUTPUT" | grep -Fq -- "---- Global Information"; then
   exit 1
 fi
 
+if ! printf '%s\n' "$LOAD_OUTPUT" | grep -Fq -- "load test started : 5 virtual users | duration: 300s"; then
+  printf '%s\n' "$LOAD_OUTPUT"
+  printf '%s\n' "expected load start line" >&2
+  exit 1
+fi
+
 if printf '%s\n' "$LOAD_OUTPUT" | grep -Fq "Gatling summary:"; then
   printf '%s\n' "$LOAD_OUTPUT"
   printf '%s\n' "expected native Gatling summary for load, not compact custom summary" >&2
@@ -280,6 +287,12 @@ fi
 if ! printf '%s\n' "$STRESS_OUTPUT" | grep -Fq -- "---- Global Information"; then
   printf '%s\n' "$STRESS_OUTPUT"
   printf '%s\n' "expected native Gatling Global Information summary for stress" >&2
+  exit 1
+fi
+
+if ! printf '%s\n' "$STRESS_OUTPUT" | grep -Fq -- "stress test started : 5-50 virtual users | duration: 300s"; then
+  printf '%s\n' "$STRESS_OUTPUT"
+  printf '%s\n' "expected stress start line" >&2
   exit 1
 fi
 
