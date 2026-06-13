@@ -103,7 +103,7 @@ Generated evidence remains ignored by Git under `output/`.
 - `RUN_GATLING_TESTS=false` skips all Gatling stages for normal CI/CD runs.
 - `RUN_GATLING_TESTS=true` runs `Gatling Max Limit`, `Gatling Load Test`, and `Gatling Stress Test` when their runner scripts exist.
 - Use `RUN_GATLING_TESTS=true` for final performance evidence collection.
-- `GATLING_CONSOLE_MODE=summary` keeps the Jenkins console compact while preserving the complete Gatling run log under `output/gatling/<run-type>/`. For all Gatling runs, the console prints Gatling's native `Global Information` summary block instead of wrapper parameter lines or custom rewritten metrics. For max-limit discovery, Jenkins console output is limited to Gatling's native summary for the first failing level; wrapper start lines, passing-level pings, boundary summary, report path, and discovery log path are written only to `output/gatling/max-limit/raw/max-limit-discovery.log`. If no level fails, the lower-bound result is recorded in the discovery log.
+- `GATLING_CONSOLE_MODE=summary` keeps the Jenkins console compact while preserving the complete Gatling run log under `output/gatling/<run-type>/`. For all Gatling runs, the console prints Gatling's native `Global Information` summary block instead of wrapper parameter lines or custom rewritten metrics. For max-limit discovery, Jenkins console output also prints the wrapper's final boundary summary, including the highest passing tested virtual-user level and the first failing tested virtual-user level. Wrapper start lines and passing-level pings are written only to `output/gatling/max-limit/raw/max-limit-discovery.log`.
 - `GATLING_CONSOLE_MODE=full` prints the complete Gatling run log to the Jenkins console.
 
 Summary mode preserves Gatling's own report wording so Jenkins screenshots match the standard Gatling terminal summary expected for submission.
@@ -117,7 +117,7 @@ For Jenkins max-limit discovery, the build parameters expose the main discovery 
 - `GATLING_MAX_DURATION_SECONDS=10`
 - `GATLING_MAX_LIMIT_USERS=12000`
 
-With those defaults, Jenkins tests single levels from 8000 through 12000 virtual users in 20-user steps unless a Gatling assertion threshold is crossed earlier. When a threshold is crossed, the console shows Gatling's native summary for the first failing tested level; the highest passing tested level and first failing tested level are recorded in `output/gatling/max-limit/raw/max-limit-discovery.log`.
+With those defaults, Jenkins tests single levels from 8000 through 12000 virtual users in 20-user steps unless a Gatling assertion threshold is crossed earlier. When a threshold is crossed, the console shows Gatling's native summary for the first failing tested level followed by the wrapper boundary summary. The same highest passing tested level and first failing tested level are also recorded in `output/gatling/max-limit/raw/max-limit-discovery.log`.
 
 Monitoring is handled by the separate Jenkins Freestyle job `meta-monitoring`, which runs `./scripts/run-monitoring-check`; the Gatling stages are not part of that scheduled job. Jenkins publishes Gatling HTML/PDF evidence through HTML Publisher when `index.html` exists under `output/gatling/max-limit/`, `output/gatling/load-5m/`, or `output/gatling/stress-5m/`.
 

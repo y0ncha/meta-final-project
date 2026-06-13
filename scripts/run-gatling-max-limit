@@ -90,6 +90,11 @@ summary_log() {
   write_discovery_log "$*"
 }
 
+final_summary_log() {
+  write_discovery_log "$*"
+  printf '%s\n' "$*"
+}
+
 print_test_parameters() {
   summary_log "max limit tests started : ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} virtual users | step: ${GATLING_MAX_STEP_USERS} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s per level"
 }
@@ -104,25 +109,25 @@ print_test_summary() {
   highest_passing="$2"
   first_failing="$3"
 
-  summary_log "Max-limit test summary:"
-  summary_log "  tested range: ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} virtual users"
-  summary_log "  step: ${GATLING_MAX_STEP_USERS} virtual users"
-  summary_log "  duration: ${GATLING_MAX_DURATION_SECONDS}s per level"
+  final_summary_log "Max-limit test summary:"
+  final_summary_log "  tested range: ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} virtual users"
+  final_summary_log "  step: ${GATLING_MAX_STEP_USERS} virtual users"
+  final_summary_log "  duration: ${GATLING_MAX_DURATION_SECONDS}s per level"
   if [ -n "$highest_passing" ]; then
-    summary_log "  highest passing tested level: ${highest_passing} virtual users"
+    final_summary_log "  highest passing tested level: ${highest_passing} virtual users"
   else
-    summary_log "  highest passing tested level: none"
+    final_summary_log "  highest passing tested level: none"
   fi
   if [ -n "$first_failing" ]; then
-    summary_log "  first failing tested level: ${first_failing} virtual users"
+    final_summary_log "  first failing tested level: ${first_failing} virtual users"
   else
-    summary_log "  first failing tested level: not found"
+    final_summary_log "  first failing tested level: not found"
   fi
-  summary_log "  result: $result"
+  final_summary_log "  result: $result"
   if [ -s "$OUTPUT_DIR/index.html" ]; then
-    summary_log "  Gatling report: $OUTPUT_DIR/index.html"
+    final_summary_log "  Gatling report: $OUTPUT_DIR/index.html"
   fi
-  summary_log "  full discovery log: $DISCOVERY_LOG"
+  final_summary_log "  full discovery log: $DISCOVERY_LOG"
 }
 
 run_gatling_level() {
