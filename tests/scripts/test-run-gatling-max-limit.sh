@@ -97,6 +97,7 @@ assert_file_equals "5|1|max-limit|5|5|unset
   GATLING_MAX_BASE_USERS=100 \
   GATLING_MAX_STEP_USERS=25 \
   GATLING_MAX_DURATION_SECONDS=7 \
+  GATLING_CONSOLE_MODE=summary \
   GATLING_MAX_LIMIT_USERS=175 \
     "$SCRIPT_DIR/run-gatling-max-limit" > "$TEST_ROOT/single-level.log"
 )
@@ -105,11 +106,15 @@ assert_file_equals "100|7|max-limit|100|25|unset
 125|7|max-limit|100|25|unset
 150|7|max-limit|100|25|unset" "$CALL_LOG"
 
-grep -Fq 'max limit tests started : 100-175 virtual users | step: 25 virtual users | duration: 7s per level' "$TEST_ROOT/single-level.log"
-grep -Fq 'max limit level finished : 100 virtual users | duration: 7s | passed' "$TEST_ROOT/single-level.log"
-grep -Fq 'max limit level finished : 125 virtual users | duration: 7s | passed' "$TEST_ROOT/single-level.log"
-grep -Fq '  first failing tested level: 150 virtual users' "$TEST_ROOT/single-level.log"
-grep -Fq '  highest passing tested level: 125 virtual users' "$TEST_ROOT/single-level.log"
+if [ -s "$TEST_ROOT/single-level.log" ]; then
+  printf '%s\n' 'wrapper summary should not print to stdout' >&2
+  exit 1
+fi
+grep -Fq 'max limit tests started : 100-175 virtual users | step: 25 virtual users | duration: 7s per level' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
+grep -Fq 'max limit level finished : 100 virtual users | duration: 7s | passed' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
+grep -Fq 'max limit level finished : 125 virtual users | duration: 7s | passed' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
+grep -Fq '  first failing tested level: 150 virtual users' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
+grep -Fq '  highest passing tested level: 125 virtual users' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
 if grep -Fq 'max limit visual report started' "$TEST_ROOT/single-level.log"; then
   printf '%s\n' 'visual report phase should not run during max-limit discovery' >&2
   exit 1

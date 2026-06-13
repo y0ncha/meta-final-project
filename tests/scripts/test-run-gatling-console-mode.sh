@@ -66,10 +66,13 @@ chmod +x "$SCRIPT_DIR/run-gatling-container" "$FAKE_GATLING"
 )
 
 grep -Fq -- 'Gatling console mode: summary. Full log saved to output/gatling/load-5m/load-5m-run.log' "$TEST_ROOT/summary.out"
-grep -Fq -- 'load test started : 5 virtual users | duration: 300s' "$TEST_ROOT/summary.out"
 grep -Fq -- '---- Global Information --------------------------------------------------------' "$TEST_ROOT/summary.out"
 grep -Fq -- '> request count                                     10 (OK=8      KO=2     )' "$TEST_ROOT/summary.out"
 grep -Fq -- '> j.i.IOException: Premature close                                    2 (100.0%)' "$TEST_ROOT/summary.out"
+if grep -Fq -- 'load test started' "$TEST_ROOT/summary.out"; then
+  printf '%s\n' 'Summary mode printed load wrapper start line' >&2
+  exit 1
+fi
 if grep -Fq -- 'Gatling summary:' "$TEST_ROOT/summary.out"; then
   printf '%s\n' 'Summary mode printed custom metrics instead of Gatling native summary' >&2
   exit 1

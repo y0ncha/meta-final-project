@@ -87,7 +87,7 @@ progress_log() {
 }
 
 summary_log() {
-  printf '%s\n' "$*" | tee -a "$DISCOVERY_LOG"
+  write_discovery_log "$*"
 }
 
 print_test_parameters() {

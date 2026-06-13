@@ -84,19 +84,29 @@ assert_not_contains() {
 }
 
 assert_contains "---- Global Information"
-assert_contains "max limit tests started : 10-30 virtual users | step: 10 virtual users | duration: 5s per level"
-assert_contains "max limit level finished : 10 virtual users | duration: 5s | passed"
-assert_contains "Max-limit test summary:"
-assert_contains "  tested range: 10-30 virtual users"
-assert_contains "  step: 10 virtual users"
-assert_contains "  duration: 5s per level"
-assert_contains "  highest passing tested level: 10 virtual users"
-assert_contains "  first failing tested level: 20 virtual users"
-assert_contains "  result: failure boundary found"
-assert_contains "  Gatling report: output/gatling/max-limit/index.html"
+assert_not_contains "max limit tests started : 10-30 virtual users | step: 10 virtual users | duration: 5s per level"
+assert_not_contains "max limit level finished : 10 virtual users | duration: 5s | passed"
+assert_not_contains "Max-limit test summary:"
+assert_not_contains "  tested range: 10-30 virtual users"
+assert_not_contains "  highest passing tested level: 10 virtual users"
+assert_not_contains "  first failing tested level: 20 virtual users"
+assert_not_contains "  result: failure boundary found"
+assert_not_contains "  Gatling report: output/gatling/max-limit/index.html"
 assert_not_contains "Max-limit testing level 10 virtual users."
 assert_not_contains "Max-limit level 10 virtual users passed."
 
+if ! grep -Fq "Max-limit test summary:" output/gatling/max-limit/raw/max-limit-discovery.log; then
+  printf '%s\n' "expected wrapper summary in discovery log" >&2
+  exit 1
+fi
+if ! grep -Fq "  highest passing tested level: 10 virtual users" output/gatling/max-limit/raw/max-limit-discovery.log; then
+  printf '%s\n' "expected highest passing level in discovery log" >&2
+  exit 1
+fi
+if ! grep -Fq "  first failing tested level: 20 virtual users" output/gatling/max-limit/raw/max-limit-discovery.log; then
+  printf '%s\n' "expected first failing level in discovery log" >&2
+  exit 1
+fi
 if ! grep -Fq "Max-limit testing level 10 virtual users." output/gatling/max-limit/raw/max-limit-discovery.log; then
   printf '%s\n' "expected per-level progress in discovery log" >&2
   exit 1
@@ -198,6 +208,47 @@ if printf '%s\n' "$RUNNER_OUTPUT" | grep -Fq "Gatling exited with status"; then
   exit 1
 fi
 
+cat > "$RUNNER_ROOT/fake-gatling-no-summary.sh" <<'SH'
+#!/usr/bin/env sh
+set -eu
+
+cat <<'LOG'
+Compilation failed before Gatling produced a final report.
+LOG
+exit 1
+SH
+chmod +x "$RUNNER_ROOT/fake-gatling-no-summary.sh"
+
+set +e
+NO_SUMMARY_OUTPUT=$(
+  GATLING_DOCKER_PIPELINE=1 \
+  GATLING_RUN_TYPE=stress-5m \
+  GATLING_CONSOLE_MODE=summary \
+  GATLING_BIN="$RUNNER_ROOT/fake-gatling-no-summary.sh" \
+  ./scripts/run-gatling-container 2>&1
+)
+NO_SUMMARY_STATUS=$?
+set -e
+
+if [ "$NO_SUMMARY_STATUS" -ne 1 ]; then
+  printf '%s\n' "$NO_SUMMARY_OUTPUT"
+  printf '%s\n' "expected no-summary Gatling failure status 1, got $NO_SUMMARY_STATUS" >&2
+  exit 1
+fi
+
+summary_header_count=$(printf '%s\n' "$NO_SUMMARY_OUTPUT" | grep -Fc "Gatling console mode: summary.")
+if [ "$summary_header_count" -ne 1 ]; then
+  printf '%s\n' "$NO_SUMMARY_OUTPUT"
+  printf '%s\n' "expected one summary-mode header, got $summary_header_count" >&2
+  exit 1
+fi
+
+if ! printf '%s\n' "$NO_SUMMARY_OUTPUT" | grep -Fq "No Gatling summary lines matched; inspect output/gatling/stress-5m/stress-5m-run.log"; then
+  printf '%s\n' "$NO_SUMMARY_OUTPUT"
+  printf '%s\n' "expected no-summary fallback message" >&2
+  exit 1
+fi
+
 set +e
 PASSING_MAX_OUTPUT=$(
   GATLING_DOCKER_PIPELINE=1 \
@@ -253,9 +304,9 @@ if ! printf '%s\n' "$LOAD_OUTPUT" | grep -Fq -- "---- Global Information"; then
   exit 1
 fi
 
-if ! printf '%s\n' "$LOAD_OUTPUT" | grep -Fq -- "load test started : 5 virtual users | duration: 300s"; then
+if printf '%s\n' "$LOAD_OUTPUT" | grep -Fq -- "load test started"; then
   printf '%s\n' "$LOAD_OUTPUT"
-  printf '%s\n' "expected load start line" >&2
+  printf '%s\n' "expected load summary mode to omit wrapper start line" >&2
   exit 1
 fi
 
@@ -290,9 +341,9 @@ if ! printf '%s\n' "$STRESS_OUTPUT" | grep -Fq -- "---- Global Information"; the
   exit 1
 fi
 
-if ! printf '%s\n' "$STRESS_OUTPUT" | grep -Fq -- "stress test started : 5-50 virtual users | duration: 300s"; then
+if printf '%s\n' "$STRESS_OUTPUT" | grep -Fq -- "stress test started"; then
   printf '%s\n' "$STRESS_OUTPUT"
-  printf '%s\n' "expected stress start line" >&2
+  printf '%s\n' "expected stress summary mode to omit wrapper start line" >&2
   exit 1
 fi
 
