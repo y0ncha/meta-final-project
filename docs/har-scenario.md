@@ -17,3 +17,5 @@ In short:
 `open app -> click About -> type Yonatan -> click Submit -> see success -> reload -> click Submit empty -> see validation error`
 
 This scenario covers the app page load, link navigation, positive form submission, and negative empty-input validation.
+
+Gatling does not load this HAR at runtime.

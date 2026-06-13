@@ -7,7 +7,6 @@ class MetaSimulation extends Simulation {
   private val appRootUrl = appBaseUrl + "/"
   private val appSubmitUrl = appBaseUrl + "/index.jsp"
   private val runType = sys.env.getOrElse("GATLING_RUN_TYPE", "load-5m")
-  private val maxProfileMode = sys.env.getOrElse("GATLING_MAX_PROFILE_MODE", "single").trim
 
   if (!Set("max-limit", "load-5m", "stress-5m").contains(runType)) {
     throw new IllegalArgumentException("GATLING_RUN_TYPE must be max-limit, load-5m, or stress-5m")
@@ -31,17 +30,6 @@ class MetaSimulation extends Simulation {
 
     val stepUsers = (targetUsers - startUsers) / 4
     (0 to 4).map(level => startUsers + (stepUsers * level))
-  }
-
-  private def incrementCount(baseUsers: Int, targetUsers: Int, stepUsers: Int, name: String): Int = {
-    if (targetUsers < baseUsers) {
-      throw new IllegalArgumentException(s"${name}_USERS must be greater than or equal to ${name}_BASE_USERS")
-    }
-    if ((targetUsers - baseUsers) % stepUsers != 0) {
-      throw new IllegalArgumentException(s"${name}_USERS minus ${name}_BASE_USERS must divide evenly by ${name}_STEP_USERS")
-    }
-
-    (targetUsers - baseUsers) / stepUsers
   }
 
   private val httpProtocol = http
@@ -114,51 +102,14 @@ class MetaSimulation extends Simulation {
     case "max-limit" =>
       val maxUsers = intEnv("GATLING_MAX_USERS", 5)
       val maxDurationSeconds = intEnv("GATLING_MAX_DURATION_SECONDS", 30)
-      maxProfileMode match {
-        case "single" =>
-          setUp(
-            scn.inject(
-              constantConcurrentUsers(maxUsers).during(maxDurationSeconds.seconds)
-            )
-          )
-            .protocols(httpProtocol)
-            .assertions(
-              global.failedRequests.count.lt(1)
-            )
-
-        case "visual" =>
-          val maxBaseUsers = intEnv("GATLING_MAX_BASE_USERS", maxUsers)
-          val maxStepUsers = intEnv("GATLING_MAX_STEP_USERS", 5)
-          val maxVisualIncrementCount = incrementCount(maxBaseUsers, maxUsers, maxStepUsers, "GATLING_MAX")
-
-          if (maxVisualIncrementCount == 0) {
-            setUp(
-              scn.inject(
-                constantConcurrentUsers(maxUsers).during(maxDurationSeconds.seconds)
-              )
-            )
-              .protocols(httpProtocol)
-              .assertions(
-                global.failedRequests.count.lt(1)
-              )
-          } else {
-            setUp(
-              scn.inject(
-                incrementConcurrentUsers(maxStepUsers)
-                  .times(maxVisualIncrementCount)
-                  .eachLevelLasting(maxDurationSeconds.seconds)
-                  .separatedByRampsLasting(0.seconds)
-                  .startingFrom(maxBaseUsers)
-              )
-            )
-              .protocols(httpProtocol)
-              .assertions(
-                global.failedRequests.count.lt(1)
-              )
-          }
-
-        case _ =>
-          throw new IllegalArgumentException("GATLING_MAX_PROFILE_MODE must be single or visual")
-      }
+      setUp(
+        scn.inject(
+          constantConcurrentUsers(maxUsers).during(maxDurationSeconds.seconds)
+        )
+      )
+        .protocols(httpProtocol)
+        .assertions(
+          global.failedRequests.count.lt(1)
+        )
   }
 }
