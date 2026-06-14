@@ -41,7 +41,7 @@ assert_contains 'val maxLimitUsers = intEnv("GATLING_MAX_LIMIT_USERS", maxBaseUs
 assert_contains 'val levels = steppedLevels(maxBaseUsers, maxLimitUsers, maxStepUsers)'
 assert_contains 'val staircaseProfile = levels.map { level =>'
 assert_contains 'constantConcurrentUsers(level).during(maxDurationSeconds.seconds)'
-assert_contains 'scn.inject(staircaseProfile: _*)'
+assert_contains 'scn.inject(staircaseProfile)'
 assert_not_contains 'GATLING_MAX_PROFILE_MODE'
 assert_not_contains 'case "visual" =>'
 assert_not_contains 'maxVisualIncrementCount'
@@ -62,6 +62,7 @@ assert_not_contains '.during(durationSeconds.seconds)'
 assert_not_contains 'constantConcurrentUsers(maxUsers).during(maxDurationSeconds.seconds)'
 assert_not_contains 'nothingFor((index * maxDurationSeconds).seconds)'
 assert_not_contains 'setUp(populations: _*)'
+assert_not_contains 'scn.inject(staircaseProfile: _*)'
 
 if [ ! -s "$REFERENCE_SIMULATION" ]; then
   printf 'Expected HAR converter reference simulation at %s\n' "$REFERENCE_SIMULATION" >&2

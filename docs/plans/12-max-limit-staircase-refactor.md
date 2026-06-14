@@ -67,7 +67,7 @@ This is a refactor of the already implemented Gatling container evidence flow fr
 | TASK-004 | In the `case "max-limit"` branch, read `GATLING_MAX_BASE_USERS`, `GATLING_MAX_STEP_USERS`, `GATLING_MAX_LIMIT_USERS`, and `GATLING_MAX_DURATION_SECONDS` with positive-integer validation. | Yes | 2026-06-14 |
 | TASK-005 | In the `case "max-limit"` branch, build `levels = steppedLevels(maxBaseUsers, maxLimitUsers, maxStepUsers)`. | Yes | 2026-06-14 |
 | TASK-006 | In the `case "max-limit"` branch, build `staircaseProfile = levels.map { level => constantConcurrentUsers(level).during(maxDurationSeconds.seconds) }` so each level runs sequentially for the configured duration. | Yes | 2026-06-14 |
-| TASK-007 | In the `case "max-limit"` branch, call `setUp(scn.inject(staircaseProfile: _*))`, apply the existing `httpProtocol`, and keep assertion `global.failedRequests.count.lt(1)`. | Yes | 2026-06-14 |
+| TASK-007 | In the `case "max-limit"` branch, call `setUp(scn.inject(staircaseProfile))`, apply the existing `httpProtocol`, and keep assertion `global.failedRequests.count.lt(1)`. | Yes | 2026-06-14 |
 | TASK-008 | Verify by diff inspection that `load-5m` still uses `rampConcurrentUsers(0).to(loadUsers).during(60.seconds)`, `constantConcurrentUsers(loadUsers).during(180.seconds)`, and `rampConcurrentUsers(loadUsers).to(0).during(60.seconds)`. | Yes | 2026-06-14 |
 | TASK-009 | Verify by diff inspection that `stress-5m` still uses five `60.seconds` levels from `GATLING_STRESS_START_USERS` to `GATLING_STRESS_TARGET_USERS`. | Yes | 2026-06-14 |
 

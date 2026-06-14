@@ -119,7 +119,7 @@ class MetaSimulation extends Simulation {
       }
 
       setUp(
-        scn.inject(staircaseProfile: _*)
+        scn.inject(staircaseProfile)
       )
         .protocols(httpProtocol)
         .assertions(
