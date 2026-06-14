@@ -60,7 +60,7 @@ The EC2 VM must run only the Tomcat application service:
 | monitor_tool | UptimeRobot UI evidence packaged; Jenkins `meta-monitoring` public-target script check passed |
 | monitor_target | `http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` |
 | playwright_target | `http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` |
-| gatling_target | Pending user-run public Gatling evidence against `PUBLIC_APP_BASE_URL` |
+| gatling_target | Public Gatling evidence packaged from Jenkins `MeTA/meta-ci-cd` build `#261` against `PUBLIC_APP_BASE_URL`; load and stress passed with `0 KO`, while max-limit failed at the first tested level (`8100`) and does not prove a passing public max-limit value |
 
 All public-hosted bonus evidence classified by Plan 11 must use the same `PUBLIC_APP_BASE_URL`.
 
@@ -125,7 +125,7 @@ Run these only after the EC2 instance exists and `PUBLIC_APP_BASE_URL` is known:
 
 ## Remaining Host And Submission Blockers
 
-- Plan 11 still needs final public-hosted evidence classification and user-run public Gatling artifacts.
-- Public-hosted Tomcat, UptimeRobot monitor UI, Jenkins monitoring, and Playwright evidence are packaged, but should be re-checked against the live `PUBLIC_APP_BASE_URL` before claiming the bonus.
+- Plan 11 still needs final public-hosted evidence classification.
+- Public-hosted Tomcat, UptimeRobot monitor UI, Jenkins monitoring, Playwright evidence, and public Gatling evidence are packaged, but should be re-checked against the live `PUBLIC_APP_BASE_URL` before claiming the bonus.
 - Terminate AWS resources after Plan 11 public-hosted evidence capture is complete.
 - Record cleanup verification so Plan 11 can close the public-hosted bonus section honestly.

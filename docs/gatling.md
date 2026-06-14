@@ -145,7 +145,7 @@ The 5-minute stress test uses five 60-second staircase levels from `GATLING_STRE
 - Attach the three generated Gatling PDFs.
 - Include the max-limit conclusion and graph explanations in the final submission package.
 - Do not claim a precise max limit unless the run shows a zero-KO passing level followed by a tested level with at least one KO.
-- The stress terminal screenshot is packaged under `submission/local/k-gatling-cmd-screenshots/`; the max-limit and load terminal screenshots must still be added before final submission.
+- The max-limit, load, and stress terminal screenshots are packaged under `submission/local/k-gatling-cmd-screenshots/`.
 
 ## Troubleshooting
 
