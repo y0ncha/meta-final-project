@@ -96,6 +96,65 @@ print_test_summary() {
   final_summary_log "  full discovery log: $DISCOVERY_LOG"
 }
 
+level_at_index() {
+  target_index="$1"
+  level="$GATLING_MAX_BASE_USERS"
+  previous_level=''
+  index=0
+
+  while [ "$index" -lt "$target_index" ] && [ "$level" -lt "$GATLING_MAX_LIMIT_USERS" ]; do
+    previous_level="$level"
+    next_level=$((level + GATLING_MAX_STEP_USERS))
+    if [ "$next_level" -gt "$GATLING_MAX_LIMIT_USERS" ]; then
+      level="$GATLING_MAX_LIMIT_USERS"
+    else
+      level="$next_level"
+    fi
+    index=$((index + 1))
+  done
+
+  printf '%s|%s\n' "$previous_level" "$level"
+}
+
+failure_levels_from_simulation_log() {
+  simulation_log="$OUTPUT_DIR/simulation.log"
+  if [ ! -s "$simulation_log" ]; then
+    return 1
+  fi
+
+  first_ko_offset_ms=$(
+    awk -F '	' '
+      $1 == "RUN" && run == "" {
+        run = $4
+      }
+      $1 == "REQUEST" && $7 == "KO" {
+        if (first == "" || $5 < first) {
+          first = $5
+        }
+      }
+      END {
+        if (run != "" && first != "") {
+          print first - run
+        } else {
+          exit 1
+        }
+      }
+    ' "$simulation_log"
+  ) || return 1
+
+  case "$first_ko_offset_ms" in
+    ''|*[!0-9-]*)
+      return 1
+      ;;
+  esac
+  if [ "$first_ko_offset_ms" -lt 0 ]; then
+    first_ko_offset_ms=0
+  fi
+
+  level_index=$((first_ko_offset_ms / (GATLING_MAX_DURATION_SECONDS * 1000)))
+  level_at_index "$level_index"
+}
+
 run_gatling_staircase() {
   env \
     GATLING_RUN_TYPE=max-limit \
@@ -152,5 +211,14 @@ if [ "$status" -eq 0 ]; then
   exit 0
 fi
 
-print_test_summary "inspect staircase report for first KO level" "" ""
+failure_levels=$(failure_levels_from_simulation_log || true)
+if [ -n "$failure_levels" ]; then
+  highest_passing=$(printf '%s\n' "$failure_levels" | cut -d '|' -f 1)
+  first_failing=$(printf '%s\n' "$failure_levels" | cut -d '|' -f 2)
+else
+  highest_passing=''
+  first_failing=''
+fi
+
+print_test_summary "inspect staircase report for first KO level" "$highest_passing" "$first_failing"
 exit 0

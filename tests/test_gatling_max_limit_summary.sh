@@ -22,6 +22,10 @@ printf '%s|%s|%s|%s\n' \
   "$GATLING_MAX_DURATION_SECONDS" >> "$OUTPUT_DIR/raw/calls.log"
 
 printf '%s\n' '<html>fake report</html>' > "$OUTPUT_DIR/index.html"
+cat > "$OUTPUT_DIR/simulation.log" <<'LOG'
+RUN	MetaSimulation	metasimulation	1000000	 	3.2.1
+REQUEST	1		GET /meta	1007000	1020000	KO	i.n.c.ConnectTimeoutException: connection timed out
+LOG
 cat > "$OUTPUT_DIR/max-limit-run.log" <<'LOG'
 ================================================================================
 ---- Global Information --------------------------------------------------------
@@ -85,8 +89,8 @@ assert_contains "Max-limit test summary:"
 assert_contains "  app base URL: http://example.test/meta/"
 assert_contains "  tested range: 10-30 virtual users"
 assert_contains "  cutoff rule: highest tested level with KO=0; first failing level has KO>0"
-assert_contains "  highest passing tested level: inspect staircase report"
-assert_contains "  first failing tested level: inspect staircase report"
+assert_contains "  highest passing tested level: 10"
+assert_contains "  first failing tested level: 20"
 assert_contains "  result: inspect staircase report for first KO level"
 assert_contains "  staircase Gatling report: output/gatling/max-limit/index.html"
 assert_not_contains "Max-limit testing level"
@@ -100,12 +104,12 @@ if ! grep -Fq "  app base URL: http://example.test/meta/" output/gatling/max-lim
   printf '%s\n' "expected app base URL in discovery log summary" >&2
   exit 1
 fi
-if ! grep -Fq "  highest passing tested level: inspect staircase report" output/gatling/max-limit/raw/max-limit-discovery.log; then
-  printf '%s\n' "expected highest passing fallback in discovery log" >&2
+if ! grep -Fq "  highest passing tested level: 10" output/gatling/max-limit/raw/max-limit-discovery.log; then
+  printf '%s\n' "expected parsed highest passing level in discovery log" >&2
   exit 1
 fi
-if ! grep -Fq "  first failing tested level: inspect staircase report" output/gatling/max-limit/raw/max-limit-discovery.log; then
-  printf '%s\n' "expected first failing fallback in discovery log" >&2
+if ! grep -Fq "  first failing tested level: 20" output/gatling/max-limit/raw/max-limit-discovery.log; then
+  printf '%s\n' "expected parsed first failing level in discovery log" >&2
   exit 1
 fi
 if ! grep -Fq "command parameters: GATLING_RUN_TYPE=max-limit APP_BASE_URL=http://example.test/meta/ GATLING_MAX_BASE_USERS=10 GATLING_MAX_STEP_USERS=10 GATLING_MAX_LIMIT_USERS=30 GATLING_MAX_DURATION_SECONDS=5" output/gatling/max-limit/raw/max-limit-discovery.log; then
