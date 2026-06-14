@@ -1,0 +1,49 @@
+#!/usr/bin/env sh
+set -eu
+
+if [ "$#" -ne 2 ]; then
+  printf '%s\n' "Usage: $0 SOURCE_DIR PUBLISH_DIR" >&2
+  exit 2
+fi
+
+SOURCE_DIR=$1
+PUBLISH_DIR=$2
+
+case "$SOURCE_DIR" in
+  /*) ;;
+  *) SOURCE_DIR="$PWD/$SOURCE_DIR" ;;
+esac
+
+case "$PUBLISH_DIR" in
+  /*) ;;
+  *) PUBLISH_DIR="$PWD/$PUBLISH_DIR" ;;
+esac
+
+if [ ! -d "$SOURCE_DIR" ]; then
+  printf 'Source directory does not exist: %s\n' "$SOURCE_DIR" >&2
+  exit 2
+fi
+
+rm -rf "$PUBLISH_DIR"
+mkdir -p "$PUBLISH_DIR"
+
+(
+  cd "$SOURCE_DIR"
+
+  find . \( -path './raw' -o -path './raw/*' \) -prune -o -type d -exec sh -c '
+    dest=$1
+    shift
+    for dir do
+      mkdir -p "$dest/$dir"
+    done
+  ' sh "$PUBLISH_DIR" {} +
+
+  find . \( -path './raw' -o -path './raw/*' \) -prune -o -type f ! -name '*-run.log' ! -name 'simulation.log' -exec sh -c '
+    dest=$1
+    shift
+    for file do
+      mkdir -p "$dest/$(dirname "$file")"
+      cp "$file" "$dest/$file"
+    done
+  ' sh "$PUBLISH_DIR" {} +
+)

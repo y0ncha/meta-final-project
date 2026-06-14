@@ -6,7 +6,7 @@ pipeline {
     timestamps()
     disableConcurrentBuilds()
     timeout(time: 60, unit: 'MINUTES')
-    buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '10'))
+    buildDiscarder(logRotator(numToKeepStr: '10', artifactNumToKeepStr: '5'))
   }
 
   parameters {
@@ -185,9 +185,19 @@ NODE'''
         if (fileExists('scripts/generate-pipeline-report')) {
           sh './scripts/generate-pipeline-report'
         }
+
+        [
+          [dir: 'output/gatling/max-limit', publishDir: 'output/jenkins-html/gatling/max-limit'],
+          [dir: 'output/gatling/load-5m', publishDir: 'output/jenkins-html/gatling/load-5m'],
+          [dir: 'output/gatling/stress-5m', publishDir: 'output/jenkins-html/gatling/stress-5m']
+        ].each { report ->
+          if (fileExists("${report.dir}/index.html")) {
+            sh "./scripts/prepare-gatling-html-publish-dir '${report.dir}' '${report.publishDir}'"
+          }
+        }
       }
 
-      archiveArtifacts artifacts: 'output/**/*', allowEmptyArchive: true
+      archiveArtifacts artifacts: 'output/**/*', excludes: 'output/gatling/**/raw/**,output/gatling/**/*-run.log,output/gatling/**/simulation.log', allowEmptyArchive: true
       script {
         if (fileExists('output/reports/pipeline-report.html')) {
           publishHTML(target: [
@@ -220,16 +230,16 @@ NODE'''
         }
 
         [
-          [name: 'Gatling Max Limit Report', dir: 'output/gatling/max-limit'],
-          [name: 'Gatling Load 5m Report', dir: 'output/gatling/load-5m'],
-          [name: 'Gatling Stress 5m Report', dir: 'output/gatling/stress-5m']
+          [name: 'Gatling Max Limit Report', dir: 'output/gatling/max-limit', publishDir: 'output/jenkins-html/gatling/max-limit'],
+          [name: 'Gatling Load 5m Report', dir: 'output/gatling/load-5m', publishDir: 'output/jenkins-html/gatling/load-5m'],
+          [name: 'Gatling Stress 5m Report', dir: 'output/gatling/stress-5m', publishDir: 'output/jenkins-html/gatling/stress-5m']
         ].each { report ->
-          if (fileExists("${report.dir}/index.html")) {
+          if (fileExists("${report.publishDir}/index.html")) {
             publishHTML(target: [
               allowMissing: true,
               alwaysLinkToLastBuild: true,
-              keepAll: true,
-              reportDir: report.dir,
+              keepAll: false,
+              reportDir: report.publishDir,
               reportFiles: 'index.html,*.pdf',
               reportName: report.name
             ])
