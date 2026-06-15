@@ -36,7 +36,7 @@ This file tracks the optional public-IP bonus host for the AWS EC2 Tomcat-only p
 | public_dns | `ec2-51-84-219-74.il-central-1.compute.amazonaws.com` |
 | public_app_url | `http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` |
 | security_group_id | `sg-01f4e4d1d0d23faf0` |
-| security_group_rules | `tcp/22` from `109.186.132.220/32`, `tcp/8080` from `0.0.0.0/0`, no `tcp/8081` rule |
+| security_group_rules | `tcp/22` from the current operator public IP as `/32`, `tcp/8080` from `0.0.0.0/0`, no `tcp/8081` rule |
 | ssh_access_mode | Temporary EC2 key pair `meta-public-app-20260612`; private key kept outside the repo under `/private/tmp/` |
 | ec2_env_policy | EC2 checkout keeps an ignored `.env` with `APP_BASE_URL=http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` and `TOMCAT_RESTART_POLICY=unless-stopped`; local `.env` should stay absent or use local defaults |
 
@@ -100,9 +100,10 @@ Run these only after the EC2 instance exists and `PUBLIC_APP_BASE_URL` is known:
 | VPC | Default VPC `vpc-0e87ee26cebf894d3` |
 | Subnet | `subnet-096ef9f2436c50d00` in `il-central-1a`, public IP on launch enabled |
 | Security group | `meta-public-app-sg` / `sg-01f4e4d1d0d23faf0` |
-| SSH rule | `tcp/22` restricted to `109.186.132.220/32` |
+| SSH rule | `tcp/22` restricted to the current operator public IP as `/32`; no `tcp/22` rule from `0.0.0.0/0` |
 | Tomcat rule | `tcp/8080` open from `0.0.0.0/0` for the public app |
 | Jenkins rule | No public `tcp/8081` ingress rule |
+| Instance metadata | IMDSv2 required |
 | Instance launch | `i-055ec052f6b33983c` running as `t3.micro` |
 | EC2 tools | Docker 29.5.3, Docker Compose v5.1.4, Git 2.34.1, curl 7.81.0, Maven 3.6.3 |
 | Repository commit on EC2 | Final checkout returned to clean `main` at `debe9c710bd0d9826b487af7df06fb87f278c467` |
@@ -120,6 +121,7 @@ Run these only after the EC2 instance exists and `PUBLIC_APP_BASE_URL` is known:
 - Keep the EC2 evidence window short.
 - Use the cheapest viable VM because the EC2 host runs Tomcat only.
 - Avoid NAT Gateway, load balancer, RDS, ECS, EKS, and Auto Scaling.
+- Keep SSH closed to the internet; allow `tcp/22` only from the operator's current public `/32`.
 - Release the Elastic IP after evidence capture so the stable URL does not keep billing after the project window.
 - Run Gatling from outside the EC2 host so the load generator does not consume EC2 CPU or memory.
 - Terminate the EC2 instance immediately after evidence capture.

@@ -135,12 +135,8 @@ restart_tomcat_before_run() {
     restart_log "Tomcat restart requested before Gatling: local Compose target from APP_BASE_URL=${APP_BASE_URL}"
     (cd "$PROJECT_ROOT" && docker compose restart tomcat >/dev/null)
   else
-    if [ -z "${GATLING_PUBLIC_TOMCAT_SSH_TARGET:-}" ]; then
-      printf '%s\n' 'GATLING_PUBLIC_TOMCAT_SSH_TARGET is required when restarting public Tomcat before Gatling' >&2
-      exit 2
-    fi
-    restart_log "Tomcat restart requested before Gatling: public SSH target ${GATLING_PUBLIC_TOMCAT_SSH_TARGET} from APP_BASE_URL=${APP_BASE_URL}"
-    ssh "$GATLING_PUBLIC_TOMCAT_SSH_TARGET" docker restart meta-tomcat >/dev/null
+    printf '%s\n' 'Remote Tomcat restart before Gatling is intentionally unsupported. Restart the public EC2 Tomcat manually, then rerun without GATLING_RESTART_TOMCAT_BEFORE_RUN=true.' >&2
+    exit 2
   fi
   restart_log 'Tomcat restart completed before Gatling.'
 }
