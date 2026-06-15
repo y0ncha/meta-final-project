@@ -4,10 +4,31 @@ set -eu
 PROJECT_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd -P)
 TEST_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/gatling-max-limit-test.XXXXXX")
 SCRIPT_DIR="$TEST_ROOT/scripts"
+BIN_DIR="$TEST_ROOT/bin"
 CALL_LOG="$TEST_ROOT/calls.log"
+RESTART_LOG="$TEST_ROOT/restarts.log"
 
-mkdir -p "$SCRIPT_DIR"
+mkdir -p "$SCRIPT_DIR" "$BIN_DIR"
 cp "$PROJECT_ROOT/scripts/run-gatling-max-limit" "$SCRIPT_DIR/run-gatling-max-limit"
+
+cat > "$BIN_DIR/docker" <<'SH'
+#!/usr/bin/env sh
+set -eu
+
+: "${RESTART_LOG:?}"
+printf 'docker|%s\n' "$*" >> "$RESTART_LOG"
+SH
+
+cat > "$BIN_DIR/ssh" <<'SH'
+#!/usr/bin/env sh
+set -eu
+
+: "${RESTART_LOG:?}"
+target="$1"
+shift
+printf 'ssh|%s|%s\n' "$target" "$*" >> "$RESTART_LOG"
+SH
+chmod +x "$BIN_DIR/docker" "$BIN_DIR/ssh"
 
 cat > "$SCRIPT_DIR/run-gatling-container" <<'SH'
 #!/usr/bin/env sh
@@ -70,6 +91,81 @@ EOF
 )
 
 assert_file_equals "max-limit|10|10|30|1|0|http://example.test/meta/" "$CALL_LOG"
+
+: > "$CALL_LOG"
+: > "$RESTART_LOG"
+(
+  cd "$TEST_ROOT"
+  PATH="$BIN_DIR:$PATH" \
+  CALL_LOG="$CALL_LOG" \
+  RESTART_LOG="$RESTART_LOG" \
+  APP_BASE_URL=http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ \
+  GATLING_RESTART_TOMCAT_BEFORE_RUN=true \
+  GATLING_MAX_BASE_USERS=10 \
+  GATLING_MAX_STEP_USERS=10 \
+  GATLING_MAX_DURATION_SECONDS=1 \
+  GATLING_MAX_LIMIT_USERS=30 \
+    "$SCRIPT_DIR/run-gatling-max-limit" > "$TEST_ROOT/local-restart.log"
+)
+
+assert_file_equals "docker|compose restart tomcat" "$RESTART_LOG"
+assert_file_equals "max-limit|10|10|30|1|0|http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/" "$CALL_LOG"
+grep -Fq 'Tomcat restart requested before Gatling: local Compose target from APP_BASE_URL=http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/' "$TEST_ROOT/local-restart.log"
+grep -Fq 'Tomcat restart completed before Gatling.' "$TEST_ROOT/local-restart.log"
+
+: > "$CALL_LOG"
+: > "$RESTART_LOG"
+(
+  cd "$TEST_ROOT"
+  PATH="$BIN_DIR:$PATH" \
+  CALL_LOG="$CALL_LOG" \
+  RESTART_LOG="$RESTART_LOG" \
+  APP_BASE_URL=http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ \
+  GATLING_RESTART_TOMCAT_BEFORE_RUN=true \
+  GATLING_PUBLIC_TOMCAT_SSH_TARGET=ubuntu@51.84.219.74 \
+  GATLING_MAX_BASE_USERS=10 \
+  GATLING_MAX_STEP_USERS=10 \
+  GATLING_MAX_DURATION_SECONDS=1 \
+  GATLING_MAX_LIMIT_USERS=30 \
+    "$SCRIPT_DIR/run-gatling-max-limit" > "$TEST_ROOT/public-restart.log"
+)
+
+assert_file_equals "ssh|ubuntu@51.84.219.74|docker restart meta-tomcat" "$RESTART_LOG"
+assert_file_equals "max-limit|10|10|30|1|0|http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/" "$CALL_LOG"
+grep -Fq 'Tomcat restart requested before Gatling: public SSH target ubuntu@51.84.219.74 from APP_BASE_URL=http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/' "$TEST_ROOT/public-restart.log"
+grep -Fq 'Tomcat restart completed before Gatling.' "$TEST_ROOT/public-restart.log"
+
+: > "$CALL_LOG"
+: > "$RESTART_LOG"
+set +e
+(
+  cd "$TEST_ROOT"
+  PATH="$BIN_DIR:$PATH" \
+  CALL_LOG="$CALL_LOG" \
+  RESTART_LOG="$RESTART_LOG" \
+  APP_BASE_URL=http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ \
+  GATLING_RESTART_TOMCAT_BEFORE_RUN=true \
+  GATLING_MAX_BASE_USERS=10 \
+  GATLING_MAX_STEP_USERS=10 \
+  GATLING_MAX_DURATION_SECONDS=1 \
+  GATLING_MAX_LIMIT_USERS=30 \
+    "$SCRIPT_DIR/run-gatling-max-limit" > "$TEST_ROOT/public-restart-missing-target.log" 2>&1
+)
+missing_target_status=$?
+set -e
+if [ "$missing_target_status" -ne 2 ]; then
+  printf 'expected missing public SSH target to exit 2, got %s\n' "$missing_target_status" >&2
+  exit 1
+fi
+if [ -s "$CALL_LOG" ]; then
+  printf '%s\n' 'Gatling should not run when public restart target is missing' >&2
+  exit 1
+fi
+if [ -s "$RESTART_LOG" ]; then
+  printf '%s\n' 'restart command should not run when public SSH target is missing' >&2
+  exit 1
+fi
+grep -Fq 'GATLING_PUBLIC_TOMCAT_SSH_TARGET is required when restarting public Tomcat before Gatling' "$TEST_ROOT/public-restart-missing-target.log"
 
 : > "$CALL_LOG"
 (

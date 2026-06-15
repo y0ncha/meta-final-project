@@ -2,6 +2,7 @@
 set -eu
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
+PROJECT_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd -P)
 RUNNER="$SCRIPT_DIR/run-gatling-container"
 APP_BASE_URL="${APP_BASE_URL:-http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/}"
 
@@ -37,6 +38,7 @@ GATLING_MAX_STEP_USERS="${GATLING_MAX_STEP_USERS:-${GATLING_MAX_STEP_USERS_PER_S
 GATLING_MAX_DURATION_SECONDS="${GATLING_MAX_DURATION_SECONDS:-${GATLING_MAX_LEVEL_SECONDS:-10}}"
 GATLING_MAX_RAMP_SECONDS="${GATLING_MAX_RAMP_SECONDS:-0}"
 GATLING_CONSOLE_MODE="${GATLING_CONSOLE_MODE:-full}"
+GATLING_RESTART_TOMCAT_BEFORE_RUN="${GATLING_RESTART_TOMCAT_BEFORE_RUN:-false}"
 
 positive_int GATLING_MAX_BASE_USERS "$GATLING_MAX_BASE_USERS"
 positive_int GATLING_MAX_STEP_USERS "$GATLING_MAX_STEP_USERS"
@@ -46,6 +48,13 @@ case "$GATLING_CONSOLE_MODE" in
   full|summary) ;;
   *)
     printf '%s\n' 'GATLING_CONSOLE_MODE must be full or summary' >&2
+    exit 2
+    ;;
+esac
+case "$GATLING_RESTART_TOMCAT_BEFORE_RUN" in
+  1|true|TRUE|yes|YES|on|ON|0|false|FALSE|no|NO|off|OFF) ;;
+  *)
+    printf '%s\n' 'GATLING_RESTART_TOMCAT_BEFORE_RUN must be true or false' >&2
     exit 2
     ;;
 esac
@@ -76,9 +85,66 @@ summary_log() {
   write_discovery_log "$*"
 }
 
+restart_log() {
+  write_discovery_log "$*"
+  printf '%s\n' "$*"
+}
+
 final_summary_log() {
   write_discovery_log "$*"
   printf '%s\n' "$*"
+}
+
+app_base_host() {
+  without_scheme="$APP_BASE_URL"
+  case "$without_scheme" in
+    *://*) without_scheme=${without_scheme#*://} ;;
+  esac
+  host_port=${without_scheme%%/*}
+  case "$host_port" in
+    \[*\]*)
+      host=${host_port#\[}
+      host=${host%%\]*}
+      ;;
+    *)
+      host=${host_port%%:*}
+      ;;
+  esac
+  printf '%s\n' "$host"
+}
+
+is_truthy() {
+  case "$1" in
+    1|true|TRUE|yes|YES|on|ON) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+is_local_tomcat_target() {
+  case "$1" in
+    tomcat|meta-tomcat|localhost|127.0.0.1|0.0.0.0|::1) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+restart_tomcat_before_run() {
+  if ! is_truthy "$GATLING_RESTART_TOMCAT_BEFORE_RUN"; then
+    return 0
+  fi
+
+  target_host=$(app_base_host)
+  if is_local_tomcat_target "$target_host"; then
+    restart_log "Tomcat restart requested before Gatling: local Compose target from APP_BASE_URL=${APP_BASE_URL}"
+    (cd "$PROJECT_ROOT" && docker compose restart tomcat >/dev/null)
+  else
+    if [ -z "${GATLING_PUBLIC_TOMCAT_SSH_TARGET:-}" ]; then
+      printf '%s\n' 'GATLING_PUBLIC_TOMCAT_SSH_TARGET is required when restarting public Tomcat before Gatling' >&2
+      exit 2
+    fi
+    restart_log "Tomcat restart requested before Gatling: public SSH target ${GATLING_PUBLIC_TOMCAT_SSH_TARGET} from APP_BASE_URL=${APP_BASE_URL}"
+    ssh "$GATLING_PUBLIC_TOMCAT_SSH_TARGET" docker restart meta-tomcat >/dev/null
+  fi
+  restart_log 'Tomcat restart completed before Gatling.'
 }
 
 print_test_summary() {
@@ -240,6 +306,7 @@ write_level_schedule() {
 
 summary_log "max limit staircase started : ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} virtual users | step: ${GATLING_MAX_STEP_USERS} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s per level | ramp: ${GATLING_MAX_RAMP_SECONDS}s"
 summary_log "command parameters: GATLING_RUN_TYPE=max-limit APP_BASE_URL=${APP_BASE_URL} GATLING_MAX_BASE_USERS=${GATLING_MAX_BASE_USERS} GATLING_MAX_STEP_USERS=${GATLING_MAX_STEP_USERS} GATLING_MAX_LIMIT_USERS=${GATLING_MAX_LIMIT_USERS} GATLING_MAX_DURATION_SECONDS=${GATLING_MAX_DURATION_SECONDS} GATLING_MAX_RAMP_SECONDS=${GATLING_MAX_RAMP_SECONDS}"
+restart_tomcat_before_run
 write_level_schedule
 
 set +e

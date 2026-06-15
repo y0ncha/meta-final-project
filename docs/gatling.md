@@ -70,6 +70,22 @@ The main controls are:
 - `GATLING_MAX_DURATION_SECONDS`: how long each virtual-user level is held.
 - `GATLING_MAX_RAMP_SECONDS`: optional ramp time from 0 to the first level and between staircase levels. `0` means instant transitions.
 - `GATLING_MAX_LIMIT_USERS`: highest virtual-user level to test before reporting a lower bound.
+- `GATLING_RESTART_TOMCAT_BEFORE_RUN`: optional `true` / `false` switch for restarting Tomcat immediately before the max-limit run.
+- `GATLING_PUBLIC_TOMCAT_SSH_TARGET`: SSH target used only when `GATLING_RESTART_TOMCAT_BEFORE_RUN=true` and `APP_BASE_URL` points at the public EC2 host.
+
+When `GATLING_RESTART_TOMCAT_BEFORE_RUN=true`, the max-limit wrapper chooses the restart mechanism from `APP_BASE_URL`. Local Docker targets such as `tomcat`, `localhost`, or `127.0.0.1` run `docker compose restart tomcat` from the repository root. Public targets run `ssh "$GATLING_PUBLIC_TOMCAT_SSH_TARGET" docker restart meta-tomcat`, so the public path requires SSH access to the EC2 VM and a running Docker host. The wrapper records the restart action in `output/gatling/max-limit/raw/max-limit-discovery.log`. Keep this disabled inside Jenkins unless the Gatling execution environment has the required Docker or SSH tooling.
+
+Examples:
+
+```sh
+GATLING_RESTART_TOMCAT_BEFORE_RUN=true \
+./scripts/run-gatling-max-limit
+
+APP_BASE_URL=http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ \
+GATLING_RESTART_TOMCAT_BEFORE_RUN=true \
+GATLING_PUBLIC_TOMCAT_SSH_TARGET=ubuntu@51.84.219.74 \
+./scripts/run-gatling-max-limit
+```
 
 With Jenkins defaults, max-limit evidence tests a targeted staircase from `8250` through `8350` virtual users in `50`-user steps, holding each level for `10` seconds with no extra ramp time. Choose tighter local or public ranges when you already know the failure region; do not run a broad public staircase far past the expected failure point.
 
