@@ -1,5 +1,22 @@
 # 12 - Max-Limit Staircase Refactor Changelog
 
+## 2026-06-15 Concise Max-Limit Summary
+
+## Summary
+
+Shortened the final max-limit wrapper summary so Jenkins screenshots show only the app URL, pipe-separated test parameters, and the key boundary result. If Gatling reports a KO but the wrapper cannot parse boundary levels from `simulation.log`, the summary now flags that missing boundary data explicitly instead of printing fallback inspection text.
+
+## Files Changed
+
+- `scripts/run-gatling-max-limit`: Replaced the long final summary with concise `parameters` and `key result` lines.
+- `tests/scripts/test-run-gatling-max-limit.sh` and `tests/test_gatling_max_limit_summary.sh`: Updated wrapper-output assertions for the shorter summary and missing-boundary flag.
+- `docs/gatling.md` and `docs/jenkins.md`: Updated Jenkins summary documentation.
+
+## Validation
+
+- `sh tests/scripts/test-run-gatling-max-limit.sh`: passed.
+- `sh tests/test_gatling_max_limit_summary.sh`: passed.
+
 ## 2026-06-15 Users/Sec Max-Limit Refactor
 
 ## Summary

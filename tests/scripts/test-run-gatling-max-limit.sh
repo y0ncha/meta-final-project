@@ -212,16 +212,12 @@ if ! grep -Fq 'Max-limit test summary:' "$TEST_ROOT/single-level.log"; then
   printf '%s\n' 'wrapper summary should print to stdout' >&2
   exit 1
 fi
-if ! grep -Fq '  staircase Gatling report: output/gatling/max-limit/index.html' "$TEST_ROOT/single-level.log"; then
-  printf '%s\n' 'staircase report should print to stdout' >&2
+if ! grep -Fq '  parameters: range 100-175 users/sec | step 25 users/sec | duration 7s/level | ramp 2s' "$TEST_ROOT/single-level.log"; then
+  printf '%s\n' 'concise parameter summary should print to stdout' >&2
   exit 1
 fi
-if ! grep -Fq '  highest passing tested level: inspect staircase report' "$TEST_ROOT/single-level.log"; then
-  printf '%s\n' 'honest fallback highest passing summary should print to stdout' >&2
-  exit 1
-fi
-if ! grep -Fq '  first failing tested level: inspect staircase report' "$TEST_ROOT/single-level.log"; then
-  printf '%s\n' 'honest fallback first failing summary should print to stdout' >&2
+if ! grep -Fq '  key result: first KO observed | missing: boundary levels were not parsed from simulation.log' "$TEST_ROOT/single-level.log"; then
+  printf '%s\n' 'missing-boundary key result should print to stdout' >&2
   exit 1
 fi
 if grep -Fq 'max limit level finished :' "$TEST_ROOT/single-level.log"; then
@@ -231,16 +227,13 @@ fi
 grep -Fq 'max limit staircase started : 100-175 users/sec | step: 25 users/sec | duration: 7s per level | ramp: 2s' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
 grep -Fq 'command parameters: GATLING_RUN_TYPE=max-limit APP_BASE_URL=http://example.test/meta/ GATLING_MAX_BASE_USERS=100 GATLING_MAX_STEP_USERS=25 GATLING_MAX_LIMIT_USERS=175 GATLING_MAX_DURATION_SECONDS=7 GATLING_MAX_RAMP_SECONDS=2' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
 grep -Fq '  app base URL: http://example.test/meta/' "$TEST_ROOT/single-level.log"
-grep -Fq '  ramp: 2s between levels' "$TEST_ROOT/single-level.log"
-grep -Fq '  latency review: use Gatling p95 and response-time graphs as supporting evidence, not as the cutoff' "$TEST_ROOT/single-level.log"
 grep -Fq 'ramp schedule: 0-100 users/sec | report time window: 0-2s' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
 grep -Fq 'level schedule: 100 users/sec | report time window: 2-9s' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
 grep -Fq 'ramp schedule: 100-125 users/sec | report time window: 9-11s' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
 grep -Fq 'level schedule: 125 users/sec | report time window: 11-18s' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
 grep -Fq 'level schedule: 150 users/sec | report time window: 20-27s' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
 grep -Fq 'level schedule: 175 users/sec | report time window: 29-36s' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
-grep -Fq '  first failing tested level: inspect staircase report' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
-grep -Fq '  highest passing tested level: inspect staircase report' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
+grep -Fq '  key result: first KO observed | missing: boundary levels were not parsed from simulation.log' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
 if grep -Fq 'Max-limit testing level' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"; then
   printf '%s\n' 'single-level discovery progress should not be logged' >&2
   exit 1

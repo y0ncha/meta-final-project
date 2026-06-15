@@ -124,7 +124,7 @@ Generated evidence remains ignored by Git under `output/`.
 - `RUN_GATLING_LOAD_TEST=true` runs the clean five-minute `Gatling Load Test`.
 - `RUN_GATLING_STRESS_TEST=true` runs the clean five-minute `Gatling Stress Test`.
 - Leave all three unchecked for normal CI/CD runs. Check only the specific Gatling evidence stage you intend to run.
-- `GATLING_CONSOLE_MODE=summary` keeps the Jenkins console compact while preserving the complete Gatling run log under `output/gatling/<run-type>/`. For all Gatling runs, the console prints Gatling's native `Global Information` summary block instead of wrapper parameter lines or custom rewritten metrics. For max-limit, Jenkins console output also prints the wrapper's final staircase summary and KO cutoff rule. Wrapper parameter lines are written only to `output/gatling/max-limit/raw/max-limit-discovery.log`.
+- `GATLING_CONSOLE_MODE=summary` keeps the Jenkins console compact while preserving the complete Gatling run log under `output/gatling/<run-type>/`. For all Gatling runs, the console prints Gatling's native `Global Information` summary block instead of wrapper parameter lines or custom rewritten metrics. For max-limit, Jenkins console output also prints a short wrapper summary: app URL, pipe-separated parameters, and the key boundary result. Wrapper parameter lines are written only to `output/gatling/max-limit/raw/max-limit-discovery.log`.
 - `GATLING_CONSOLE_MODE=full` streams the complete Gatling run log to the Jenkins console while also preserving the same log under `output/gatling/<run-type>/`.
 
 Summary mode preserves Gatling's own report wording so Jenkins screenshots match the standard Gatling terminal summary expected for submission.
@@ -139,7 +139,7 @@ For Jenkins max-limit staircase evidence, the build parameters expose the main b
 - `GATLING_MAX_RAMP_SECONDS=0`
 - `GATLING_MAX_LIMIT_USERS=8350`
 
-With those defaults, Jenkins runs one targeted staircase from 8250 through 8350 users/sec in 50 users/sec steps. When any request/check/timeout fails, the console shows Gatling's native summary followed by the wrapper staircase summary. The tested range, exact command parameters, level-to-time schedule, ramp schedule when enabled, KO cutoff rule, p95 review note, and report path are also recorded in `output/gatling/max-limit/raw/max-limit-discovery.log`.
+With those defaults, Jenkins runs one targeted staircase from 8250 through 8350 users/sec in 50 users/sec steps. When any request/check/timeout fails, the console shows Gatling's native summary followed by the short wrapper staircase summary. The exact command parameters, level-to-time schedule, ramp schedule when enabled, and parsed key result are also recorded in `output/gatling/max-limit/raw/max-limit-discovery.log`.
 
 Monitoring is handled by the separate Jenkins Freestyle job `meta-monitoring`, which runs `./scripts/run-monitoring-check`; the Gatling stages are not part of that scheduled job. Jenkins publishes Gatling HTML/PDF evidence through HTML Publisher when `index.html` exists under `output/gatling/max-limit/`, `output/gatling/load-5m/`, or `output/gatling/stress-5m/`.
 

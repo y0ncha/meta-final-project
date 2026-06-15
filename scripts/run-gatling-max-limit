@@ -154,27 +154,14 @@ print_test_summary() {
 
   final_summary_log "Max-limit test summary:"
   final_summary_log "  app base URL: ${APP_BASE_URL}"
-  final_summary_log "  tested range: ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} users/sec"
-  final_summary_log "  step: ${GATLING_MAX_STEP_USERS} users/sec"
-  final_summary_log "  duration: ${GATLING_MAX_DURATION_SECONDS}s per level"
-  final_summary_log "  ramp: ${GATLING_MAX_RAMP_SECONDS}s between levels"
-  final_summary_log "  cutoff rule: highest tested level with KO=0; first failing level has KO>0"
-  final_summary_log "  latency review: use Gatling p95 and response-time graphs as supporting evidence, not as the cutoff"
-  if [ -n "$highest_passing" ]; then
-    final_summary_log "  highest passing tested level: $highest_passing users/sec"
+  final_summary_log "  parameters: range ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} users/sec | step ${GATLING_MAX_STEP_USERS} users/sec | duration ${GATLING_MAX_DURATION_SECONDS}s/level | ramp ${GATLING_MAX_RAMP_SECONDS}s"
+  if [ "$result" = "tested lower bound; no failing users/sec level found" ]; then
+    final_summary_log "  key result: tested lower bound | no failing users/sec level found"
+  elif [ -n "$highest_passing" ] && [ -n "$first_failing" ]; then
+    final_summary_log "  key result: highest passing ${highest_passing} users/sec | first failing ${first_failing} users/sec"
   else
-    final_summary_log "  highest passing tested level: inspect staircase report"
+    final_summary_log "  key result: first KO observed | missing: boundary levels were not parsed from simulation.log"
   fi
-  if [ -n "$first_failing" ]; then
-    final_summary_log "  first failing tested level: $first_failing users/sec"
-  else
-    final_summary_log "  first failing tested level: inspect staircase report"
-  fi
-  final_summary_log "  result: $result"
-  if [ -s "$OUTPUT_DIR/index.html" ]; then
-    final_summary_log "  staircase Gatling report: $OUTPUT_DIR/index.html"
-  fi
-  final_summary_log "  full discovery log: $DISCOVERY_LOG"
 }
 
 level_at_offset_ms() {
