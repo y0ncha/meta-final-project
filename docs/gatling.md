@@ -124,8 +124,8 @@ Generated evidence remains ignored by Git under `output/`.
 - `RUN_GATLING_LOAD_TEST=true` runs the clean five-minute `Gatling Load Test`.
 - `RUN_GATLING_STRESS_TEST=true` runs the clean five-minute `Gatling Stress Test`.
 - Leave all three unchecked for normal CI/CD runs. Check only the specific Gatling evidence stage you intend to run.
-- `GATLING_CONSOLE_MODE=summary` keeps the Jenkins console compact while preserving the complete Gatling run log under `output/gatling/<run-type>/`. For all Gatling runs, the console prints Gatling's native `Global Information` summary block first, then a short wrapper summary with the same shape: app URL, parameters, and key result. Max-limit also writes its detailed command parameters and level schedule to `output/gatling/max-limit/raw/max-limit-discovery.log`.
-- `GATLING_CONSOLE_MODE=full` streams the complete Gatling run log to the Jenkins console while also preserving the same log under `output/gatling/<run-type>/`.
+- `GATLING_CONSOLE_MODE=summary` is the default. It keeps the console compact while preserving the complete Gatling run log under `output/gatling/<run-type>/`. For all Gatling runs, the console prints Gatling's native `Global Information` summary block first, then a short wrapper summary with the same shape: app URL, parameters, and key result. Max-limit also writes its detailed command parameters and level schedule to `output/gatling/max-limit/raw/max-limit-discovery.log`.
+- `GATLING_CONSOLE_MODE=full` streams the complete Gatling run log to the console while also preserving the same log under `output/gatling/<run-type>/`. Set it explicitly only when you need live low-level Gatling progress.
 
 Summary mode preserves Gatling's own report wording and keeps the wrapper summary short, so Jenkins screenshots show both the standard Gatling terminal summary and the repo-specific evidence context.
 

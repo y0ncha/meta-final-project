@@ -61,6 +61,29 @@ chmod +x "$SCRIPT_DIR/run-gatling-container" "$FAKE_GATLING"
   GATLING_DOCKER_PIPELINE=1 \
   GATLING_RUN_TYPE=load-5m \
   GATLING_BIN="$FAKE_GATLING" \
+    "$SCRIPT_DIR/run-gatling-container" > "$TEST_ROOT/default-summary.out"
+)
+
+grep -Fq -- '---- Global Information --------------------------------------------------------' "$TEST_ROOT/default-summary.out"
+grep -Fq -- '> request count                                     10 (OK=8      KO=2     )' "$TEST_ROOT/default-summary.out"
+if grep -Fq -- 'VERY NOISY GATLING DETAIL' "$TEST_ROOT/default-summary.out"; then
+  printf '%s\n' 'Default console mode should be summary, but printed noisy Gatling detail' >&2
+  exit 1
+fi
+if grep -Fq -- 'PROGRESS BLOCK THAT SHOULD BE HIDDEN' "$TEST_ROOT/default-summary.out"; then
+  printf '%s\n' 'Default console mode should be summary, but printed an earlier progress block' >&2
+  exit 1
+fi
+if grep -Fq -- '> request count                                      1 (OK=1      KO=0     )' "$TEST_ROOT/default-summary.out"; then
+  printf '%s\n' 'Default console mode should be summary, but printed an earlier Gatling progress summary' >&2
+  exit 1
+fi
+
+(
+  cd "$TEST_ROOT"
+  GATLING_DOCKER_PIPELINE=1 \
+  GATLING_RUN_TYPE=load-5m \
+  GATLING_BIN="$FAKE_GATLING" \
   GATLING_CONSOLE_MODE=summary \
     "$SCRIPT_DIR/run-gatling-container" > "$TEST_ROOT/summary.out"
 )
