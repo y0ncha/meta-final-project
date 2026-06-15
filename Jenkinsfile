@@ -14,11 +14,11 @@ pipeline {
     booleanParam(name: 'RUN_GATLING_LOAD_TEST', defaultValue: false, description: 'Run the clean five-minute Gatling load test')
     booleanParam(name: 'RUN_GATLING_STRESS_TEST', defaultValue: false, description: 'Run the clean five-minute Gatling stress test')
     choice(name: 'APP_BASE_URL', choices: ['http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/', 'http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/'], description: 'Application base URL for Tomcat verification, Playwright, and Gatling')
-    string(name: 'GATLING_MAX_START_USERS', defaultValue: '0', description: 'First users/sec level for targeted Gatling max-limit confirmation')
-    string(name: 'GATLING_MAX_STEP_USERS', defaultValue: '25', description: 'Users/sec increase between Gatling max-limit levels')
+    string(name: 'MAX_LIMIT_START_USERS_PER_SEC', defaultValue: '0', description: 'First users/sec level for targeted Gatling max-limit confirmation')
+    string(name: 'MAX_LIMIT_STEP_USERS_PER_SEC', defaultValue: '25', description: 'Users/sec increase between Gatling max-limit levels')
     string(name: 'GATLING_MAX_DURATION_SECONDS', defaultValue: '10', description: 'Seconds to hold each Gatling max-limit users/sec level')
     string(name: 'GATLING_MAX_RAMP_SECONDS', defaultValue: '1', description: 'Optional seconds to ramp from 0 to the first max-limit level and between levels')
-    string(name: 'GATLING_MAX_END_USERS', defaultValue: '550', description: 'Highest users/sec level to test before reporting a lower bound')
+    string(name: 'MAX_LIMIT_END_USERS_PER_SEC', defaultValue: '550', description: 'Highest users/sec level to test before reporting a lower bound')
     choice(name: 'GATLING_CONSOLE_MODE', choices: ['summary', 'full'], description: 'Use summary to keep Gatling console output compact while preserving full run logs as artifacts')
   }
 
@@ -36,11 +36,11 @@ pipeline {
     GATLING_LOAD_USERS = '5'
     GATLING_STRESS_START_USERS = '5'
     GATLING_STRESS_TARGET_USERS = '50'
-    GATLING_MAX_START_USERS = "${params.GATLING_MAX_START_USERS}"
-    GATLING_MAX_STEP_USERS = "${params.GATLING_MAX_STEP_USERS}"
+    GATLING_MAX_START_USERS = "${params.MAX_LIMIT_START_USERS_PER_SEC}"
+    GATLING_MAX_STEP_USERS = "${params.MAX_LIMIT_STEP_USERS_PER_SEC}"
     GATLING_MAX_DURATION_SECONDS = "${params.GATLING_MAX_DURATION_SECONDS}"
     GATLING_MAX_RAMP_SECONDS = "${params.GATLING_MAX_RAMP_SECONDS}"
-    GATLING_MAX_END_USERS = "${params.GATLING_MAX_END_USERS}"
+    GATLING_MAX_END_USERS = "${params.MAX_LIMIT_END_USERS_PER_SEC}"
     GATLING_CONSOLE_MODE = "${params.GATLING_CONSOLE_MODE}"
   }
 

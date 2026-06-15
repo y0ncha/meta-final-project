@@ -75,7 +75,7 @@ The class PDFs show Gatling evidence in terms of users, successes, failures, and
 
 Older concurrent-user evidence is historical after the max-limit profile change. Refresh max-limit evidence before claiming a current capacity number.
 
-The main controls are:
+The local wrapper's normalized controls are:
 
 - `GATLING_MAX_START_USERS`: first users/sec level to test. The default is `0`.
 - `GATLING_MAX_STEP_USERS`: users/sec increment after each level.
@@ -93,9 +93,9 @@ GATLING_RESTART_TOMCAT_BEFORE_RUN=true \
 ./scripts/run-gatling-max-limit
 ```
 
-With Jenkins defaults, max-limit evidence tests a staircase from `0` through `550` users/sec in `25` users/sec steps, holding each level for `10` seconds with `1` second ramps. Choose tighter local or public ranges when you already know the failure region; do not run a broad public staircase far past the expected failure point.
+With Jenkins defaults, max-limit evidence tests a staircase from `0` through `550` users/sec in `25` users/sec steps, holding each level for `10` seconds with `1` second ramps. Jenkins exposes the rate fields as `MAX_LIMIT_START_USERS_PER_SEC`, `MAX_LIMIT_STEP_USERS_PER_SEC`, and `MAX_LIMIT_END_USERS_PER_SEC`, then normalizes them into the wrapper controls above. Choose tighter local or public ranges when you already know the failure region; do not run a broad public staircase far past the expected failure point.
 
-The old names `GATLING_MAX_START_USERS_PER_SEC`, `GATLING_MAX_STEP_USERS_PER_SEC`, `GATLING_MAX_END_USERS_PER_SEC`, `GATLING_MAX_BASE_USERS`, and `GATLING_MAX_LIMIT_USERS` are still accepted as compatibility aliases for older local commands.
+The names `GATLING_MAX_START_USERS_PER_SEC`, `GATLING_MAX_STEP_USERS_PER_SEC`, `GATLING_MAX_END_USERS_PER_SEC`, `GATLING_MAX_BASE_USERS`, and `GATLING_MAX_LIMIT_USERS` are accepted as compatibility aliases for local commands.
 
 A tested level is treated as passing only when Gatling reports zero failed requests/checks/timeouts.
 
@@ -141,11 +141,11 @@ After this Jenkinsfile change is merged, run or reload the Pipeline once so Jenk
 
 For Jenkins max-limit staircase evidence, the build parameters expose the main bounds:
 
-- `GATLING_MAX_START_USERS=0`
-- `GATLING_MAX_STEP_USERS=25`
+- `MAX_LIMIT_START_USERS_PER_SEC=0`
+- `MAX_LIMIT_STEP_USERS_PER_SEC=25`
 - `GATLING_MAX_DURATION_SECONDS=10`
 - `GATLING_MAX_RAMP_SECONDS=1`
-- `GATLING_MAX_END_USERS=550`
+- `MAX_LIMIT_END_USERS_PER_SEC=550`
 
 With those defaults, Jenkins runs one staircase from 0 through 550 users/sec in 25 users/sec steps with 1 second ramps. When any request/check/timeout fails, the console shows Gatling's native summary followed by the short wrapper staircase summary. The exact command parameters, level-to-time schedule, and ramp schedule when enabled are also recorded in `output/gatling/max-limit/raw/max-limit-discovery.log`.
 

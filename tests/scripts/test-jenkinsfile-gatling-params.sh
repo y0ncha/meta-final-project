@@ -21,31 +21,34 @@ assert_not_contains() {
 }
 
 assert_contains "choice(name: 'APP_BASE_URL', choices: ['http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/', 'http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/']"
-assert_contains "string(name: 'GATLING_MAX_START_USERS', defaultValue: '0'"
-assert_contains "string(name: 'GATLING_MAX_STEP_USERS', defaultValue: '25'"
+assert_contains "string(name: 'MAX_LIMIT_START_USERS_PER_SEC', defaultValue: '0'"
+assert_contains "string(name: 'MAX_LIMIT_STEP_USERS_PER_SEC', defaultValue: '25'"
 assert_contains "string(name: 'GATLING_MAX_DURATION_SECONDS', defaultValue: '10'"
 assert_contains "string(name: 'GATLING_MAX_RAMP_SECONDS', defaultValue: '1'"
-assert_contains "string(name: 'GATLING_MAX_END_USERS', defaultValue: '550'"
+assert_contains "string(name: 'MAX_LIMIT_END_USERS_PER_SEC', defaultValue: '550'"
 assert_contains "choice(name: 'GATLING_CONSOLE_MODE', choices: ['summary', 'full']"
 assert_contains "description: 'First users/sec level for targeted Gatling max-limit confirmation'"
 assert_contains "description: 'Users/sec increase between Gatling max-limit levels'"
 assert_contains "description: 'Seconds to hold each Gatling max-limit users/sec level'"
 assert_contains "description: 'Highest users/sec level to test before reporting a lower bound'"
 
-assert_contains 'GATLING_MAX_START_USERS = "${params.GATLING_MAX_START_USERS}"'
-assert_contains 'GATLING_MAX_STEP_USERS = "${params.GATLING_MAX_STEP_USERS}"'
+assert_contains 'GATLING_MAX_START_USERS = "${params.MAX_LIMIT_START_USERS_PER_SEC}"'
+assert_contains 'GATLING_MAX_STEP_USERS = "${params.MAX_LIMIT_STEP_USERS_PER_SEC}"'
 assert_contains 'GATLING_MAX_DURATION_SECONDS = "${params.GATLING_MAX_DURATION_SECONDS}"'
 assert_contains 'GATLING_MAX_RAMP_SECONDS = "${params.GATLING_MAX_RAMP_SECONDS}"'
-assert_contains 'GATLING_MAX_END_USERS = "${params.GATLING_MAX_END_USERS}"'
+assert_contains 'GATLING_MAX_END_USERS = "${params.MAX_LIMIT_END_USERS_PER_SEC}"'
 assert_contains 'GATLING_CONSOLE_MODE = "${params.GATLING_CONSOLE_MODE}"'
 
+assert_not_contains "string(name: 'GATLING_MAX_START_USERS', defaultValue:"
+assert_not_contains "string(name: 'GATLING_MAX_START_USERS_PER_SEC', defaultValue:"
+assert_not_contains "string(name: 'GATLING_MAX_STEP_USERS', defaultValue:"
+assert_not_contains "string(name: 'GATLING_MAX_STEP_USERS_PER_SEC', defaultValue:"
+assert_not_contains "string(name: 'GATLING_MAX_END_USERS', defaultValue:"
+assert_not_contains "string(name: 'GATLING_MAX_END_USERS_PER_SEC', defaultValue:"
 assert_not_contains "string(name: 'GATLING_MAX_BASE_USERS'"
 assert_not_contains "string(name: 'GATLING_MAX_BASE_USERS_PER_SEC'"
 assert_not_contains "string(name: 'GATLING_MAX_LIMIT_USERS'"
 assert_not_contains "string(name: 'GATLING_MAX_LIMIT_USERS_PER_SEC'"
-assert_not_contains "string(name: 'GATLING_MAX_START_USERS_PER_SEC'"
-assert_not_contains "string(name: 'GATLING_MAX_STEP_USERS_PER_SEC'"
-assert_not_contains "string(name: 'GATLING_MAX_END_USERS_PER_SEC'"
 assert_not_contains "string(name: 'GATLING_MAX_LEVEL_COUNT'"
 assert_not_contains "string(name: 'GATLING_MAX_DISCOVERY_ATTEMPTS'"
 assert_not_contains "booleanParam(name: 'GATLING_MAX_SINGLE_LEVEL_MODE'"
@@ -57,9 +60,6 @@ assert_not_contains '-e GATLING_MAX_SINGLE_LEVEL_MODE=${env.GATLING_MAX_SINGLE_L
 assert_not_contains 'GATLING_LOAD_USERS_PER_SEC'
 assert_not_contains 'GATLING_STRESS_START_USERS_PER_SEC'
 assert_not_contains 'GATLING_STRESS_TARGET_USERS_PER_SEC'
-assert_not_contains 'GATLING_MAX_START_USERS_PER_SEC'
-assert_not_contains 'GATLING_MAX_STEP_USERS_PER_SEC'
-assert_not_contains 'GATLING_MAX_END_USERS_PER_SEC'
 assert_contains '-e GATLING_CONSOLE_MODE=${env.GATLING_CONSOLE_MODE}'
 assert_contains '-e GATLING_MAX_RAMP_SECONDS=${env.GATLING_MAX_RAMP_SECONDS}'
 assert_contains '-e GATLING_MAX_END_USERS=${env.GATLING_MAX_END_USERS}'

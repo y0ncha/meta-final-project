@@ -1,5 +1,17 @@
 # 12 - Max-Limit Staircase Refactor Changelog
 
+## 2026-06-16 Jenkins MAX_LIMIT PER_SEC Parameters
+
+## Summary
+
+Renamed the Jenkins-facing max-limit rate build parameters with uppercase `_PER_SEC` suffixes and the UI-only `MAX_LIMIT` prefix: `MAX_LIMIT_START_USERS_PER_SEC`, `MAX_LIMIT_STEP_USERS_PER_SEC`, and `MAX_LIMIT_END_USERS_PER_SEC`. The pipeline still normalizes those UI values into the existing runner variables so the shell wrappers and Gatling simulation contract stay compatible.
+
+## Files Changed
+
+- `Jenkinsfile`: Exposes the three max-limit rate fields with uppercase `_PER_SEC` suffixes and maps them into the existing environment variables.
+- `tests/scripts/test-jenkinsfile-gatling-params.sh`: Enforces the new Jenkins build parameter names and the internal normalization.
+- `docs/gatling.md` and `docs/jenkins.md`: Document the Jenkins-facing parameter names.
+
 ## 2026-06-16 SLA Parameter Documentation
 
 ## Summary
