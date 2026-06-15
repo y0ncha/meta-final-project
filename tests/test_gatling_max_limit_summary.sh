@@ -366,6 +366,30 @@ if printf '%s\n' "$LOAD_OUTPUT" | grep -Fq -- "load test started"; then
   exit 1
 fi
 
+if ! printf '%s\n' "$LOAD_OUTPUT" | grep -Fq "Load test summary:"; then
+  printf '%s\n' "$LOAD_OUTPUT"
+  printf '%s\n' "expected load wrapper summary" >&2
+  exit 1
+fi
+
+if ! printf '%s\n' "$LOAD_OUTPUT" | grep -Fq "  app base URL: http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/"; then
+  printf '%s\n' "$LOAD_OUTPUT"
+  printf '%s\n' "expected load app base URL summary" >&2
+  exit 1
+fi
+
+if ! printf '%s\n' "$LOAD_OUTPUT" | grep -Fq "  parameters: users 5 | duration 300s"; then
+  printf '%s\n' "$LOAD_OUTPUT"
+  printf '%s\n' "expected load parameter summary" >&2
+  exit 1
+fi
+
+if ! printf '%s\n' "$LOAD_OUTPUT" | grep -Fq "  key result: Gatling completed with status 0"; then
+  printf '%s\n' "$LOAD_OUTPUT"
+  printf '%s\n' "expected load key result summary" >&2
+  exit 1
+fi
+
 if printf '%s\n' "$LOAD_OUTPUT" | grep -Fq "Gatling console mode: summary."; then
   printf '%s\n' "$LOAD_OUTPUT"
   printf '%s\n' "expected load summary mode to omit wrapper header" >&2
@@ -375,6 +399,12 @@ fi
 if printf '%s\n' "$LOAD_OUTPUT" | grep -Fq "Gatling summary:"; then
   printf '%s\n' "$LOAD_OUTPUT"
   printf '%s\n' "expected native Gatling summary for load, not compact custom summary" >&2
+  exit 1
+fi
+
+if printf '%s\n' "$LOAD_OUTPUT" | grep -Fq "Gatling evidence:"; then
+  printf '%s\n' "$LOAD_OUTPUT"
+  printf '%s\n' "expected load summary mode without evidence path noise" >&2
   exit 1
 fi
 
@@ -409,6 +439,30 @@ if printf '%s\n' "$STRESS_OUTPUT" | grep -Fq -- "stress test started"; then
   exit 1
 fi
 
+if ! printf '%s\n' "$STRESS_OUTPUT" | grep -Fq "Stress test summary:"; then
+  printf '%s\n' "$STRESS_OUTPUT"
+  printf '%s\n' "expected stress wrapper summary" >&2
+  exit 1
+fi
+
+if ! printf '%s\n' "$STRESS_OUTPUT" | grep -Fq "  app base URL: http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/"; then
+  printf '%s\n' "$STRESS_OUTPUT"
+  printf '%s\n' "expected stress app base URL summary" >&2
+  exit 1
+fi
+
+if ! printf '%s\n' "$STRESS_OUTPUT" | grep -Fq "  parameters: range 5-50 users | duration 300s"; then
+  printf '%s\n' "$STRESS_OUTPUT"
+  printf '%s\n' "expected stress parameter summary" >&2
+  exit 1
+fi
+
+if ! printf '%s\n' "$STRESS_OUTPUT" | grep -Fq "  key result: Gatling completed with status 0"; then
+  printf '%s\n' "$STRESS_OUTPUT"
+  printf '%s\n' "expected stress key result summary" >&2
+  exit 1
+fi
+
 if printf '%s\n' "$STRESS_OUTPUT" | grep -Fq "Gatling console mode: summary."; then
   printf '%s\n' "$STRESS_OUTPUT"
   printf '%s\n' "expected stress summary mode to omit wrapper header" >&2
@@ -418,5 +472,11 @@ fi
 if printf '%s\n' "$STRESS_OUTPUT" | grep -Fq "Gatling summary:"; then
   printf '%s\n' "$STRESS_OUTPUT"
   printf '%s\n' "expected native Gatling summary for stress, not compact custom summary" >&2
+  exit 1
+fi
+
+if printf '%s\n' "$STRESS_OUTPUT" | grep -Fq "Gatling evidence:"; then
+  printf '%s\n' "$STRESS_OUTPUT"
+  printf '%s\n' "expected stress summary mode without evidence path noise" >&2
   exit 1
 fi

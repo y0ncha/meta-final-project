@@ -99,6 +99,31 @@ print_test_parameters() {
   esac
 }
 
+print_wrapper_summary() {
+  status="$1"
+
+  if [ "$GATLING_CONSOLE_MODE" != summary ]; then
+    return 0
+  fi
+  if [ "$GATLING_RUN_TYPE" = max-limit ]; then
+    return 0
+  fi
+
+  case "$GATLING_RUN_TYPE" in
+    load-5m)
+      printf '%s\n' 'Load test summary:'
+      printf '%s\n' "  app base URL: ${APP_BASE_URL}"
+      printf '%s\n' "  parameters: users ${GATLING_LOAD_USERS} | duration ${GATLING_LOAD_DURATION_SECONDS}s"
+      ;;
+    stress-5m)
+      printf '%s\n' 'Stress test summary:'
+      printf '%s\n' "  app base URL: ${APP_BASE_URL}"
+      printf '%s\n' "  parameters: range ${GATLING_STRESS_START_USERS}-${GATLING_STRESS_TARGET_USERS} users | duration ${GATLING_STRESS_DURATION_SECONDS}s"
+      ;;
+  esac
+  printf '%s\n' "  key result: Gatling completed with status ${status}"
+}
+
 run_and_log() {
   set +e
   case "$GATLING_CONSOLE_MODE" in
@@ -218,7 +243,9 @@ cp -R "$REPORT_DIR"/. "$OUTPUT_DIR"/
 test -s "$OUTPUT_DIR/index.html"
 test -s "$LOG_FILE"
 
-if [ "$GATLING_CONSOLE_MODE" != summary ] || [ "$GATLING_RUN_TYPE" != max-limit ]; then
+print_wrapper_summary "$gatling_status"
+
+if [ "$GATLING_CONSOLE_MODE" != summary ]; then
   printf '%s\n' 'Gatling evidence:'
   printf '%s\n' "  $LOG_FILE"
   printf '%s\n' "  $OUTPUT_DIR/index.html"
@@ -226,7 +253,7 @@ if [ "$GATLING_CONSOLE_MODE" != summary ] || [ "$GATLING_RUN_TYPE" != max-limit 
 fi
 
 if [ "$gatling_status" -ne 0 ]; then
-  if [ "$GATLING_CONSOLE_MODE" != summary ] || [ "$GATLING_RUN_TYPE" != max-limit ]; then
+  if [ "$GATLING_CONSOLE_MODE" != summary ]; then
     printf '%s\n' "Gatling exited with status $gatling_status after report normalization" >&2
   fi
   exit "$gatling_status"
