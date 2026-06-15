@@ -93,7 +93,7 @@ print_test_parameters() {
       ;;
     max-limit)
       if [ "${GATLING_MAX_DISCOVERY_WRAPPER:-0}" != "1" ]; then
-        printf '%s\n' "max limit staircase started : base ${GATLING_MAX_BASE_USERS} virtual users | step ${GATLING_MAX_STEP_USERS} virtual users | limit ${GATLING_MAX_LIMIT_USERS} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s per level | ramp: ${GATLING_MAX_RAMP_SECONDS}s"
+        printf '%s\n' "max limit staircase started : base ${GATLING_MAX_BASE_USERS} users/sec | step ${GATLING_MAX_STEP_USERS} users/sec | limit ${GATLING_MAX_LIMIT_USERS} users/sec | duration: ${GATLING_MAX_DURATION_SECONDS}s per level | ramp: ${GATLING_MAX_RAMP_SECONDS}s"
       fi
       ;;
   esac

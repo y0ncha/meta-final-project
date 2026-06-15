@@ -6,7 +6,7 @@ Source: Jenkins local build `#12` for max-limit. Local build `#17` load/stress s
 
 The local max-limit run used a users/sec arrival-rate staircase from `250` to `550 users/sec`, stepping by `25 users/sec`. Each level ran for `10` seconds with a `1` second ramp.
 
-The Gatling graphs show the load increasing until the local Docker/Tomcat path starts producing failures. The run completed with `217272` total requests, `213804 OK`, and `3468 KO`. The dominant error was `Address not available` against `tomcat:8080`, which means the local client/network path could not allocate or open enough connections at the failing load.
+The Gatling graphs show the configured users/sec arrival-rate staircase increasing until the local Docker/Tomcat path starts producing failures. The run completed with `217272` total requests, `213804 OK`, and `3468 KO`. The request-rate and active-users metrics are observed results of the run, not the configured max-limit levels. The dominant error was `Address not available` against `tomcat:8080`, which means the local client/network path could not allocate or open enough connections at the failing load.
 
 Under the project `KO=0` rule, the graph supports a local tested max limit of `475 users/sec`; `500 users/sec` is the first failing tested level.
 

@@ -106,6 +106,7 @@ The HAR was used as the recording/reference source for the Gatling scenario. Gat
 
 - Workload knob: users/sec arrival rate
 - Passing rule: `KO=0`
+- Native Gatling metrics: final request-rate and active-user values are observed results, not the configured max-limit level
 - Source: Jenkins `MeTA/meta-ci-cd` build `#12`
 - Tested range: `250` to `550 users/sec`, step `25 users/sec`, `10s/level`, `1s` ramp
 - Result: `475 users/sec` is the highest tested level with `KO=0`
@@ -118,7 +119,7 @@ A failed tested level is not the max limit. The max limit is the previous tested
 
 The local graph explanations are packaged in `submission/local/l-gatling-result-pdfs/graph-explanations.md`.
 
-- Max-limit graphs were refreshed from build `#12` and show the users/sec arrival-rate staircase plus the updated `KO=0` boundary.
+- Max-limit graphs were refreshed from build `#12` and show the users/sec arrival-rate staircase plus the updated `KO=0` boundary. Gatling's request-rate and active-users graphs are supporting observed metrics, not the max-limit level definition.
 - Local build `#17` load screenshot shows `4800 OK` / `0 KO` at `5 users/sec`, p95 `13 ms`; the matching graph PDF was not retained.
 - Local build `#17` stress screenshot shows `33120 OK` / `0 KO` at `5-50 users/sec`, p95 `8 ms`; the matching graph PDF was not retained.
 
