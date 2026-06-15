@@ -60,7 +60,7 @@ The EC2 VM must run only the Tomcat application service:
 | monitor_tool | UptimeRobot UI evidence packaged; Jenkins `meta-monitoring` public-target script check passed |
 | monitor_target | `http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` |
 | playwright_target | `http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/` |
-| gatling_target | Public Gatling evidence packaged from Jenkins `MeTA/meta-ci-cd` build `#261` against `PUBLIC_APP_BASE_URL`; load and stress passed with `0 KO`, while max-limit failed at the first tested level (`8100`) and does not prove a passing public max-limit value |
+| gatling_target | Public Gatling max-limit evidence packaged from Jenkins `MeTA/meta-ci-cd` build `#13` against `PUBLIC_APP_BASE_URL`; `525 users/sec` passed and `550 users/sec` first failed. Public load and stress evidence remain from the older public evidence set and were not rerun in this max-limit-only refresh. |
 
 All public-hosted bonus evidence classified by Plan 11 must use the same `PUBLIC_APP_BASE_URL`.
 

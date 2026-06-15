@@ -77,6 +77,7 @@ EOF
   GATLING_MAX_START_USERS_PER_SEC=10 \
   GATLING_MAX_STEP_USERS_PER_SEC=10 \
   GATLING_MAX_DURATION_SECONDS=1 \
+  GATLING_MAX_RAMP_SECONDS=0 \
   GATLING_MAX_END_USERS_PER_SEC=30 \
     "$SCRIPT_DIR/run-gatling-max-limit" >/dev/null
 )
@@ -95,6 +96,7 @@ assert_file_equals "max-limit|10|10|30|1|0|http://example.test/meta/" "$CALL_LOG
   GATLING_MAX_BASE_USERS=10 \
   GATLING_MAX_STEP_USERS=10 \
   GATLING_MAX_DURATION_SECONDS=1 \
+  GATLING_MAX_RAMP_SECONDS=0 \
   GATLING_MAX_LIMIT_USERS=30 \
     "$SCRIPT_DIR/run-gatling-max-limit" > "$TEST_ROOT/local-restart.log"
 )
@@ -117,6 +119,7 @@ set +e
   GATLING_MAX_BASE_USERS=10 \
   GATLING_MAX_STEP_USERS=10 \
   GATLING_MAX_DURATION_SECONDS=1 \
+  GATLING_MAX_RAMP_SECONDS=0 \
   GATLING_MAX_LIMIT_USERS=30 \
     "$SCRIPT_DIR/run-gatling-max-limit" > "$TEST_ROOT/public-restart.log" 2>&1
 )
@@ -143,7 +146,7 @@ grep -Fq 'Remote Tomcat restart before Gatling is intentionally unsupported.' "$
     "$SCRIPT_DIR/run-gatling-max-limit" >/dev/null
 )
 
-assert_file_equals "max-limit|8250|50|8350|10|0|http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/" "$CALL_LOG"
+assert_file_equals "max-limit|250|25|550|10|1|http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/" "$CALL_LOG"
 
 : > "$CALL_LOG"
 (
@@ -154,6 +157,7 @@ assert_file_equals "max-limit|8250|50|8350|10|0|http://tomcat:8080/yonatan-csasz
   GATLING_MAX_BASE_USERS=5 \
   GATLING_MAX_STEP_USERS=5 \
   GATLING_MAX_DURATION_SECONDS=1 \
+  GATLING_MAX_RAMP_SECONDS=0 \
   GATLING_MAX_LIMIT_USERS=20 \
     "$SCRIPT_DIR/run-gatling-max-limit" >/dev/null
 )
@@ -216,6 +220,7 @@ fi
   GATLING_MAX_BASE_USERS=10 \
   GATLING_MAX_STEP_USERS=6 \
   GATLING_MAX_DURATION_SECONDS=2 \
+  GATLING_MAX_RAMP_SECONDS=0 \
   GATLING_MAX_LIMIT_USERS=25 \
     "$SCRIPT_DIR/run-gatling-max-limit" >/dev/null
 )

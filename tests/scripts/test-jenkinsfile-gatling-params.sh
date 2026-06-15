@@ -21,11 +21,11 @@ assert_not_contains() {
 }
 
 assert_contains "choice(name: 'APP_BASE_URL', choices: ['http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/', 'http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/']"
-assert_contains "string(name: 'GATLING_MAX_START_USERS_PER_SEC', defaultValue: '8250'"
-assert_contains "string(name: 'GATLING_MAX_STEP_USERS_PER_SEC', defaultValue: '50'"
+assert_contains "string(name: 'GATLING_MAX_START_USERS_PER_SEC', defaultValue: '250'"
+assert_contains "string(name: 'GATLING_MAX_STEP_USERS_PER_SEC', defaultValue: '25'"
 assert_contains "string(name: 'GATLING_MAX_DURATION_SECONDS', defaultValue: '10'"
-assert_contains "string(name: 'GATLING_MAX_RAMP_SECONDS', defaultValue: '0'"
-assert_contains "string(name: 'GATLING_MAX_END_USERS_PER_SEC', defaultValue: '8350'"
+assert_contains "string(name: 'GATLING_MAX_RAMP_SECONDS', defaultValue: '1'"
+assert_contains "string(name: 'GATLING_MAX_END_USERS_PER_SEC', defaultValue: '550'"
 assert_contains "choice(name: 'GATLING_CONSOLE_MODE', choices: ['summary', 'full']"
 assert_contains "description: 'First users/sec level for targeted Gatling max-limit confirmation'"
 assert_contains "description: 'Users/sec increase between Gatling max-limit levels'"

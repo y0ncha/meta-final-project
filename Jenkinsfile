@@ -14,11 +14,11 @@ pipeline {
     booleanParam(name: 'RUN_GATLING_LOAD_TEST', defaultValue: false, description: 'Run the clean five-minute Gatling load test')
     booleanParam(name: 'RUN_GATLING_STRESS_TEST', defaultValue: false, description: 'Run the clean five-minute Gatling stress test')
     choice(name: 'APP_BASE_URL', choices: ['http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/', 'http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/'], description: 'Application base URL for Tomcat verification, Playwright, and Gatling')
-    string(name: 'GATLING_MAX_START_USERS_PER_SEC', defaultValue: '8250', description: 'First users/sec level for targeted Gatling max-limit confirmation')
-    string(name: 'GATLING_MAX_STEP_USERS_PER_SEC', defaultValue: '50', description: 'Users/sec increase between Gatling max-limit levels')
+    string(name: 'GATLING_MAX_START_USERS_PER_SEC', defaultValue: '250', description: 'First users/sec level for targeted Gatling max-limit confirmation')
+    string(name: 'GATLING_MAX_STEP_USERS_PER_SEC', defaultValue: '25', description: 'Users/sec increase between Gatling max-limit levels')
     string(name: 'GATLING_MAX_DURATION_SECONDS', defaultValue: '10', description: 'Seconds to hold each Gatling max-limit users/sec level')
-    string(name: 'GATLING_MAX_RAMP_SECONDS', defaultValue: '0', description: 'Optional seconds to ramp from 0 to the first max-limit level and between levels')
-    string(name: 'GATLING_MAX_END_USERS_PER_SEC', defaultValue: '8350', description: 'Last users/sec level to test before reporting a lower bound')
+    string(name: 'GATLING_MAX_RAMP_SECONDS', defaultValue: '1', description: 'Optional seconds to ramp from 0 to the first max-limit level and between levels')
+    string(name: 'GATLING_MAX_END_USERS_PER_SEC', defaultValue: '550', description: 'Last users/sec level to test before reporting a lower bound')
     choice(name: 'GATLING_CONSOLE_MODE', choices: ['summary', 'full'], description: 'Use summary to keep Gatling console output compact while preserving full run logs as artifacts')
   }
 

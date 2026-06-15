@@ -20,14 +20,15 @@ assert_not_contains() {
   fi
 }
 
-assert_contains 'The local Gatling max-limit evidence must be refreshed after the users/sec refactor.'
+assert_contains 'Max-limit note: the local max-limit evidence uses users/sec arrival-rate levels from Jenkins build `#12`.'
 assert_contains '| g | Browser automation passed-run screenshot and validation explanation | `submission/local/g-browser-test-passed-run/` | ready for screenshot/PDF capture |'
 assert_contains '- Native Playwright HTML report: `submission/local/g-browser-test-passed-run/playwright-run-report.html`'
 assert_contains '- Jenkins-safe Playwright HTML report: `submission/local/g-browser-test-passed-run/index.html`'
 assert_contains '| Public Playwright | `submission/public/public-browser-test-passed-run/` | Public-target Jenkins artifacts | ready for screenshot/PDF capture |'
-assert_contains '- Required result after refresh: highest tested users/sec level with `KO=0`'
-assert_contains '- Required boundary after refresh: first tested users/sec level with `KO>0`'
-assert_contains '- Public max-limit: refresh separately before claiming a public users/sec max-limit value.'
+assert_contains '- Tested range: `250` to `550 users/sec`, step `25 users/sec`, `10s/level`, `1s` ramp'
+assert_contains '- Result: `475 users/sec` is the highest tested level with `KO=0`'
+assert_contains '- Boundary: `500 users/sec` is the first tested level with `KO>0`'
+assert_contains '- Public max-limit: build `#13` found `525 users/sec` as the highest passing tested level and `550 users/sec` as the first failing tested level.'
 assert_contains '- Public load 5m: refresh after the users/sec load-profile change before claiming current public evidence.'
 assert_contains '- Public stress 5m: refresh after the users/sec stress-profile change before claiming current public evidence.'
 assert_contains '| Public Gatling load 5m | `submission/public/public-gatling-load-5m/` | Public-target Jenkins artifacts | stale after profile change |'

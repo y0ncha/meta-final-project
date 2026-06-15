@@ -20,6 +20,16 @@
 | 11  | `expect(page.locator("#validationMessage")).toBeVisible()`       | Confirms empty submit shows a validation message.                | Negative assert, strict | Failed input validation is a major security risk: if no error appears, the app accepted invalid input.     |
 | 12  | `expect(page.locator("#validationMessage")).toHaveText(...)`     | Confirms the empty-name validation text is the expected message. | Negative assert, strict | Failed input validation is a major security risk: wrong feedback means rejection behavior is not reliable. |
 
+## Gatling SLA Context
+
+| Area | Current recommendation | Reason |
+| --- | --- | --- |
+| Hard performance SLA | `KO=0` for load, stress, and max-limit runs | A single failed request/check/timeout means the tested level is not acceptable. |
+| Latency SLA | `p95 < 2000ms` for load and stress evidence | Public build `#13` reached `1812ms` near the boundary, so `1000ms` would be too brittle. |
+| Load parameters | `GATLING_LOAD_USERS=250` users/sec | About half of the conservative local proven max-limit, suitable for stable evidence. |
+| Stress parameters | `GATLING_STRESS_START_USERS=250`, `GATLING_STRESS_TARGET_USERS=475` users/sec | Exercises degradation up to the local passing boundary without crossing into known failure. |
+| Max-limit parameters | `450-550` users/sec, step `25`, `10s` per level, ramp `1s` | Covers the local `475/500` and public `525/550` pass/fail boundaries with less wasted runtime. |
+
 \* `expect(...)` is a strict assert: it stops the test when a critical requirement fails.
 
 \*\* `expect.soft(...)` is a soft verify: it records the failure, continues execution, and still fails the whole test at the end if the soft check failed.

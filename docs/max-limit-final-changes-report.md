@@ -2,16 +2,16 @@
 
 ## Scope
 
-This update keeps the max-limit methodology as one bounded closed-concurrency staircase. It does not replace the model with separate single-level runs or an unbounded stress run.
+This update keeps the max-limit methodology as one bounded users/sec arrival-rate staircase. It does not replace the model with separate single-level runs or an unbounded stress run.
 
 ## Final Changes
 
-- Kept one closed-concurrency staircase from `GATLING_MAX_BASE_USERS` through `GATLING_MAX_LIMIT_USERS`.
+- Kept one users/sec staircase from `GATLING_MAX_BASE_USERS` through `GATLING_MAX_LIMIT_USERS`.
 - Added `exitHereIfFailed` after each request in the maintained Gatling flow so a failed virtual user stops its remaining dependent requests.
 - Added `.maxDuration(...)` to the max-limit setup. The value is calculated from the configured staircase schedule plus a 30-second grace window.
-- Changed local and Jenkins max-limit defaults from the broad `8000-12000` sweep to a targeted `8250-8350` range in `50`-user steps.
+- Changed local and Jenkins max-limit defaults to a targeted `250-550` users/sec range in `25` users/sec steps.
 - Kept `GATLING_MAX_DURATION_SECONDS=10` as the default. Longer `60-120` second holds should be used only after narrowing the range and accepting the longer runtime.
-- Kept optional ramp support through `GATLING_MAX_RAMP_SECONDS`, defaulting to `0` so existing evidence remains comparable unless the user opts in.
+- Kept optional ramp support through `GATLING_MAX_RAMP_SECONDS`, defaulting to `1` so the active-users graph has short transitions between levels.
 - Kept p95 and response-time graphs as supporting evidence. The cutoff rule remains `KO=0`.
 
 ## Deferred
@@ -23,11 +23,11 @@ This update keeps the max-limit methodology as one bounded closed-concurrency st
 For a final local confirmation run, use the Jenkins defaults or the equivalent local command:
 
 ```sh
-GATLING_MAX_BASE_USERS=8250 \
-GATLING_MAX_STEP_USERS=50 \
+GATLING_MAX_BASE_USERS=250 \
+GATLING_MAX_STEP_USERS=25 \
 GATLING_MAX_DURATION_SECONDS=10 \
-GATLING_MAX_RAMP_SECONDS=0 \
-GATLING_MAX_LIMIT_USERS=8350 \
+GATLING_MAX_RAMP_SECONDS=1 \
+GATLING_MAX_LIMIT_USERS=550 \
 ./scripts/run-gatling-max-limit
 ```
 

@@ -1,12 +1,14 @@
 # Gatling Graph Explanations
 
-Source: Jenkins local build `#260`.
+Source: Jenkins local builds `#12` for max-limit and `#260` for load/stress.
 
 ## Max Limit
 
-Pending refresh: the local max-limit PDF and graph explanation must be regenerated after the users/sec max-limit refactor.
+The local max-limit run used a users/sec arrival-rate staircase from `250` to `550 users/sec`, stepping by `25 users/sec`. Each level ran for `10` seconds with a `1` second ramp.
 
-The refreshed max-limit graph explanation should describe the users/sec arrival-rate staircase, the tested users/sec range, the highest tested users/sec level with `KO=0`, and the first tested users/sec level with `KO>0`. Do not reuse the previous concurrent-user boundary as the users/sec result.
+The Gatling graphs show the load increasing until the local Docker/Tomcat path starts producing failures. The run completed with `217272` total requests, `213804 OK`, and `3468 KO`. The dominant error was `Address not available` against `tomcat:8080`, which means the local client/network path could not allocate or open enough connections at the failing load.
+
+Under the project `KO=0` rule, the graph supports a local tested max limit of `475 users/sec`; `500 users/sec` is the first failing tested level.
 
 ## Load 5m
 

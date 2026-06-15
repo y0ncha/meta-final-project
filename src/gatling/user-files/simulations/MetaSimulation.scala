@@ -121,11 +121,11 @@ class MetaSimulation extends Simulation {
         )
 
     case "max-limit" =>
-      val maxBaseUsers = intEnv("GATLING_MAX_BASE_USERS", intEnv("GATLING_MAX_USERS", 8250))
-      val maxStepUsers = intEnv("GATLING_MAX_STEP_USERS", 50)
-      val maxLimitUsers = intEnv("GATLING_MAX_LIMIT_USERS", 8350)
+      val maxBaseUsers = intEnv("GATLING_MAX_BASE_USERS", intEnv("GATLING_MAX_USERS", 250))
+      val maxStepUsers = intEnv("GATLING_MAX_STEP_USERS", 25)
+      val maxLimitUsers = intEnv("GATLING_MAX_LIMIT_USERS", 550)
       val maxDurationSeconds = intEnv("GATLING_MAX_DURATION_SECONDS", 10)
-      val maxRampSeconds = nonNegativeIntEnv("GATLING_MAX_RAMP_SECONDS", 0)
+      val maxRampSeconds = nonNegativeIntEnv("GATLING_MAX_RAMP_SECONDS", 1)
       val levels = steppedLevels(maxBaseUsers, maxLimitUsers, maxStepUsers)
       val maxScheduleSeconds = maxRampSeconds + (levels.size * maxDurationSeconds) + ((levels.size - 1) * maxRampSeconds)
       val maxRunSeconds = maxScheduleSeconds + 30
