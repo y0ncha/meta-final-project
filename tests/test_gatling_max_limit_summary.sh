@@ -378,7 +378,7 @@ if ! printf '%s\n' "$LOAD_OUTPUT" | grep -Fq "  app base URL: http://tomcat:8080
   exit 1
 fi
 
-if ! printf '%s\n' "$LOAD_OUTPUT" | grep -Fq "  parameters: users 5 | duration 300s"; then
+if ! printf '%s\n' "$LOAD_OUTPUT" | grep -Fq "  parameters: 5 users/sec | duration 300s"; then
   printf '%s\n' "$LOAD_OUTPUT"
   printf '%s\n' "expected load parameter summary" >&2
   exit 1
@@ -451,7 +451,7 @@ if ! printf '%s\n' "$STRESS_OUTPUT" | grep -Fq "  app base URL: http://tomcat:80
   exit 1
 fi
 
-if ! printf '%s\n' "$STRESS_OUTPUT" | grep -Fq "  parameters: range 5-50 users | duration 300s"; then
+if ! printf '%s\n' "$STRESS_OUTPUT" | grep -Fq "  parameters: range 5-50 users/sec | duration 300s"; then
   printf '%s\n' "$STRESS_OUTPUT"
   printf '%s\n' "expected stress parameter summary" >&2
   exit 1

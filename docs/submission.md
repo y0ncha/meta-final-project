@@ -116,8 +116,8 @@ A failed tested level is not the max limit. The max limit is the previous tested
 The local graph explanations are packaged in `submission/local/l-gatling-result-pdfs/graph-explanations.md`.
 
 - Max-limit graphs must be refreshed to show the users/sec arrival-rate staircase and the updated `KO=0` boundary.
-- Load-test graphs show a fixed 5-minute run with `2336 OK` and `0 KO`.
-- Stress-test graphs show a 5-minute ramp with `15892 OK` and `0 KO`.
+- Load-test graphs must be refreshed after the users/sec profile change; the previous `2336 OK` / `0 KO` run used the older concurrent-user profile.
+- Stress-test graphs must be refreshed after the users/sec profile change; the previous `15892 OK` / `0 KO` run used the older concurrent-user profile.
 
 ## Optional Public-IP Bonus Evidence
 
@@ -130,8 +130,8 @@ Public evidence is optional and does not replace the required local evidence.
 | Public script check | `submission/public/public-jenkins-monitoring-check/` | `output/public-app/monitoring/`, `output/monitoring/` | ready | Script checks show `status=up` for the public URL. |
 | Public Playwright | `submission/public/public-browser-test-passed-run/` | Public-target Jenkins artifacts | ready for screenshot/PDF capture | Packaged log shows `1 passed`; target is the public EC2 URL. Includes native and Jenkins-safe HTML reports. |
 | Public Gatling max-limit | `submission/public/public-gatling-max-limit/` | Public-target Jenkins artifacts | ready with caveat | Includes screenshot, PDF report, and graph explanation. The run failed at the first tested level, so it does not prove a precise public max limit. |
-| Public Gatling load 5m | `submission/public/public-gatling-load-5m/` | Public-target Jenkins artifacts | ready | Includes screenshot, PDF report, and graph explanation. Public HTML/log artifacts were intentionally removed. |
-| Public Gatling stress 5m | `submission/public/public-gatling-stress-5m/` | Public-target Jenkins artifacts | ready | Includes screenshot, PDF report, and graph explanation. Public HTML/log artifacts were intentionally removed. |
+| Public Gatling load 5m | `submission/public/public-gatling-load-5m/` | Public-target Jenkins artifacts | stale after profile change | Refresh after the users/sec load-profile change before submitting as current public evidence. |
+| Public Gatling stress 5m | `submission/public/public-gatling-stress-5m/` | Public-target Jenkins artifacts | stale after profile change | Refresh after the users/sec stress-profile change before submitting as current public evidence. |
 | AWS cleanup | `submission/public/aws-cleanup-verification/` | Manual verification after review | deferred | Keep EC2 running through the review window; record cleanup after termination. |
 
 ### Public Gatling Results
@@ -143,8 +143,8 @@ The public-target Gatling run targeted:
 Results:
 
 - Public max-limit: refresh separately before claiming a public users/sec max-limit value.
-- Public load 5m: `1900 OK`, `0 KO`.
-- Public stress 5m: `15368 OK`, `0 KO`.
+- Public load 5m: refresh after the users/sec load-profile change before claiming current public evidence.
+- Public stress 5m: refresh after the users/sec stress-profile change before claiming current public evidence.
 
 ## Final Checks Before Sending
 

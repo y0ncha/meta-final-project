@@ -91,9 +91,9 @@ class MetaSimulation extends Simulation {
 
       setUp(
         scn.inject(
-          rampConcurrentUsers(0).to(loadUsers).during(60.seconds),
-          constantConcurrentUsers(loadUsers).during(180.seconds),
-          rampConcurrentUsers(loadUsers).to(0).during(60.seconds)
+          rampUsersPerSec(0.0).to(loadUsers.toDouble).during(60.seconds),
+          constantUsersPerSec(loadUsers.toDouble).during(180.seconds),
+          rampUsersPerSec(loadUsers.toDouble).to(0.0).during(60.seconds)
         )
       )
         .protocols(httpProtocol)
@@ -108,11 +108,11 @@ class MetaSimulation extends Simulation {
 
       setUp(
         scn.inject(
-          constantConcurrentUsers(stressLevels(0)).during(60.seconds),
-          constantConcurrentUsers(stressLevels(1)).during(60.seconds),
-          constantConcurrentUsers(stressLevels(2)).during(60.seconds),
-          constantConcurrentUsers(stressLevels(3)).during(60.seconds),
-          constantConcurrentUsers(stressLevels(4)).during(60.seconds)
+          constantUsersPerSec(stressLevels(0).toDouble).during(60.seconds),
+          constantUsersPerSec(stressLevels(1).toDouble).during(60.seconds),
+          constantUsersPerSec(stressLevels(2).toDouble).during(60.seconds),
+          constantUsersPerSec(stressLevels(3).toDouble).during(60.seconds),
+          constantUsersPerSec(stressLevels(4).toDouble).during(60.seconds)
         )
       )
         .protocols(httpProtocol)

@@ -28,9 +28,10 @@ assert_contains '| Public Playwright | `submission/public/public-browser-test-pa
 assert_contains '- Required result after refresh: highest tested users/sec level with `KO=0`'
 assert_contains '- Required boundary after refresh: first tested users/sec level with `KO>0`'
 assert_contains '- Public max-limit: refresh separately before claiming a public users/sec max-limit value.'
-assert_contains '- Public load 5m: `1900 OK`, `0 KO`.'
-assert_contains '- Public stress 5m: `15368 OK`, `0 KO`.'
-assert_contains 'Public HTML/log artifacts were intentionally removed.'
+assert_contains '- Public load 5m: refresh after the users/sec load-profile change before claiming current public evidence.'
+assert_contains '- Public stress 5m: refresh after the users/sec stress-profile change before claiming current public evidence.'
+assert_contains '| Public Gatling load 5m | `submission/public/public-gatling-load-5m/` | Public-target Jenkins artifacts | stale after profile change |'
+assert_contains '| Public Gatling stress 5m | `submission/public/public-gatling-stress-5m/` | Public-target Jenkins artifacts | stale after profile change |'
 assert_not_contains 'Local Jenkins build `#224`'
 assert_not_contains 'Jenkins public build `#225`'
 

@@ -1,5 +1,29 @@
 # 12 - Max-Limit Staircase Refactor Changelog
 
+## 2026-06-15 Users/Sec Load And Stress Profiles
+
+## Summary
+
+Changed the 5-minute load and stress Gatling profiles from closed concurrent-user injection to open users/sec arrival-rate injection. The existing environment variable names remain for compatibility, but `GATLING_LOAD_USERS`, `GATLING_STRESS_START_USERS`, and `GATLING_STRESS_TARGET_USERS` now control users/sec rates for those runs. Existing load/stress evidence must be refreshed before being submitted as current evidence.
+
+## Files Changed
+
+- `src/gatling/user-files/simulations/MetaSimulation.scala`: Replaced load/stress `rampConcurrentUsers` / `constantConcurrentUsers` injectors with `rampUsersPerSec` / `constantUsersPerSec`.
+- `scripts/run-gatling-container`: Relabeled load/stress console summaries as users/sec.
+- `tests/scripts/test-gatling-assertions.sh` and `tests/test_gatling_max_limit_summary.sh`: Enforce users/sec load/stress profiles and summary text.
+- `docs/gatling.md`, `docs/jenkins.md`, and `docs/submission.md`: Document users/sec load/stress behavior and mark old load/stress evidence stale.
+
+## Validation
+
+- `sh -n scripts/run-gatling-container scripts/run-gatling-max-limit scripts/run-gatling-load-5m scripts/run-gatling-stress-5m scripts/export-gatling-pdfs scripts/generate-pipeline-report`: passed.
+- `sh tests/scripts/test-gatling-assertions.sh`: passed.
+- `sh tests/test_gatling_max_limit_summary.sh`: passed.
+- `sh tests/scripts/test-submission-readiness.sh`: passed.
+- `sh tests/scripts/test-run-gatling-console-mode.sh`: passed.
+- `sh tests/scripts/test-run-gatling-max-limit.sh`: passed.
+- `sh tests/scripts/test-gatling-har-alignment.sh`: passed.
+- `git diff --check`: passed.
+
 ## 2026-06-15 Clear Users/Sec Parameter Names
 
 ## Summary
@@ -38,7 +62,7 @@ Changed only the Gatling max-limit workload from a closed concurrent-user stairc
 
 ## Files Changed
 
-- `src/gatling/user-files/simulations/MetaSimulation.scala`: Replaced max-limit `constantConcurrentUsers` / `rampConcurrentUsers` injectors with `constantUsersPerSec` / `rampUsersPerSec`; load and stress profiles remain concurrent-user based.
+- `src/gatling/user-files/simulations/MetaSimulation.scala`: Replaced max-limit `constantConcurrentUsers` / `rampConcurrentUsers` injectors with `constantUsersPerSec` / `rampUsersPerSec`; at this point in the history, load and stress profiles still remained concurrent-user based.
 - `scripts/run-gatling-max-limit` and `scripts/run-gatling-container`: Relabeled max-limit tested range, step, schedules, and parsed boundary summaries as users/sec while preserving stable output paths and environment variable names.
 - `Jenkinsfile`: Updated max-limit parameter descriptions to users/sec terminology without renaming parameters.
 - `tests/scripts/test-gatling-assertions.sh`, `tests/scripts/test-run-gatling-max-limit.sh`, `tests/test_gatling_max_limit_summary.sh`, `tests/scripts/test-jenkinsfile-gatling-params.sh`, `tests/scripts/test-gatling-har-alignment.sh`, and `tests/scripts/test-submission-readiness.sh`: Enforce users/sec max-limit behavior and keep HAR/load/stress/submission guardrails aligned.

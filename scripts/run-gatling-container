@@ -86,10 +86,10 @@ print_test_parameters() {
 
   case "$GATLING_RUN_TYPE" in
     load-5m)
-      printf '%s\n' "load test started : ${GATLING_LOAD_USERS} virtual users | duration: ${GATLING_LOAD_DURATION_SECONDS}s"
+      printf '%s\n' "load test started : ${GATLING_LOAD_USERS} users/sec | duration: ${GATLING_LOAD_DURATION_SECONDS}s"
       ;;
     stress-5m)
-      printf '%s\n' "stress test started : ${GATLING_STRESS_START_USERS}-${GATLING_STRESS_TARGET_USERS} virtual users | duration: ${GATLING_STRESS_DURATION_SECONDS}s"
+      printf '%s\n' "stress test started : ${GATLING_STRESS_START_USERS}-${GATLING_STRESS_TARGET_USERS} users/sec | duration: ${GATLING_STRESS_DURATION_SECONDS}s"
       ;;
     max-limit)
       if [ "${GATLING_MAX_DISCOVERY_WRAPPER:-0}" != "1" ]; then
@@ -113,12 +113,12 @@ print_wrapper_summary() {
     load-5m)
       printf '%s\n' 'Load test summary:'
       printf '%s\n' "  app base URL: ${APP_BASE_URL}"
-      printf '%s\n' "  parameters: users ${GATLING_LOAD_USERS} | duration ${GATLING_LOAD_DURATION_SECONDS}s"
+      printf '%s\n' "  parameters: ${GATLING_LOAD_USERS} users/sec | duration ${GATLING_LOAD_DURATION_SECONDS}s"
       ;;
     stress-5m)
       printf '%s\n' 'Stress test summary:'
       printf '%s\n' "  app base URL: ${APP_BASE_URL}"
-      printf '%s\n' "  parameters: range ${GATLING_STRESS_START_USERS}-${GATLING_STRESS_TARGET_USERS} users | duration ${GATLING_STRESS_DURATION_SECONDS}s"
+      printf '%s\n' "  parameters: range ${GATLING_STRESS_START_USERS}-${GATLING_STRESS_TARGET_USERS} users/sec | duration ${GATLING_STRESS_DURATION_SECONDS}s"
       ;;
   esac
   printf '%s\n' "  key result: Gatling completed with status ${status}"

@@ -38,9 +38,9 @@ APP_BASE_URL=http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ ./sc
 
 The maintained simulation uses two workload models:
 
-- Load: 60 seconds ramping from 0 to `GATLING_LOAD_USERS`, 180 seconds holding that level, then 60 seconds ramping back down to 0.
-- Stress: five 60-second staircase levels from `GATLING_STRESS_START_USERS` to `GATLING_STRESS_TARGET_USERS`. Jenkins defaults run from `5` to `50` virtual users, rounded across five levels.
-- Max-limit: one bounded open users/sec arrival-rate staircase from `GATLING_MAX_START_USERS_PER_SEC` through `GATLING_MAX_END_USERS_PER_SEC`, with optional short ramps controlled by `GATLING_MAX_RAMP_SECONDS`.
+- Load: 60 seconds ramping from 0 to `GATLING_LOAD_USERS` users/sec, 180 seconds holding that arrival rate, then 60 seconds ramping back down to 0.
+- Stress: five 60-second users/sec staircase levels from `GATLING_STRESS_START_USERS` to `GATLING_STRESS_TARGET_USERS`. Jenkins defaults run from `5` to `50` users/sec, rounded across five levels.
+- Max-limit: one bounded users/sec arrival-rate staircase from `GATLING_MAX_START_USERS_PER_SEC` through `GATLING_MAX_END_USERS_PER_SEC`, with optional short ramps controlled by `GATLING_MAX_RAMP_SECONDS`.
 
 For max-limit staircase evidence, raise or bound the tested range with environment variables:
 
@@ -149,11 +149,11 @@ The current packaged max-limit evidence must be refreshed after profile changes 
 
 ### Load 5m
 
-The 5-minute load test ramps from 0 virtual users to `GATLING_LOAD_USERS` for 60 seconds, holds for 180 seconds, and ramps down to 0 for 60 seconds. After refreshing evidence, explain the active-users graph as ramp-up, plateau, and ramp-down; the request-rate graph as resulting throughput; and the response-time/KO graphs as system behavior under that load.
+The 5-minute load test ramps from 0 to `GATLING_LOAD_USERS` users/sec for 60 seconds, holds that arrival rate for 180 seconds, and ramps down to 0 for 60 seconds. After refreshing evidence, explain the active-users graph as Gatling's resulting active users over time, the request-rate graph as resulting throughput, and the response-time/KO graphs as system behavior under that arrival rate.
 
 ### Stress 5m
 
-The 5-minute stress test uses five 60-second staircase levels from `GATLING_STRESS_START_USERS` to `GATLING_STRESS_TARGET_USERS`. After refreshing evidence, explain the active-users graph as those stepped levels, the request-rate graph as resulting throughput, and the response-time/KO graphs as the system response while load increases.
+The 5-minute stress test uses five 60-second users/sec staircase levels from `GATLING_STRESS_START_USERS` to `GATLING_STRESS_TARGET_USERS`. After refreshing evidence, explain the active-users graph as Gatling's resulting active users over time, the request-rate graph as resulting throughput, and the response-time/KO graphs as the system response while the arrival rate increases.
 
 ## Submission Notes
 
