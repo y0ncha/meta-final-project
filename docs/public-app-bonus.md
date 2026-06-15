@@ -88,9 +88,10 @@ Run these only after the EC2 instance exists and `PUBLIC_APP_BASE_URL` is known:
 - On EC2 after restart-policy changes: `docker inspect -f '{{.HostConfig.RestartPolicy.Name}}' meta-tomcat` should print `unless-stopped`
 - On EC2: `curl -fsS http://localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ >/dev/null`
 - Local/private browser automation: `APP_BASE_URL=<PUBLIC_APP_BASE_URL> ./scripts/run-playwright-container`
-- User-run Gatling load: run the approved Jenkins or runner flow with `RUN_GATLING_LOAD_TEST=true` and `APP_BASE_URL=<PUBLIC_APP_BASE_URL>`.
-- User-run Gatling stress: run the approved Jenkins or runner flow with `RUN_GATLING_STRESS_TEST=true` and `APP_BASE_URL=<PUBLIC_APP_BASE_URL>`.
-- User-run Gatling max-limit discovery: run separately with `RUN_GATLING_MAX_LIMIT=true` only when intentionally rediscovering the boundary.
+- User-run Gatling load: run the approved Jenkins or runner flow with `RUN_GATLING_LOAD_TEST=true`, `APP_BASE_URL=<PUBLIC_APP_BASE_URL>`, and the recommended SLA profile `GATLING_LOAD_USERS=250`.
+- User-run Gatling stress: run the approved Jenkins or runner flow with `RUN_GATLING_STRESS_TEST=true`, `APP_BASE_URL=<PUBLIC_APP_BASE_URL>`, and the recommended SLA profile `GATLING_STRESS_START_USERS=250`, `GATLING_STRESS_TARGET_USERS=475`.
+- User-run Gatling max-limit discovery: run separately with `RUN_GATLING_MAX_LIMIT=true` only when intentionally rediscovering the boundary. After builds `#12` and `#13`, the recommended confirmation range is `450-550 users/sec`, step `25`, `10s/level`, ramp `1s`.
+- Gatling SLA: require `KO=0`; for refreshed load/stress evidence, use p95 `< 2000ms`.
 
 ## EC2 Deployment Checks
 

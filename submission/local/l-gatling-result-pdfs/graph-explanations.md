@@ -1,6 +1,6 @@
 # Gatling Graph Explanations
 
-Source: Jenkins local builds `#12` for max-limit and `#260` for load/stress.
+Source: Jenkins local builds `#12` for max-limit and `#260` for historical load/stress evidence.
 
 ## Max Limit
 
@@ -10,14 +10,22 @@ The Gatling graphs show the load increasing until the local Docker/Tomcat path s
 
 Under the project `KO=0` rule, the graph supports a local tested max limit of `475 users/sec`; `500 users/sec` is the first failing tested level.
 
+## Current SLA-Oriented Parameters
+
+| Test | Recommended parameters | SLA / pass rule |
+| --- | --- | --- |
+| Load 5m | `GATLING_LOAD_USERS=250` users/sec | `KO=0`, p95 `< 2000ms` |
+| Stress 5m | `GATLING_STRESS_START_USERS=250`, `GATLING_STRESS_TARGET_USERS=475` users/sec | `KO=0`, p95 `< 2000ms` |
+| Max limit | `450-550` users/sec, step `25`, `10s/level`, ramp `1s` | Highest passing users/sec level before first `KO>0` |
+
 ## Load 5m
 
-The local 5-minute load test used a fixed `5` virtual users for about `300` seconds. The run completed with `2336` requests, `2336 OK`, and `0 KO`.
+The packaged local 5-minute load PDF is historical evidence from before the users/sec SLA-profile refresh. It used a fixed `5` virtual users for about `300` seconds. The run completed with `2336` requests, `2336 OK`, and `0 KO`.
 
-The Gatling graphs show stable low-load behavior: mean request rate `8.027` requests per second, mean response time `7 ms`, p95 `18 ms`, and p99 `41 ms`.
+The Gatling graphs show stable low-load behavior: mean request rate `8.027` requests per second, mean response time `7 ms`, p95 `18 ms`, and p99 `41 ms`. For current SLA evidence, rerun load as `250 users/sec` and apply `KO=0` plus p95 `< 2000ms`.
 
 ## Stress 5m
 
-The local 5-minute stress test ramped from `5` to `50` virtual users over about `300` seconds. The run completed with `15892` requests, `15892 OK`, and `0 KO`.
+The packaged local 5-minute stress PDF is historical evidence from before the users/sec SLA-profile refresh. It ramped from `5` to `50` virtual users over about `300` seconds. The run completed with `15892` requests, `15892 OK`, and `0 KO`.
 
-The Gatling graphs show throughput increasing with the ramp while requests continue to pass: mean request rate `52.449` requests per second, mean response time `11 ms`, p95 `36 ms`, and p99 `175 ms`.
+The Gatling graphs show throughput increasing with the ramp while requests continue to pass: mean request rate `52.449` requests per second, mean response time `11 ms`, p95 `36 ms`, and p99 `175 ms`. For current SLA evidence, rerun stress from `250` to `475 users/sec` and apply `KO=0` plus p95 `< 2000ms`.

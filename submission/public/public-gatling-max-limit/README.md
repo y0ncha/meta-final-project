@@ -5,6 +5,7 @@
 - Source: Jenkins `MeTA/meta-container-ci-cd` build `#13`
 - Public tested max limit: `525 users/sec`
 - First failing tested level: `550 users/sec`
+- Recommended refreshed load/stress SLA: `KO=0` and p95 `< 2000ms`
 
 Packaged files:
 
@@ -16,4 +17,5 @@ Validation notes:
 
 - Screenshot was visually inspected and shows the max-limit summary, the public EC2 URL, and the `525` / `550 users/sec` boundary.
 - Jenkins build `#13` was inspected and shows `APP_BASE_URL` set to the public EC2 URL above.
+- The public report reached p95 `1812 ms` near the failing boundary, which supports using p95 `< 2000ms` for refreshed load/stress evidence.
 - Public Gatling HTML and log artifacts were intentionally removed from this folder; the packaged report is the PDF.

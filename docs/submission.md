@@ -33,7 +33,7 @@ Attached are the 12 required items for the MTA 2026 Semester B DevOps final proj
 
 Browser automation note: the assignment names Selenium IDE `.side`; this project uses Playwright as the Selenium IDE or similar browser automation tool. The Playwright test file and passed-run evidence are attached.
 
-Gatling/HAR note: the HAR records the browser scenario. Gatling HAR Converter generated a reference Scala simulation, and the maintained `MetaSimulation.scala` is the cleaned HAR-derived version used for repeatable max-limit, load, and stress runs. Gatling does not load the HAR file at runtime.
+Gatling/HAR note: the HAR records the browser scenario. Gatling HAR Converter generated a reference Scala simulation, and the maintained `MetaSimulation.scala` is the cleaned HAR-derived version used for repeatable max-limit, load, and stress runs. Gatling does not load the HAR file at runtime. The current hard Gatling SLA is `KO=0`; recommended refreshed load/stress evidence should also use `p95 < 2000ms`.
 
 Max-limit note: the local max-limit evidence uses users/sec arrival-rate levels from Jenkins build `#12`. `475 users/sec` passed with `KO=0`; `500 users/sec` was the first failing tested level. The local failure was `Address not available`, meaning the local Docker/Gatling networking path could no longer allocate or open enough client-side connections at that load. Because Gatling counted those failures as `KO`, the local tested max limit is `475 users/sec`.
 
@@ -64,7 +64,7 @@ These are the 12 items requested by `docs/final-project.txt`.
 | i | HAR file | `submission/local/i-har-file/meta-functional-flow.har` | packaged; sensitivity review recommended | HAR validation passed, but the file contains local `JSESSIONID` cookie evidence. Review before external sharing. |
 | j | Max-limit result, why it is the limit, and how it was found | `submission/local/j-gatling-max-limit/` | ready | Local build `#12`: `475 users/sec` passed, `500 users/sec` first failed under `KO=0`. |
 | k | Three Gatling CMD summary screenshots | `submission/local/k-gatling-cmd-screenshots/` | ready | Contains max-limit, load, and stress summary screenshots. |
-| l | Three Gatling result PDFs with graph explanations | `submission/local/l-gatling-result-pdfs/` | ready | Contains max-limit, load, and stress PDFs plus `graph-explanations.md`. |
+| l | Three Gatling result PDFs with graph explanations | `submission/local/l-gatling-result-pdfs/` | ready with caveat | Max-limit was refreshed from build `#12`; load/stress PDFs are older-profile evidence and should be refreshed with the SLA-oriented users/sec parameters before being claimed as current. |
 
 ## Required Explanations
 
@@ -118,6 +118,16 @@ The local graph explanations are packaged in `submission/local/l-gatling-result-
 - Max-limit graphs were refreshed from build `#12` and show the users/sec arrival-rate staircase plus the updated `KO=0` boundary.
 - Load-test graphs must be refreshed after the users/sec profile change; the previous `2336 OK` / `0 KO` run used the older concurrent-user profile.
 - Stress-test graphs must be refreshed after the users/sec profile change; the previous `15892 OK` / `0 KO` run used the older concurrent-user profile.
+
+### Gatling SLA Recommendations
+
+| Area | Recommended value | Evidence basis |
+|---|---|---|
+| Hard gate | `KO=0` | A tested level is acceptable only when Gatling reports zero failed requests/checks/timeouts. |
+| Load latency | `p95 < 2000ms` | Public build `#13` reached p95 `1812ms` near the public failure boundary, so `1000ms` would be too brittle. |
+| Load profile | `GATLING_LOAD_USERS=250` users/sec | About half of the conservative local `475 users/sec` passing max-limit. |
+| Stress profile | `GATLING_STRESS_START_USERS=250`, `GATLING_STRESS_TARGET_USERS=475` users/sec | Exercises up to the local passing boundary without crossing the known local failure point. |
+| Max-limit confirmation | `450-550` users/sec, step `25`, `10s/level`, ramp `1s` | Covers local `475/500` and public `525/550` pass/fail boundaries with a focused range. |
 
 ## Optional Public-IP Bonus Evidence
 

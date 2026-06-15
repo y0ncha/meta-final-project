@@ -1,5 +1,17 @@
 # 12 - Max-Limit Staircase Refactor Changelog
 
+## 2026-06-16 SLA Parameter Documentation
+
+## Summary
+
+Documented the recommended Gatling SLA profile after inspecting local Jenkins build `#12` and public Jenkins build `#13`: keep `KO=0` as the hard gate, use p95 `< 2000ms` for refreshed load/stress evidence, run load at `250 users/sec`, run stress from `250` to `475 users/sec`, and confirm max-limit with a focused `450-550 users/sec` range.
+
+## Files Changed
+
+- `docs/gatling.md`, `docs/jenkins.md`, `docs/submission.md`, `docs/public-app-bonus.md`, and `docs/max-limit-final-changes-report.md`: Added SLA/parameter guidance and clarified the evidence basis.
+- `submission/email/email-body.md`, `submission/local/j-gatling-max-limit/max-limit-explanation.md`, `submission/local/l-gatling-result-pdfs/README.md`, `submission/local/l-gatling-result-pdfs/graph-explanations.md`, `submission/local/g-browser-test-passed-run/validation-explanation.md`, and `submission/public/public-gatling-max-limit/`: Aligned packaged explanation text with the recommended SLA profile.
+- `tests/scripts/test-submission-readiness.sh`: Protects the new submission-facing SLA wording.
+
 ## 2026-06-15 Users/Sec Load And Stress Profiles
 
 ## Summary

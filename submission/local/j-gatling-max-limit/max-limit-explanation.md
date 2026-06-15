@@ -17,3 +17,12 @@ What failed:
 At `500 users/sec`, Gatling reported `3468` failed requests with `Address not available` against `tomcat:8080`. This means the local Docker/Gatling networking path could no longer allocate or open enough client-side connections for that load. It is valid max-limit evidence because Gatling counted those connection failures as `KO`, so `500 users/sec` violates the `KO=0` rule.
 
 Conclusion: the local app max limit for this evidence run is `475 users/sec`; `500 users/sec` is the first tested level beyond the limit.
+
+Recommended SLA context:
+
+| Area | Recommended value | Why |
+| --- | --- | --- |
+| Hard Gatling SLA | `KO=0` | The max limit is defined by the highest tested level with no failed requests/checks/timeouts. |
+| Load test profile | `250 users/sec` | About half of the local tested max, suitable for stable evidence. |
+| Stress test profile | `250-475 users/sec` | Exercises increasing arrival rate up to the local passing boundary. |
+| Load/stress latency SLA | `p95 < 2000ms` | Public build `#13` reached p95 `1812ms` near failure, so this is defensible without being brittle. |
