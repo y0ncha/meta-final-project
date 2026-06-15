@@ -38,9 +38,9 @@ This follow-up refactors the completed Jenkins container CI/CD plan so Jenkins r
 - **REQ-014**: Remove the legacy Compose runner services for Playwright, HAR, Gatling, and their Jenkins workspace variants.
 - **REQ-015**: Keep `docker-compose.yml` limited to regular services `tomcat` and `jenkins`; no `tools` profile services may remain.
 - **REQ-016**: Keep generated evidence under ignored `output/` paths and do not delete required evidence unless regenerated.
-- **REQ-017**: Keep the Jenkins job name `meta-container-ci-cd` and root `Jenkinsfile` as the source-controlled Pipeline entrypoint.
+- **REQ-017**: Keep the Jenkins job name `meta-ci-cd` and root `Jenkinsfile` as the source-controlled Pipeline entrypoint.
 - **REQ-018**: Keep the Docker Pipeline preflight HTTP probe immune to Groovy and shell quote stripping; do not embed JavaScript string literals inside a nested `sh 'node -e "..."'` command.
-- **REQ-019**: Superseded on 2026-06-10 by Plan 09. Keep `meta-container-ci-cd` focused on SCM/manual CI/CD work only; monitoring must run in separate Jenkins Freestyle job `meta-monitoring` using `scripts/run-monitoring-check`.
+- **REQ-019**: Superseded on 2026-06-10 by Plan 09. Keep `meta-ci-cd` focused on SCM/manual CI/CD work only; monitoring must run in separate Jenkins Freestyle job `meta-monitoring` using `scripts/run-monitoring-check`.
 - **CON-001**: Read `contribution.md` and `rules/compliance.md` before mutating files.
 - **CON-002**: Stop before editing if this plan conflicts with `rules/compliance.md`; no conflict was found because the rules prefer containerized Jenkins, Playwright, and Gatling.
 - **CON-003**: Do not add Jenkins Docker Cloud agents or dynamic agent configuration.
@@ -187,7 +187,7 @@ This follow-up refactors the completed Jenkins container CI/CD plan so Jenkins r
 ## 9. Follow-Up Notes
 
 - 2026-06-10: Replaced the Docker Pipeline preflight `node -e` HTTP probe with a single-quoted heredoc. Jenkins had executed `require(http)` and `.on(error)` after Groovy and shell quote handling removed the JavaScript string quotes, causing `TypeError [ERR_INVALID_ARG_TYPE]` before the Tomcat reachability check could run.
-- 2026-06-10: Superseded the trigger-aware availability design after instructor confirmation. Plan 09 separates monitoring into Jenkins Freestyle job `meta-monitoring` with shell command `./scripts/run-monitoring-check`. Plan 05 now keeps `meta-container-ci-cd` as the CI/CD build/deploy/test job only.
+- 2026-06-10: Superseded the trigger-aware availability design after instructor confirmation. Plan 09 separates monitoring into Jenkins Freestyle job `meta-monitoring` with shell command `./scripts/run-monitoring-check`. Plan 05 now keeps `meta-ci-cd` as the CI/CD build/deploy/test job only.
 - 2026-06-11: Collapsed the old visible `Checkout` and `Prepare Evidence Workspace` stages into the beginning of `Build WAR`. The CI/CD graph then started with the assignment-facing build stage while still running explicit `checkout scm`, recording `CHECKED_OUT_COMMIT`, and cleaning old generated evidence before Maven built the WAR.
 - 2026-06-11: Restored an explicit visible `Pre-build` stage after clarifying that pre-build and post-build should remain distinct Jenkins-managed blocks. `Pre-build` owns SCM checkout, `CHECKED_OUT_COMMIT`, and old evidence cleanup. Post-build remains the Declarative `post { always { ... } }` block so report generation and artifact publication still run after failures.
 - 2026-06-11: Moved Docker CLI, Compose CLI, and Docker daemon readiness checks into `Pre-build`, then renamed `Docker Pipeline Preflight` to `Container Test Preflight`. The remaining container preflight stays after `Deploy Tomcat` and `Verify Tomcat` because it validates the disposable test container against the WAR deployed by the current pipeline run.

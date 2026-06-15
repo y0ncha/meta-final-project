@@ -2,7 +2,7 @@
 
 - Status: ready
 - Required target: `APP_BASE_URL=http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`
-- Source: Jenkins `MeTA/meta-container-ci-cd` build `#13`
+- Source: Jenkins `MeTA/meta-ci-cd` build `#13`
 - Public tested max limit: `525 users/sec`
 - First failing tested level: `550 users/sec`
 - Recommended refreshed load/stress SLA: `KO=0` and p95 `< 2000ms`

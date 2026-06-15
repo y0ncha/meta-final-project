@@ -16,11 +16,11 @@ tags:
 
 ![Status: Completed](https://img.shields.io/badge/status-Completed-brightgreen)
 
-This plan implements the instructor-confirmed monitoring split. The Jenkins CI/CD Pipeline job `meta-container-ci-cd` remains responsible for build, deployment, Tomcat verification, Playwright, Gatling, and reports. The separate Jenkins Freestyle job `meta-monitoring` runs every 5 minutes and calls source-controlled script `scripts/run-monitoring-check`. Official monitor evidence must come from UptimeRobot by default, with SiteMonitorLite allowed only when documented.
+This plan implements the instructor-confirmed monitoring split. The Jenkins CI/CD Pipeline job `meta-ci-cd` remains responsible for build, deployment, Tomcat verification, Playwright, Gatling, and reports. The separate Jenkins Freestyle job `meta-monitoring` runs every 5 minutes and calls source-controlled script `scripts/run-monitoring-check`. Official monitor evidence must come from UptimeRobot by default, with SiteMonitorLite allowed only when documented.
 
 ## 1. Requirements & Constraints
 
-- **REQ-001**: Keep CI/CD job name `meta-container-ci-cd`.
+- **REQ-001**: Keep CI/CD job name `meta-ci-cd`.
 - **REQ-002**: Keep CI/CD job script path `Jenkinsfile`.
 - **REQ-003**: Use monitoring job name `meta-monitoring`.
 - **REQ-004**: Configure `meta-monitoring` as Jenkins job type `Freestyle project`.

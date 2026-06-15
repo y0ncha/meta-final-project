@@ -7,7 +7,7 @@ The project uses a Jenkins Pipeline job for CI/CD and a Jenkins Freestyle job fo
 ```mermaid
 flowchart LR
   Dev["Developer"] -->|push code| GitHub["GitHub"]
-  GitHub -->|SCM poll| CICD["Jenkins job: meta-container-ci-cd"]
+  GitHub -->|SCM poll| CICD["Jenkins job: meta-ci-cd"]
   CICD -->|build WAR| Maven["Maven"]
   Maven -->|yonatan-csasznik-yoed-halberstam-niv-levin.war| Tomcat["Tomcat (localhost:8080/yonatan-csasznik-yoed-halberstam-niv-levin/)"]
   CICD -->|deploy + verify| Tomcat
@@ -21,11 +21,11 @@ flowchart LR
 
 ## CI/CD Pipeline
 
-The CI/CD job is `meta-container-ci-cd` and uses script path `Jenkinsfile`. It runs on SCM polling or manual execution. It does not contain the monitoring schedule.
+The CI/CD job is `meta-ci-cd` and uses script path `Jenkinsfile`. It runs on SCM polling or manual execution. It does not contain the monitoring schedule.
 
 ```mermaid
 flowchart TD
-  Start["Jenkins job: meta-container-ci-cd"] --> Build["Build WAR"]
+  Start["Jenkins job: meta-ci-cd"] --> Build["Build WAR"]
   Build --> Deploy["Deploy to Tomcat"]
   Deploy --> Verify["Verify app"]
   Verify --> Browser["Run Playwright"]

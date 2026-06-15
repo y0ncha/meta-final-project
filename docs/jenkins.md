@@ -9,7 +9,7 @@
 - Tomcat Compose service: `tomcat`
 - Jenkins home volume: `jenkins_home`
 - Tomcat webapps volume: `tomcat_webapps`
-- Jenkins CI/CD SCM workspace: the `meta-container-ci-cd` workspace created from the GitHub repository checkout.
+- Jenkins CI/CD SCM workspace: the `meta-ci-cd` workspace created from the GitHub repository checkout.
 - Jenkins monitoring workspace: the `meta-monitoring` workspace that writes monitoring evidence.
 - Legacy local validation mount: `/workspace/final-project`
 - Jenkins Tomcat deployment mount: `/tomcat-webapps`
@@ -40,7 +40,7 @@ This project uses one source-controlled Jenkins Pipeline job for CI/CD and one J
 
 ### CI/CD Job
 
-- Job name: `meta-container-ci-cd`
+- Job name: `meta-ci-cd`
 - Job type: `Pipeline`
 - Script path: `Jenkinsfile`
 - Purpose: build the WAR, deploy to Tomcat, verify Tomcat, run Playwright, run Gatling, and publish reports.
@@ -64,7 +64,7 @@ Final GitHub-backed setup:
 - Source code management: `Git`
 - Repository URL: `https://github.com/y0ncha/meta-final-project.git`
 - Credentials: leave empty for a public repository. If the repository is private, use the same read-only GitHub credentials policy as the CI/CD job.
-- Branch specifier: use the same branch as `meta-container-ci-cd` while validating a branch, then switch to `*/main` after merge.
+- Branch specifier: use the same branch as `meta-ci-cd` while validating a branch, then switch to `*/main` after merge.
 - Trigger: `Build periodically`
 - Schedule: `H/5 * * * *`
 - Build step: `Execute shell`
@@ -80,7 +80,7 @@ Previous local validation setup used for Plan 05:
 
 ## Pipeline Flow
 
-The source-controlled `Jenkinsfile` is only for the `meta-container-ci-cd` job. It does not contain the five-minute monitoring schedule.
+The source-controlled `Jenkinsfile` is only for the `meta-ci-cd` job. It does not contain the five-minute monitoring schedule.
 
 ### Pre Actions
 
@@ -114,7 +114,7 @@ The `post` block runs after the visible stages finish. It exports PDFs for the G
 
 ## Schedule
 
-- `meta-container-ci-cd` uses SCM polling schedule `* * * * *` or manual builds.
+- `meta-ci-cd` uses SCM polling schedule `* * * * *` or manual builds.
 - `meta-monitoring` uses monitoring schedule `H/5 * * * *`.
 - The monitoring target from inside Jenkins is `http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`.
 - Do not schedule Gatling every five minutes. The project requires five-minute Gatling test duration, not a five-minute Gatling cadence.
@@ -131,7 +131,7 @@ The `post` block runs after the visible stages finish. It exports PDFs for the G
 ## Evidence To Capture
 
 - Jenkins dashboard screenshot with `localhost:8081` visible.
-- Successful manual or SCM-triggered `meta-container-ci-cd` build log.
+- Successful manual or SCM-triggered `meta-ci-cd` build log.
 - Successful scheduled `meta-monitoring` build log.
 - `output/monitoring/latest-check.txt` from `meta-monitoring`.
 - Console line showing `mvn -B clean package`.
@@ -164,8 +164,8 @@ The `post` block runs after the visible stages finish. It exports PDFs for the G
 - Previous Plan 05 local evidence files:
   - `output/jenkins/manual-build-1-console.log`
   - `output/jenkins/scheduled-build-2-console.log`
-  - `output/jenkins/meta-container-ci-cd-config.xml`
-  - `output/jenkins/meta-container-ci-cd-builds.json`
+  - `output/jenkins/meta-ci-cd-config.xml`
+  - `output/jenkins/meta-ci-cd-builds.json`
 
 ## Troubleshooting
 

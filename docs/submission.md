@@ -103,7 +103,7 @@ The HAR was used as the recording/reference source for the Gatling scenario. Gat
 
 - Workload knob: users/sec arrival rate
 - Passing rule: `KO=0`
-- Source: Jenkins `MeTA/meta-container-ci-cd` build `#12`
+- Source: Jenkins `MeTA/meta-ci-cd` build `#12`
 - Tested range: `250` to `550 users/sec`, step `25 users/sec`, `10s/level`, `1s` ramp
 - Result: `475 users/sec` is the highest tested level with `KO=0`
 - Boundary: `500 users/sec` is the first tested level with `KO>0`

@@ -1,6 +1,6 @@
 # Public Gatling Max-Limit Graph Explanation
 
-Source: Jenkins `MeTA/meta-container-ci-cd` build `#13`.
+Source: Jenkins `MeTA/meta-ci-cd` build `#13`.
 
 The public max-limit run tested the EC2 Tomcat URL from `250` to `550 users/sec` in `25 users/sec` steps. Each level ran for `10` seconds with a `1` second ramp.
 

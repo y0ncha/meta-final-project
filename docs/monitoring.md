@@ -12,7 +12,7 @@
 - Evidence path: `output/monitoring/latest-check.txt`
 - Post-build action: Archive artifacts with pattern `output/monitoring/**/*`
 
-The instructor confirmed that monitoring should be a separate Jenkins job. Do not put the 5-minute monitoring schedule in the CI/CD job `meta-container-ci-cd`.
+The instructor confirmed that monitoring should be a separate Jenkins job. Do not put the 5-minute monitoring schedule in the CI/CD job `meta-ci-cd`.
 
 ## Behavior
 
@@ -65,8 +65,8 @@ Current evidence split:
 
 ## Defense Checklist
 
-- Show Jenkins has two jobs: `meta-container-ci-cd` and `meta-monitoring`.
-- Show `meta-container-ci-cd` uses `Jenkinsfile` and has no `H/5` monitoring cron.
+- Show Jenkins has two jobs: `meta-ci-cd` and `meta-monitoring`.
+- Show `meta-ci-cd` uses `Jenkinsfile` and has no `H/5` monitoring cron.
 - Show `meta-monitoring` is a Freestyle project.
 - Show `meta-monitoring` has trigger `Build periodically` with schedule `H/5 * * * *`.
 - Show `meta-monitoring` has an Execute shell step that runs `./scripts/run-monitoring-check`.

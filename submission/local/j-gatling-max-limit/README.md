@@ -3,7 +3,7 @@
 - Status: ready
 - Assignment item: `j) Write in the email what is your app max limit, explain why this is the limit and how you found it`
 - Packaged files: `max-limit-explanation.md`, `max-limit-discovery.log`
-- Source: Jenkins `MeTA/meta-container-ci-cd` build `#12`
+- Source: Jenkins `MeTA/meta-ci-cd` build `#12`
 - Local tested max limit: `475 users/sec`
 - First failing tested level: `500 users/sec`
 

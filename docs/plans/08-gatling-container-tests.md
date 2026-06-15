@@ -272,7 +272,7 @@ Follow-up update on 2026-06-13: Gatling Recorder's HAR Converter now generates `
 - **DEP-007**: Docker image `denvazh/gatling:3.2.1` must be available locally or pullable from the configured Docker registry.
 - **DEP-008**: Docker image `mcr.microsoft.com/playwright:v1.60.0-noble` must be available locally or pullable for automated PDF export.
 - **DEP-009**: `scripts/deploy-war` must exist, remain executable, and deploy `target/yonatan-csasznik-yoed-halberstam-niv-levin.war` before Gatling runs.
-- **DEP-010**: `Jenkinsfile` must remain the source-controlled Pipeline job script for `meta-container-ci-cd`.
+- **DEP-010**: `Jenkinsfile` must remain the source-controlled Pipeline job script for `meta-ci-cd`.
 - **DEP-011**: Jenkins plugin `htmlpublisher` must remain installed in the custom Jenkins image so Gatling reports appear in build pages.
 - **DEP-012**: Generated evidence under `output/` must remain ignored by `.gitignore`.
 
@@ -320,9 +320,9 @@ Follow-up update on 2026-06-13: Gatling Recorder's HAR Converter now generates `
 - **TEST-009A**: `GATLING_PDF_REQUIRE_ALL=false ./scripts/export-gatling-pdfs` must allow Jenkins-style partial export when optional max-limit evidence is not present.
 - **TEST-009B**: `scripts/run-gatling-container` must remove stale stable outputs before each run and normalize the latest raw report before returning a Gatling assertion failure status.
 - **TEST-010**: Jenkins-compatible execution path must remain source-controlled through `Jenkinsfile` and `scripts/run-gatling-container`.
-- **TEST-011**: Jenkins job `meta-container-ci-cd` should be rerun before final submission to capture live build-page evidence.
-- **TEST-012**: Jenkins job `meta-container-ci-cd` should run `Gatling Load Test` and `Gatling Stress Test` successfully when `RUN_GATLING_TESTS=true` before final submission.
-- **TEST-013**: Jenkins job `meta-container-ci-cd` should run full `Gatling Max Limit` discovery successfully when `RUN_GATLING_TESTS=true` before final submission.
+- **TEST-011**: Jenkins job `meta-ci-cd` should be rerun before final submission to capture live build-page evidence.
+- **TEST-012**: Jenkins job `meta-ci-cd` should run `Gatling Load Test` and `Gatling Stress Test` successfully when `RUN_GATLING_TESTS=true` before final submission.
+- **TEST-013**: Jenkins job `meta-ci-cd` should run full `Gatling Max Limit` discovery successfully when `RUN_GATLING_TESTS=true` before final submission.
 - **TEST-014**: Jenkins HTML Publisher should expose `Pipeline Final Report`, `Gatling Max Limit Report`, `Gatling Load 5m Report`, and `Gatling Stress 5m Report` when the corresponding report files exist.
 - **TEST-015**: `test -s output/reports/pipeline-report.html && test -s output/gatling/max-limit/index.html && test -s output/gatling/load-5m/index.html && test -s output/gatling/stress-5m/index.html` must pass.
 - **TEST-016**: `test -s output/gatling/max-limit/max-limit-report.pdf && test -s output/gatling/load-5m/load-5m-report.pdf && test -s output/gatling/stress-5m/stress-5m-report.pdf` must pass.
@@ -344,7 +344,7 @@ Follow-up update on 2026-06-13: Gatling Recorder's HAR Converter now generates `
 - **RISK-008**: Jenkins runner services depend on Docker socket access plus the existing Jenkins container volume mounts. This keeps browser/Gatling dependencies outside the Jenkins image, but it is not a production security pattern.
 - **ASSUMPTION-001**: The app remains deployed at context path `/yonatan-csasznik-yoed-halberstam-niv-levin/`.
 - **ASSUMPTION-002**: Docker Compose network name remains `meta`.
-- **ASSUMPTION-003**: Jenkins job `meta-container-ci-cd` continues to use the repository `Jenkinsfile`.
+- **ASSUMPTION-003**: Jenkins job `meta-ci-cd` continues to use the repository `Jenkinsfile`.
 - **ASSUMPTION-004**: Generated evidence remains ignored under `output/` and is attached to the final submission package outside Git.
 - **ASSUMPTION-005**: The project continues using Playwright container `mcr.microsoft.com/playwright:v1.60.0-noble` for browser automation and PDF export support.
 
