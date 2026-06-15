@@ -1,5 +1,18 @@
 # 12 - Max-Limit Staircase Refactor Changelog
 
+## 2026-06-15 Clear Users/Sec Parameter Names
+
+## Summary
+
+Renamed Jenkins-facing max-limit users/sec controls from the legacy `BASE` / `LIMIT` names to clearer `START` / `END` names. Shell wrappers still accept the old names as compatibility aliases and normalize them into the internal variables used by the Gatling simulation.
+
+## Files Changed
+
+- `Jenkinsfile`: Replaced max-limit UI parameters with `GATLING_MAX_START_USERS_PER_SEC`, `GATLING_MAX_STEP_USERS_PER_SEC`, and `GATLING_MAX_END_USERS_PER_SEC`.
+- `scripts/run-gatling-max-limit` and `scripts/run-gatling-container`: Prefer the clear users/sec names while preserving old-name fallbacks.
+- `docs/gatling.md` and `docs/jenkins.md`: Document the clearer names as the preferred interface.
+- `tests/scripts/test-jenkinsfile-gatling-params.sh`, `tests/scripts/test-run-gatling-max-limit.sh`, and `tests/test_gatling_max_limit_summary.sh`: Verify the new names and compatibility behavior.
+
 ## 2026-06-15 Concise Max-Limit Summary
 
 ## Summary

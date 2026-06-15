@@ -83,10 +83,10 @@ EOF
   cd "$TEST_ROOT"
   CALL_LOG="$CALL_LOG" \
   APP_BASE_URL=http://example.test/meta/ \
-  GATLING_MAX_BASE_USERS=10 \
-  GATLING_MAX_STEP_USERS=10 \
+  GATLING_MAX_START_USERS_PER_SEC=10 \
+  GATLING_MAX_STEP_USERS_PER_SEC=10 \
   GATLING_MAX_DURATION_SECONDS=1 \
-  GATLING_MAX_LIMIT_USERS=30 \
+  GATLING_MAX_END_USERS_PER_SEC=30 \
     "$SCRIPT_DIR/run-gatling-max-limit" >/dev/null
 )
 
@@ -225,7 +225,7 @@ if grep -Fq 'max limit level finished :' "$TEST_ROOT/single-level.log"; then
   exit 1
 fi
 grep -Fq 'max limit staircase started : 100-175 users/sec | step: 25 users/sec | duration: 7s per level | ramp: 2s' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
-grep -Fq 'command parameters: GATLING_RUN_TYPE=max-limit APP_BASE_URL=http://example.test/meta/ GATLING_MAX_BASE_USERS=100 GATLING_MAX_STEP_USERS=25 GATLING_MAX_LIMIT_USERS=175 GATLING_MAX_DURATION_SECONDS=7 GATLING_MAX_RAMP_SECONDS=2' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
+grep -Fq 'command parameters: GATLING_RUN_TYPE=max-limit APP_BASE_URL=http://example.test/meta/ GATLING_MAX_START_USERS_PER_SEC=100 GATLING_MAX_STEP_USERS_PER_SEC=25 GATLING_MAX_END_USERS_PER_SEC=175 GATLING_MAX_DURATION_SECONDS=7 GATLING_MAX_RAMP_SECONDS=2' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
 grep -Fq '  app base URL: http://example.test/meta/' "$TEST_ROOT/single-level.log"
 grep -Fq 'ramp schedule: 0-100 users/sec | report time window: 0-2s' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
 grep -Fq 'level schedule: 100 users/sec | report time window: 2-9s' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"

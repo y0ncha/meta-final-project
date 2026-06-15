@@ -112,7 +112,7 @@ if ! grep -Fq "  key result: highest passing 10 users/sec | first failing 20 use
   printf '%s\n' "expected parsed key result in discovery log" >&2
   exit 1
 fi
-if ! grep -Fq "command parameters: GATLING_RUN_TYPE=max-limit APP_BASE_URL=http://example.test/meta/ GATLING_MAX_BASE_USERS=10 GATLING_MAX_STEP_USERS=10 GATLING_MAX_LIMIT_USERS=30 GATLING_MAX_DURATION_SECONDS=5 GATLING_MAX_RAMP_SECONDS=0" output/gatling/max-limit/raw/max-limit-discovery.log; then
+if ! grep -Fq "command parameters: GATLING_RUN_TYPE=max-limit APP_BASE_URL=http://example.test/meta/ GATLING_MAX_START_USERS_PER_SEC=10 GATLING_MAX_STEP_USERS_PER_SEC=10 GATLING_MAX_END_USERS_PER_SEC=30 GATLING_MAX_DURATION_SECONDS=5 GATLING_MAX_RAMP_SECONDS=0" output/gatling/max-limit/raw/max-limit-discovery.log; then
   printf '%s\n' "expected exact staircase command parameters in discovery log" >&2
   exit 1
 fi
