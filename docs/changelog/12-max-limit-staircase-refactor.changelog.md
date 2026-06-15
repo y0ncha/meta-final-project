@@ -1,5 +1,36 @@
 # 12 - Max-Limit Staircase Refactor Changelog
 
+## 2026-06-15 Final Max-Limit Hardening
+
+## Summary
+
+Kept the single closed-concurrency staircase and hardened it for final evidence runs. The profile now exits failed virtual users early, has a calculated max-duration guard, keeps optional ramp timing, and defaults to a targeted `8250` to `8350` local range around the packaged `8300` pass / `8350` fail boundary instead of a broad `8000` to `12000` sweep.
+
+## Files Changed
+
+- `src/gatling/user-files/simulations/MetaSimulation.scala`: Adds `exitHereIfFailed`, a calculated `.maxDuration(...)` guard, `GATLING_MAX_RAMP_SECONDS`, optional initial ramp from 0 to the first max-limit level, and optional ramps between levels.
+- `scripts/run-gatling-max-limit`: Uses targeted local defaults, validates the ramp setting, logs ramp windows, maps KO timestamps across hold and ramp windows, and records p95 as supporting evidence rather than the cutoff.
+- `scripts/run-gatling-container` and `Jenkinsfile`: Pass `GATLING_MAX_RAMP_SECONDS` through local and Jenkins Gatling execution, default max-limit runs to `8250-8350` in `50`-user steps, and stream full-mode Gatling logs live to the console while preserving the run log file.
+- `docs/gatling.md` and `docs/jenkins.md`: Document the staircase rationale, optional ramps, steady-state duration tradeoff, fail-fast behavior, max-duration guard, targeted defaults, and latency-review role.
+- `docs/max-limit-final-changes-report.md`: Records the final accepted and deferred review recommendations.
+- `tests/scripts/test-run-gatling-max-limit.sh`, `tests/test_gatling_max_limit_summary.sh`, `tests/scripts/test-gatling-assertions.sh`, and `tests/scripts/test-jenkinsfile-gatling-params.sh`: Cover the new parameter, schedule logging, summary wording, and Jenkins parameter propagation.
+
+## Validation
+
+- `sh tests/scripts/test-run-gatling-max-limit.sh`: passed.
+- `sh tests/test_gatling_max_limit_summary.sh`: passed.
+- `sh tests/scripts/test-gatling-assertions.sh`: passed.
+- `sh tests/scripts/test-jenkinsfile-gatling-params.sh`: passed.
+- `sh tests/scripts/test-run-gatling-console-mode.sh`: passed.
+
+## Not Run
+
+- Gatling max-limit, load, and stress evidence runs were not executed. Per project constraint, those runs must be triggered by the user or Jenkins, not by the assistant.
+
+## Remaining Risks
+
+- Any enabled ramp or changed default range changes the active-users graph and timing windows, so packaged max-limit evidence should be refreshed before submission if this new profile is used as replacement evidence.
+
 ## 2026-06-14 Single Staircase Max-Limit Implementation
 
 ## Summary

@@ -30,11 +30,12 @@ GATLING_CONSOLE_MODE="${GATLING_CONSOLE_MODE:-full}"
 GATLING_LOAD_USERS="${GATLING_LOAD_USERS:-${GATLING_LOAD_USERS_PER_SEC:-5}}"
 GATLING_STRESS_START_USERS="${GATLING_STRESS_START_USERS:-${GATLING_STRESS_START_USERS_PER_SEC:-10}}"
 GATLING_STRESS_TARGET_USERS="${GATLING_STRESS_TARGET_USERS:-${GATLING_STRESS_TARGET_USERS_PER_SEC:-50}}"
-GATLING_MAX_USERS="${GATLING_MAX_USERS:-${GATLING_MAX_START_USERS_PER_SEC:-5}}"
+GATLING_MAX_USERS="${GATLING_MAX_USERS:-${GATLING_MAX_START_USERS_PER_SEC:-8250}}"
 GATLING_MAX_BASE_USERS="${GATLING_MAX_BASE_USERS:-${GATLING_MAX_BASE_USERS_PER_SEC:-${GATLING_MAX_START_USERS_PER_SEC:-$GATLING_MAX_USERS}}}"
-GATLING_MAX_STEP_USERS="${GATLING_MAX_STEP_USERS:-${GATLING_MAX_STEP_USERS_PER_SEC:-5}}"
-GATLING_MAX_LIMIT_USERS="${GATLING_MAX_LIMIT_USERS:-${GATLING_MAX_LIMIT_USERS_PER_SEC:-$GATLING_MAX_BASE_USERS}}"
-GATLING_MAX_DURATION_SECONDS="${GATLING_MAX_DURATION_SECONDS:-${GATLING_MAX_LEVEL_SECONDS:-30}}"
+GATLING_MAX_STEP_USERS="${GATLING_MAX_STEP_USERS:-${GATLING_MAX_STEP_USERS_PER_SEC:-50}}"
+GATLING_MAX_LIMIT_USERS="${GATLING_MAX_LIMIT_USERS:-${GATLING_MAX_LIMIT_USERS_PER_SEC:-8350}}"
+GATLING_MAX_DURATION_SECONDS="${GATLING_MAX_DURATION_SECONDS:-${GATLING_MAX_LEVEL_SECONDS:-10}}"
+GATLING_MAX_RAMP_SECONDS="${GATLING_MAX_RAMP_SECONDS:-0}"
 GATLING_LOAD_DURATION_SECONDS=300
 GATLING_STRESS_DURATION_SECONDS=300
 SIMULATION_CLASS="${GATLING_SIMULATION_CLASS:-MetaSimulation}"
@@ -92,7 +93,7 @@ print_test_parameters() {
       ;;
     max-limit)
       if [ "${GATLING_MAX_DISCOVERY_WRAPPER:-0}" != "1" ]; then
-        printf '%s\n' "max limit staircase started : base ${GATLING_MAX_BASE_USERS} virtual users | step ${GATLING_MAX_STEP_USERS} virtual users | limit ${GATLING_MAX_LIMIT_USERS} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s per level"
+        printf '%s\n' "max limit staircase started : base ${GATLING_MAX_BASE_USERS} virtual users | step ${GATLING_MAX_STEP_USERS} virtual users | limit ${GATLING_MAX_LIMIT_USERS} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s per level | ramp: ${GATLING_MAX_RAMP_SECONDS}s"
       fi
       ;;
   esac
@@ -100,13 +101,23 @@ print_test_parameters() {
 
 run_and_log() {
   set +e
-  "$@" > "$LOG_FILE" 2>&1
-  status=$?
-  set -e
   case "$GATLING_CONSOLE_MODE" in
     full)
-      cat "$LOG_FILE"
+      status_file=$(mktemp "${TMPDIR:-/tmp}/gatling-status.XXXXXX")
+      {
+        "$@" 2>&1
+        printf '%s\n' "$?" > "$status_file"
+      } | tee "$LOG_FILE"
+      status=$(cat "$status_file")
+      rm -f "$status_file"
       ;;
+    summary)
+      "$@" > "$LOG_FILE" 2>&1
+      status=$?
+      ;;
+  esac
+  set -e
+  case "$GATLING_CONSOLE_MODE" in
     summary)
       print_default_gatling_summary || print_gatling_log_excerpt
       ;;
@@ -135,6 +146,7 @@ if [ "$GATLING_DOCKER_PIPELINE" = "1" ]; then
   export GATLING_MAX_STEP_USERS
   export GATLING_MAX_LIMIT_USERS
   export GATLING_MAX_DURATION_SECONDS
+  export GATLING_MAX_RAMP_SECONDS
 
   CONTAINER_PROJECT_ROOT="$PROJECT_ROOT"
   GATLING_CMD="$GATLING_BIN"
@@ -179,6 +191,7 @@ else
     -e GATLING_MAX_STEP_USERS="$GATLING_MAX_STEP_USERS" \
     -e GATLING_MAX_LIMIT_USERS="$GATLING_MAX_LIMIT_USERS" \
     -e GATLING_MAX_DURATION_SECONDS="$GATLING_MAX_DURATION_SECONDS" \
+    -e GATLING_MAX_RAMP_SECONDS="$GATLING_MAX_RAMP_SECONDS" \
     "$GATLING_IMAGE" \
     -sf /work/src/gatling/user-files/simulations \
     -rf "/work/$RAW_DIR" \

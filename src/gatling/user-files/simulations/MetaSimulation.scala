@@ -20,6 +20,14 @@ class MetaSimulation extends Simulation {
     value
   }
 
+  private def nonNegativeIntEnv(name: String, defaultValue: => Int): Int = {
+    val value = sys.env.get(name).map(_.trim).filter(_.nonEmpty).map(_.toInt).getOrElse(defaultValue)
+    if (value < 0) {
+      throw new IllegalArgumentException(s"$name must be greater than or equal to 0")
+    }
+    value
+  }
+
   private def staircaseLevels(startUsers: Int, targetUsers: Int, name: String): Seq[Int] = {
     if (targetUsers < startUsers) {
       throw new IllegalArgumentException(s"${name}_TARGET_USERS must be greater than or equal to ${name}_START_USERS")
@@ -50,6 +58,7 @@ class MetaSimulation extends Simulation {
         .get(appRootUrl)
         .check(status.is(200), substring("MeTA"))
     )
+    .exitHereIfFailed
     .pause(1.second)
     .exec(
       http("POST /yonatan-csasznik-yoed-halberstam-niv-levin/index.jsp submit name")
@@ -57,11 +66,13 @@ class MetaSimulation extends Simulation {
         .formParam("nameInput", "Yonatan")
         .check(status.is(200), substring("Hello, Yonatan. MeTA Corporate reviewed your form, opened a committee, and somehow approved it."))
     )
+    .exitHereIfFailed
     .exec(
       http("GET /yonatan-csasznik-yoed-halberstam-niv-levin/ reload before empty submit")
         .get(appRootUrl)
         .check(status.is(200), substring("MeTA"))
     )
+    .exitHereIfFailed
     .pause(1.second)
     .exec(
       http("POST /yonatan-csasznik-yoed-halberstam-niv-levin/index.jsp submit empty name")
@@ -69,6 +80,7 @@ class MetaSimulation extends Simulation {
         .formParam("nameInput", "")
         .check(status.is(200), substring("Please enter a name before MeTA Corporate schedules a meeting about the empty box."))
     )
+    .exitHereIfFailed
 
   private val scn = scenario("Meta JSP HAR-derived flow")
     .exec(harDerivedFlow)
@@ -109,19 +121,38 @@ class MetaSimulation extends Simulation {
         )
 
     case "max-limit" =>
-      val maxBaseUsers = intEnv("GATLING_MAX_BASE_USERS", intEnv("GATLING_MAX_USERS", 5))
-      val maxStepUsers = intEnv("GATLING_MAX_STEP_USERS", 5)
-      val maxLimitUsers = intEnv("GATLING_MAX_LIMIT_USERS", maxBaseUsers)
-      val maxDurationSeconds = intEnv("GATLING_MAX_DURATION_SECONDS", 30)
+      val maxBaseUsers = intEnv("GATLING_MAX_BASE_USERS", intEnv("GATLING_MAX_USERS", 8250))
+      val maxStepUsers = intEnv("GATLING_MAX_STEP_USERS", 50)
+      val maxLimitUsers = intEnv("GATLING_MAX_LIMIT_USERS", 8350)
+      val maxDurationSeconds = intEnv("GATLING_MAX_DURATION_SECONDS", 10)
+      val maxRampSeconds = nonNegativeIntEnv("GATLING_MAX_RAMP_SECONDS", 0)
       val levels = steppedLevels(maxBaseUsers, maxLimitUsers, maxStepUsers)
-      val staircaseProfile = levels.map { level =>
-        constantConcurrentUsers(level).during(maxDurationSeconds.seconds)
+      val maxScheduleSeconds = maxRampSeconds + (levels.size * maxDurationSeconds) + ((levels.size - 1) * maxRampSeconds)
+      val maxRunSeconds = maxScheduleSeconds + 30
+      val levelHolds = levels.zipWithIndex.flatMap { case (level, index) =>
+        val hold = Seq(constantConcurrentUsers(level).during(maxDurationSeconds.seconds))
+        val rampToNext = levels.lift(index + 1).toSeq.flatMap { nextLevel =>
+          if (maxRampSeconds > 0) {
+            Seq(rampConcurrentUsers(level).to(nextLevel).during(maxRampSeconds.seconds))
+          } else {
+            Seq.empty
+          }
+        }
+        hold ++ rampToNext
+      }
+      val staircaseProfile = {
+        if (maxRampSeconds > 0) {
+          Seq(rampConcurrentUsers(0).to(levels.head).during(maxRampSeconds.seconds)) ++ levelHolds
+        } else {
+          levelHolds
+        }
       }
 
       setUp(
         scn.inject(staircaseProfile)
       )
         .protocols(httpProtocol)
+        .maxDuration(maxRunSeconds.seconds)
         .assertions(
           global.failedRequests.count.lt(1)
         )

@@ -21,15 +21,17 @@ assert_not_contains() {
 }
 
 assert_contains "choice(name: 'APP_BASE_URL', choices: ['http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/', 'http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/']"
-assert_contains "string(name: 'GATLING_MAX_BASE_USERS', defaultValue: '8000'"
-assert_contains "string(name: 'GATLING_MAX_STEP_USERS', defaultValue: '20'"
+assert_contains "string(name: 'GATLING_MAX_BASE_USERS', defaultValue: '8250'"
+assert_contains "string(name: 'GATLING_MAX_STEP_USERS', defaultValue: '50'"
 assert_contains "string(name: 'GATLING_MAX_DURATION_SECONDS', defaultValue: '10'"
-assert_contains "string(name: 'GATLING_MAX_LIMIT_USERS', defaultValue: '12000'"
+assert_contains "string(name: 'GATLING_MAX_RAMP_SECONDS', defaultValue: '0'"
+assert_contains "string(name: 'GATLING_MAX_LIMIT_USERS', defaultValue: '8350'"
 assert_contains "choice(name: 'GATLING_CONSOLE_MODE', choices: ['summary', 'full']"
 
 assert_contains 'GATLING_MAX_BASE_USERS = "${params.GATLING_MAX_BASE_USERS}"'
 assert_contains 'GATLING_MAX_STEP_USERS = "${params.GATLING_MAX_STEP_USERS}"'
 assert_contains 'GATLING_MAX_DURATION_SECONDS = "${params.GATLING_MAX_DURATION_SECONDS}"'
+assert_contains 'GATLING_MAX_RAMP_SECONDS = "${params.GATLING_MAX_RAMP_SECONDS}"'
 assert_contains 'GATLING_MAX_LIMIT_USERS = "${params.GATLING_MAX_LIMIT_USERS}"'
 assert_contains 'GATLING_CONSOLE_MODE = "${params.GATLING_CONSOLE_MODE}"'
 
@@ -49,6 +51,7 @@ assert_not_contains 'GATLING_LOAD_USERS_PER_SEC'
 assert_not_contains 'GATLING_STRESS_START_USERS_PER_SEC'
 assert_not_contains 'GATLING_STRESS_TARGET_USERS_PER_SEC'
 assert_contains '-e GATLING_CONSOLE_MODE=${env.GATLING_CONSOLE_MODE}'
+assert_contains '-e GATLING_MAX_RAMP_SECONDS=${env.GATLING_MAX_RAMP_SECONDS}'
 
 assert_contains "booleanParam(name: 'RUN_GATLING_MAX_LIMIT', defaultValue: false"
 assert_contains "booleanParam(name: 'RUN_GATLING_LOAD_TEST', defaultValue: false"

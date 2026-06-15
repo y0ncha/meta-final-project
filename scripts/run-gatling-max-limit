@@ -20,15 +20,28 @@ positive_int() {
   fi
 }
 
-GATLING_MAX_USERS="${GATLING_MAX_USERS:-${GATLING_MAX_START_USERS_PER_SEC:-5}}"
+non_negative_int() {
+  name="$1"
+  value="$2"
+  case "$value" in
+    ''|*[!0-9]*)
+      printf '%s\n' "$name must be a non-negative integer" >&2
+      exit 2
+      ;;
+  esac
+}
+
+GATLING_MAX_USERS="${GATLING_MAX_USERS:-${GATLING_MAX_START_USERS_PER_SEC:-8250}}"
 GATLING_MAX_BASE_USERS="${GATLING_MAX_BASE_USERS:-${GATLING_MAX_BASE_USERS_PER_SEC:-${GATLING_MAX_START_USERS_PER_SEC:-$GATLING_MAX_USERS}}}"
-GATLING_MAX_STEP_USERS="${GATLING_MAX_STEP_USERS:-${GATLING_MAX_STEP_USERS_PER_SEC:-5}}"
-GATLING_MAX_DURATION_SECONDS="${GATLING_MAX_DURATION_SECONDS:-${GATLING_MAX_LEVEL_SECONDS:-30}}"
+GATLING_MAX_STEP_USERS="${GATLING_MAX_STEP_USERS:-${GATLING_MAX_STEP_USERS_PER_SEC:-50}}"
+GATLING_MAX_DURATION_SECONDS="${GATLING_MAX_DURATION_SECONDS:-${GATLING_MAX_LEVEL_SECONDS:-10}}"
+GATLING_MAX_RAMP_SECONDS="${GATLING_MAX_RAMP_SECONDS:-0}"
 GATLING_CONSOLE_MODE="${GATLING_CONSOLE_MODE:-full}"
 
 positive_int GATLING_MAX_BASE_USERS "$GATLING_MAX_BASE_USERS"
 positive_int GATLING_MAX_STEP_USERS "$GATLING_MAX_STEP_USERS"
 positive_int GATLING_MAX_DURATION_SECONDS "$GATLING_MAX_DURATION_SECONDS"
+non_negative_int GATLING_MAX_RAMP_SECONDS "$GATLING_MAX_RAMP_SECONDS"
 case "$GATLING_CONSOLE_MODE" in
   full|summary) ;;
   *)
@@ -41,7 +54,7 @@ if [ -z "${GATLING_MAX_LIMIT_USERS:-}" ]; then
   GATLING_MAX_LIMIT_USERS="${GATLING_MAX_LIMIT_USERS_PER_SEC:-}"
 fi
 if [ -z "$GATLING_MAX_LIMIT_USERS" ]; then
-  GATLING_MAX_LIMIT_USERS="$GATLING_MAX_BASE_USERS"
+  GATLING_MAX_LIMIT_USERS="8350"
 fi
 positive_int GATLING_MAX_LIMIT_USERS "$GATLING_MAX_LIMIT_USERS"
 
@@ -78,7 +91,9 @@ print_test_summary() {
   final_summary_log "  tested range: ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} virtual users"
   final_summary_log "  step: ${GATLING_MAX_STEP_USERS} virtual users"
   final_summary_log "  duration: ${GATLING_MAX_DURATION_SECONDS}s per level"
+  final_summary_log "  ramp: ${GATLING_MAX_RAMP_SECONDS}s between levels"
   final_summary_log "  cutoff rule: highest tested level with KO=0; first failing level has KO>0"
+  final_summary_log "  latency review: use Gatling p95 and response-time graphs as supporting evidence, not as the cutoff"
   if [ -n "$highest_passing" ]; then
     final_summary_log "  highest passing tested level: $highest_passing"
   else
@@ -96,24 +111,46 @@ print_test_summary() {
   final_summary_log "  full discovery log: $DISCOVERY_LOG"
 }
 
-level_at_index() {
-  target_index="$1"
+level_at_offset_ms() {
+  offset_ms="$1"
   level="$GATLING_MAX_BASE_USERS"
   previous_level=''
-  index=0
+  elapsed_ms=0
+  hold_ms=$((GATLING_MAX_DURATION_SECONDS * 1000))
+  ramp_ms=$((GATLING_MAX_RAMP_SECONDS * 1000))
 
-  while [ "$index" -lt "$target_index" ] && [ "$level" -lt "$GATLING_MAX_LIMIT_USERS" ]; do
-    previous_level="$level"
+  if [ "$ramp_ms" -gt 0 ]; then
+    elapsed_ms=$((elapsed_ms + ramp_ms))
+    if [ "$offset_ms" -lt "$elapsed_ms" ]; then
+      printf '%s|%s\n' "$previous_level" "$level"
+      return 0
+    fi
+  fi
+
+  while :; do
+    elapsed_ms=$((elapsed_ms + hold_ms))
+    if [ "$offset_ms" -lt "$elapsed_ms" ]; then
+      printf '%s|%s\n' "$previous_level" "$level"
+      return 0
+    fi
+    if [ "$level" -eq "$GATLING_MAX_LIMIT_USERS" ]; then
+      printf '%s|%s\n' "$previous_level" "$level"
+      return 0
+    fi
     next_level=$((level + GATLING_MAX_STEP_USERS))
     if [ "$next_level" -gt "$GATLING_MAX_LIMIT_USERS" ]; then
-      level="$GATLING_MAX_LIMIT_USERS"
-    else
-      level="$next_level"
+      next_level="$GATLING_MAX_LIMIT_USERS"
     fi
-    index=$((index + 1))
+    if [ "$ramp_ms" -gt 0 ]; then
+      elapsed_ms=$((elapsed_ms + ramp_ms))
+      if [ "$offset_ms" -lt "$elapsed_ms" ]; then
+        printf '%s|%s\n' "$level" "$next_level"
+        return 0
+      fi
+    fi
+    previous_level="$level"
+    level="$next_level"
   done
-
-  printf '%s|%s\n' "$previous_level" "$level"
 }
 
 failure_levels_from_simulation_log() {
@@ -151,8 +188,7 @@ failure_levels_from_simulation_log() {
     first_ko_offset_ms=0
   fi
 
-  level_index=$((first_ko_offset_ms / (GATLING_MAX_DURATION_SECONDS * 1000)))
-  level_at_index "$level_index"
+  level_at_offset_ms "$first_ko_offset_ms"
 }
 
 run_gatling_staircase() {
@@ -164,6 +200,7 @@ run_gatling_staircase() {
     GATLING_MAX_STEP_USERS="$GATLING_MAX_STEP_USERS" \
     GATLING_MAX_LIMIT_USERS="$GATLING_MAX_LIMIT_USERS" \
     GATLING_MAX_DURATION_SECONDS="$GATLING_MAX_DURATION_SECONDS" \
+    GATLING_MAX_RAMP_SECONDS="$GATLING_MAX_RAMP_SECONDS" \
     "$RUNNER"
 }
 
@@ -173,26 +210,36 @@ has_gatling_report() {
 
 write_level_schedule() {
   level="$GATLING_MAX_BASE_USERS"
-  index=0
+  starts_at=0
+  if [ "$GATLING_MAX_RAMP_SECONDS" -gt 0 ]; then
+    ends_at="$GATLING_MAX_RAMP_SECONDS"
+    summary_log "ramp schedule: 0-${level} virtual users | report time window: ${starts_at}-${ends_at}s"
+    starts_at="$ends_at"
+  fi
   while :; do
-    starts_at=$((index * GATLING_MAX_DURATION_SECONDS))
-    ends_at=$(((index + 1) * GATLING_MAX_DURATION_SECONDS))
+    ends_at=$((starts_at + GATLING_MAX_DURATION_SECONDS))
     summary_log "level schedule: ${level} virtual users | report time window: ${starts_at}-${ends_at}s"
     if [ "$level" -eq "$GATLING_MAX_LIMIT_USERS" ]; then
       break
     fi
     next_level=$((level + GATLING_MAX_STEP_USERS))
     if [ "$next_level" -gt "$GATLING_MAX_LIMIT_USERS" ]; then
-      level="$GATLING_MAX_LIMIT_USERS"
-    else
-      level="$next_level"
+      next_level="$GATLING_MAX_LIMIT_USERS"
     fi
-    index=$((index + 1))
+    if [ "$GATLING_MAX_RAMP_SECONDS" -gt 0 ]; then
+      ramp_starts_at="$ends_at"
+      ramp_ends_at=$((ramp_starts_at + GATLING_MAX_RAMP_SECONDS))
+      summary_log "ramp schedule: ${level}-${next_level} virtual users | report time window: ${ramp_starts_at}-${ramp_ends_at}s"
+      starts_at="$ramp_ends_at"
+    else
+      starts_at="$ends_at"
+    fi
+    level="$next_level"
   done
 }
 
-summary_log "max limit staircase started : ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} virtual users | step: ${GATLING_MAX_STEP_USERS} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s per level"
-summary_log "command parameters: GATLING_RUN_TYPE=max-limit APP_BASE_URL=${APP_BASE_URL} GATLING_MAX_BASE_USERS=${GATLING_MAX_BASE_USERS} GATLING_MAX_STEP_USERS=${GATLING_MAX_STEP_USERS} GATLING_MAX_LIMIT_USERS=${GATLING_MAX_LIMIT_USERS} GATLING_MAX_DURATION_SECONDS=${GATLING_MAX_DURATION_SECONDS}"
+summary_log "max limit staircase started : ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} virtual users | step: ${GATLING_MAX_STEP_USERS} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s per level | ramp: ${GATLING_MAX_RAMP_SECONDS}s"
+summary_log "command parameters: GATLING_RUN_TYPE=max-limit APP_BASE_URL=${APP_BASE_URL} GATLING_MAX_BASE_USERS=${GATLING_MAX_BASE_USERS} GATLING_MAX_STEP_USERS=${GATLING_MAX_STEP_USERS} GATLING_MAX_LIMIT_USERS=${GATLING_MAX_LIMIT_USERS} GATLING_MAX_DURATION_SECONDS=${GATLING_MAX_DURATION_SECONDS} GATLING_MAX_RAMP_SECONDS=${GATLING_MAX_RAMP_SECONDS}"
 write_level_schedule
 
 set +e

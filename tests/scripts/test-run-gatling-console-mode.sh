@@ -107,6 +107,92 @@ grep -Fq -- '---- Global Information' "$TEST_ROOT/output/gatling/load-5m/load-5m
 
 grep -Fq -- 'VERY NOISY GATLING DETAIL' "$TEST_ROOT/full.out"
 
+cat > "$FAKE_GATLING" <<'SH'
+#!/usr/bin/env sh
+set -eu
+
+raw_dir=""
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -rf)
+      raw_dir="$2"
+      shift 2
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+
+mkdir -p "$raw_dir/fake-run"
+printf '%s\n' 'LIVE FULL MODE LINE BEFORE REPORT'
+if [ -n "${STREAM_MARKER:-}" ]; then
+  : > "$STREAM_MARKER"
+fi
+sleep 2
+printf '<!doctype html><title>fake gatling report</title>\n' > "$raw_dir/fake-run/index.html"
+printf '%s\n' '---- Global Information --------------------------------------------------------'
+printf '%s\n' '> request count                                      1 (OK=1      KO=0     )'
+exit 0
+SH
+chmod +x "$FAKE_GATLING"
+
+(
+  cd "$TEST_ROOT"
+  STREAM_MARKER="$TEST_ROOT/stream.marker" \
+  GATLING_DOCKER_PIPELINE=1 \
+  GATLING_RUN_TYPE=stress-5m \
+  GATLING_BIN="$FAKE_GATLING" \
+  GATLING_CONSOLE_MODE=full \
+    "$SCRIPT_DIR/run-gatling-container" > "$TEST_ROOT/full-live.out"
+) &
+runner_pid=$!
+
+marker_seen=0
+i=0
+while [ "$i" -lt 50 ]; do
+  if [ -e "$TEST_ROOT/stream.marker" ]; then
+    marker_seen=1
+    break
+  fi
+  sleep 0.1
+  i=$((i + 1))
+done
+
+if [ "$marker_seen" -ne 1 ]; then
+  printf '%s\n' 'Fake Gatling did not reach live-stream marker' >&2
+  kill "$runner_pid" 2>/dev/null || true
+  wait "$runner_pid" 2>/dev/null || true
+  exit 1
+fi
+
+if ! kill -0 "$runner_pid" 2>/dev/null; then
+  printf '%s\n' 'Full-mode runner finished before live-stream assertion could run' >&2
+  wait "$runner_pid" 2>/dev/null || true
+  exit 1
+fi
+
+line_seen=0
+i=0
+while [ "$i" -lt 10 ]; do
+  if grep -Fq -- 'LIVE FULL MODE LINE BEFORE REPORT' "$TEST_ROOT/full-live.out"; then
+    line_seen=1
+    break
+  fi
+  sleep 0.1
+  i=$((i + 1))
+done
+
+if [ "$line_seen" -ne 1 ]; then
+  printf '%s\n' 'Full mode did not stream Gatling output while the run was still active' >&2
+  kill "$runner_pid" 2>/dev/null || true
+  wait "$runner_pid" 2>/dev/null || true
+  exit 1
+fi
+
+wait "$runner_pid"
+grep -Fq -- 'LIVE FULL MODE LINE BEFORE REPORT' "$TEST_ROOT/output/gatling/stress-5m/stress-5m-run.log"
+
 (
   cd "$TEST_ROOT"
   GATLING_DOCKER_PIPELINE=1 \
