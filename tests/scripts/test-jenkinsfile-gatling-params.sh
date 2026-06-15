@@ -50,15 +50,31 @@ assert_not_contains 'GATLING_STRESS_START_USERS_PER_SEC'
 assert_not_contains 'GATLING_STRESS_TARGET_USERS_PER_SEC'
 assert_contains '-e GATLING_CONSOLE_MODE=${env.GATLING_CONSOLE_MODE}'
 
-assert_contains "booleanParam(name: 'RUN_GATLING_TESTS', defaultValue: false"
-assert_contains "expression { params.RUN_GATLING_TESTS }"
-assert_not_contains "RUN_GATLING_MAX_LIMIT"
+assert_contains "booleanParam(name: 'RUN_GATLING_MAX_LIMIT', defaultValue: false"
+assert_contains "booleanParam(name: 'RUN_GATLING_LOAD_TEST', defaultValue: false"
+assert_contains "booleanParam(name: 'RUN_GATLING_STRESS_TEST', defaultValue: false"
+assert_contains "expression { params.RUN_GATLING_MAX_LIMIT }"
+assert_contains "expression { params.RUN_GATLING_LOAD_TEST }"
+assert_contains "expression { params.RUN_GATLING_STRESS_TEST }"
+assert_not_contains "RUN_GATLING_TESTS"
 assert_not_contains "defaultValue: '200'"
 assert_not_contains "defaultValue: '1050'"
 
-run_gatling_count=$(grep -F "expression { params.RUN_GATLING_TESTS }" "$JENKINSFILE" | wc -l | tr -d ' ')
-if [ "$run_gatling_count" != "3" ]; then
-  printf 'Expected 3 RUN_GATLING_TESTS stage gates, got %s\n' "$run_gatling_count" >&2
+run_max_limit_count=$(grep -F "expression { params.RUN_GATLING_MAX_LIMIT }" "$JENKINSFILE" | wc -l | tr -d ' ')
+if [ "$run_max_limit_count" != "1" ]; then
+  printf 'Expected 1 RUN_GATLING_MAX_LIMIT stage gate, got %s\n' "$run_max_limit_count" >&2
+  exit 1
+fi
+
+run_load_count=$(grep -F "expression { params.RUN_GATLING_LOAD_TEST }" "$JENKINSFILE" | wc -l | tr -d ' ')
+if [ "$run_load_count" != "1" ]; then
+  printf 'Expected 1 RUN_GATLING_LOAD_TEST stage gate, got %s\n' "$run_load_count" >&2
+  exit 1
+fi
+
+run_stress_count=$(grep -F "expression { params.RUN_GATLING_STRESS_TEST }" "$JENKINSFILE" | wc -l | tr -d ' ')
+if [ "$run_stress_count" != "1" ]; then
+  printf 'Expected 1 RUN_GATLING_STRESS_TEST stage gate, got %s\n' "$run_stress_count" >&2
   exit 1
 fi
 

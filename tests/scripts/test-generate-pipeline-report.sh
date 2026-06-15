@@ -52,7 +52,8 @@ assert_contains 'Gatling Load Test</td><td>HTML, PDF, raw report, log</td><td><s
 assert_contains 'Gatling Stress Test</td><td>HTML, PDF, raw report, log</td><td><span class="status status-opt-in">Opt-in / not run</span>'
 assert_contains '<span class="status status-ok">Available</span>'
 assert_contains '<span class="status status-opt-in">Opt-in'
-assert_contains 'Requires <code>RUN_GATLING_TESTS=true</code>'
+assert_contains '<code>RUN_GATLING_LOAD_TEST=true</code>'
+assert_contains '<code>RUN_GATLING_STRESS_TEST=true</code>'
 assert_contains '<th>References</th>'
 assert_contains 'href="http://localhost:8081/job/meta-ci-cd/164/artifact/output/gatling/load-5m/index.html">HTML</a>'
 assert_contains 'href="http://localhost:8081/job/meta-ci-cd/164/artifact/output/gatling/load-5m/load-5m-report.pdf">PDF</a>'
@@ -63,7 +64,7 @@ assert_not_contains '<td>Load HTML</td>'
 assert_not_contains '<td>Load PDF</td>'
 assert_not_contains 'Playwright Functional Test</td><td>HTML, JUnit XML, screenshots, log</td><td><span class="status status-ok">Available</span>'
 assert_not_contains 'Gatling Stress Test</td><td>HTML, PDF, raw report, log</td><td><span class="status status-ok">Available</span>'
-assert_not_contains 'RUN_GATLING_MAX_LIMIT=true'
+assert_contains '<code>RUN_GATLING_MAX_LIMIT=true</code>'
 assert_not_contains 'http://localhost:8081/job/meta-container-ci-cd/164/artifact/'
 assert_file_contains "$CSS_FILE" '.status-ok'
 assert_file_contains "$CSS_FILE" '.status-log'
@@ -77,15 +78,49 @@ JOB_NAME="meta-ci-cd" \
 BUILD_NUMBER="165" \
 BUILD_URL="http://localhost:8081/job/meta-ci-cd/165/" \
 BRANCH_NAME="main" \
-RUN_GATLING_TESTS="true" \
+RUN_GATLING_LOAD_TEST="true" \
   sh -c 'cd "$1" && "$2/scripts/generate-pipeline-report"' sh "$REQUESTED_ROOT" "$PROJECT_ROOT" >/tmp/generate-pipeline-report-requested-test.log
 
 test -s "$CSS_FILE"
-assert_contains 'Gatling evidence was requested with <code>RUN_GATLING_TESTS=true</code>'
-assert_contains 'Gatling Max Limit</td><td>HTML, PDF, raw report, log</td><td><span class="status status-missing">Missing</span>'
+assert_contains 'Gatling load evidence was requested with <code>RUN_GATLING_LOAD_TEST=true</code>'
+assert_contains 'Gatling Max Limit</td><td>HTML, PDF, raw report, log</td><td><span class="status status-opt-in">Opt-in / not run</span>'
 assert_contains 'Gatling Load Test</td><td>HTML, PDF, raw report, log</td><td><span class="status status-missing">Missing</span>'
+assert_contains 'Gatling Stress Test</td><td>HTML, PDF, raw report, log</td><td><span class="status status-opt-in">Opt-in / not run</span>'
+assert_contains 'Requested by RUN_GATLING_LOAD_TEST=true.'
+
+STRESS_REQUESTED_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/pipeline-report-stress-requested.XXXXXX")
+REPORT_FILE="$STRESS_REQUESTED_ROOT/output/reports/pipeline-report.html"
+CSS_FILE="$STRESS_REQUESTED_ROOT/output/reports/pipeline-report.css"
+
+JOB_NAME="meta-ci-cd" \
+BUILD_NUMBER="166" \
+BUILD_URL="http://localhost:8081/job/meta-ci-cd/166/" \
+BRANCH_NAME="main" \
+RUN_GATLING_STRESS_TEST="true" \
+  sh -c 'cd "$1" && "$2/scripts/generate-pipeline-report"' sh "$STRESS_REQUESTED_ROOT" "$PROJECT_ROOT" >/tmp/generate-pipeline-report-stress-requested-test.log
+
+test -s "$CSS_FILE"
+assert_contains 'Gatling stress evidence was requested with <code>RUN_GATLING_STRESS_TEST=true</code>'
+assert_contains 'Gatling Max Limit</td><td>HTML, PDF, raw report, log</td><td><span class="status status-opt-in">Opt-in / not run</span>'
+assert_contains 'Gatling Load Test</td><td>HTML, PDF, raw report, log</td><td><span class="status status-opt-in">Opt-in / not run</span>'
 assert_contains 'Gatling Stress Test</td><td>HTML, PDF, raw report, log</td><td><span class="status status-missing">Missing</span>'
-assert_contains 'Requested by RUN_GATLING_TESTS=true.'
-assert_not_contains 'Opt-in / not run'
+assert_contains 'Requested by RUN_GATLING_STRESS_TEST=true.'
+
+MAX_REQUESTED_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/pipeline-report-max-requested.XXXXXX")
+REPORT_FILE="$MAX_REQUESTED_ROOT/output/reports/pipeline-report.html"
+CSS_FILE="$MAX_REQUESTED_ROOT/output/reports/pipeline-report.css"
+
+JOB_NAME="meta-ci-cd" \
+BUILD_NUMBER="167" \
+BUILD_URL="http://localhost:8081/job/meta-ci-cd/167/" \
+BRANCH_NAME="main" \
+RUN_GATLING_MAX_LIMIT="true" \
+  sh -c 'cd "$1" && "$2/scripts/generate-pipeline-report"' sh "$MAX_REQUESTED_ROOT" "$PROJECT_ROOT" >/tmp/generate-pipeline-report-max-requested-test.log
+
+test -s "$CSS_FILE"
+assert_contains 'Gatling max-limit evidence was requested with <code>RUN_GATLING_MAX_LIMIT=true</code>'
+assert_contains 'Gatling Max Limit</td><td>HTML, PDF, raw report, log</td><td><span class="status status-missing">Missing</span>'
+assert_contains 'Gatling Load Test</td><td>HTML, PDF, raw report, log</td><td><span class="status status-opt-in">Opt-in / not run</span>'
+assert_contains 'Requested by RUN_GATLING_MAX_LIMIT=true.'
 
 printf '%s\n' 'generate-pipeline-report rendering checks passed'

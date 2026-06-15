@@ -21,7 +21,7 @@
 - Escaped dynamic Jenkins job, build, branch, and timestamp values in the generated Pipeline HTML report.
 - Improved the generated Pipeline HTML report rendering by moving styles into `output/reports/pipeline-report.css`, replacing run-together summary text with a metadata grid, grouping artifacts by evidence area, and rendering status badges.
 - Updated Pipeline report artifact links to use the current Jenkins `BUILD_URL`, so renamed jobs such as `meta-ci-cd` do not keep old `meta-container-ci-cd` artifact URLs after a fresh build.
-- Marked missing Gatling artifacts as opt-in/not-run evidence requiring `RUN_GATLING_TESTS=true` instead of treating intentionally skipped evidence stages as unexpected missing artifacts.
+- Marked missing Gatling artifacts as opt-in/not-run evidence unless the matching Gatling stage checkbox was selected.
 - Added `tests/scripts/test-generate-pipeline-report.sh` to guard the report rendering behavior.
 - Added `docs/gatling.md` with runtime details, commands, evidence paths, max-limit method, and report-backed graph explanations.
 - Updated `docs/submission.md` to show Gatling logs/reports/PDFs as ready while keeping the three Gatling terminal screenshots explicitly deferred.
@@ -29,6 +29,7 @@
 - Updated the opt-in max-limit path so the Jenkins Gatling evidence toggle runs `scripts/run-gatling-max-limit`, which performs bounded full discovery attempts instead of calling the one-attempt primitive directly.
 - Added `GATLING_CONSOLE_MODE=summary|full` so Jenkins can show compact Gatling summaries while preserving complete run logs in `output/gatling/<run-type>/`.
 - Fixed the 5-minute load/stress profiles so the injection profile owns the duration; virtual users no longer run an additional per-user 300-second loop after being injected.
+- Replaced the shared Gatling evidence toggle with separate Jenkins checkboxes: `RUN_GATLING_MAX_LIMIT`, `RUN_GATLING_LOAD_TEST`, and `RUN_GATLING_STRESS_TEST`.
 
 ## Evidence Produced
 

@@ -10,7 +10,9 @@ pipeline {
   }
 
   parameters {
-    booleanParam(name: 'RUN_GATLING_TESTS', defaultValue: false, description: 'Run Gatling max-limit, load, and stress tests for performance evidence')
+    booleanParam(name: 'RUN_GATLING_MAX_LIMIT', defaultValue: false, description: 'Run exploratory Gatling max-limit discovery separately from clean load/stress tests')
+    booleanParam(name: 'RUN_GATLING_LOAD_TEST', defaultValue: false, description: 'Run the clean five-minute Gatling load test')
+    booleanParam(name: 'RUN_GATLING_STRESS_TEST', defaultValue: false, description: 'Run the clean five-minute Gatling stress test')
     choice(name: 'APP_BASE_URL', choices: ['http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/', 'http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/'], description: 'Application base URL for Tomcat verification, Playwright, and Gatling')
     string(name: 'GATLING_MAX_BASE_USERS', defaultValue: '8000', description: 'First virtual-user level for Gatling max-limit discovery')
     string(name: 'GATLING_MAX_STEP_USERS', defaultValue: '20', description: 'Virtual-user increase between Gatling max-limit levels')
@@ -104,7 +106,7 @@ NODE'''
     stage('Gatling Max Limit') {
       when {
         allOf {
-          expression { params.RUN_GATLING_TESTS }
+          expression { params.RUN_GATLING_MAX_LIMIT }
           expression { fileExists('scripts/run-gatling-max-limit') }
         }
       }
@@ -125,7 +127,7 @@ NODE'''
     stage('Gatling Load Test') {
       when {
         allOf {
-          expression { params.RUN_GATLING_TESTS }
+          expression { params.RUN_GATLING_LOAD_TEST }
           expression { fileExists('scripts/run-gatling-load-5m') }
         }
       }
@@ -146,7 +148,7 @@ NODE'''
     stage('Gatling Stress Test') {
       when {
         allOf {
-          expression { params.RUN_GATLING_TESTS }
+          expression { params.RUN_GATLING_STRESS_TEST }
           expression { fileExists('scripts/run-gatling-stress-5m') }
         }
       }

@@ -98,17 +98,18 @@ Generated evidence remains ignored by Git under `output/`.
 
 ## Jenkins Integration
 
-`Jenkinsfile` gates all Gatling evidence stages behind one build parameter:
+`Jenkinsfile` exposes one checkbox per Gatling stage:
 
-- `RUN_GATLING_TESTS=false` skips all Gatling stages for normal CI/CD runs.
-- `RUN_GATLING_TESTS=true` runs `Gatling Max Limit`, `Gatling Load Test`, and `Gatling Stress Test` when their runner scripts exist.
-- Use `RUN_GATLING_TESTS=true` for final performance evidence collection.
+- `RUN_GATLING_MAX_LIMIT=true` runs the exploratory `Gatling Max Limit` staircase separately.
+- `RUN_GATLING_LOAD_TEST=true` runs the clean five-minute `Gatling Load Test`.
+- `RUN_GATLING_STRESS_TEST=true` runs the clean five-minute `Gatling Stress Test`.
+- Leave all three unchecked for normal CI/CD runs. Check only the specific Gatling evidence stage you intend to run.
 - `GATLING_CONSOLE_MODE=summary` keeps the Jenkins console compact while preserving the complete Gatling run log under `output/gatling/<run-type>/`. For all Gatling runs, the console prints Gatling's native `Global Information` summary block instead of wrapper parameter lines or custom rewritten metrics. For max-limit, Jenkins console output also prints the wrapper's final staircase summary and KO cutoff rule. Wrapper parameter lines are written only to `output/gatling/max-limit/raw/max-limit-discovery.log`.
 - `GATLING_CONSOLE_MODE=full` prints the complete Gatling run log to the Jenkins console.
 
 Summary mode preserves Gatling's own report wording so Jenkins screenshots match the standard Gatling terminal summary expected for submission.
 
-After this Jenkinsfile change is merged, run or reload the Pipeline once so Jenkins refreshes the Build with Parameters form. The old `RUN_GATLING_MAX_LIMIT` parameter is obsolete and should not be used for new evidence runs.
+After this Jenkinsfile change is merged, run or reload the Pipeline once so Jenkins refreshes the Build with Parameters form.
 
 For Jenkins max-limit staircase evidence, the build parameters expose the main bounds:
 
@@ -123,7 +124,7 @@ Monitoring is handled by the separate Jenkins Freestyle job `meta-monitoring`, w
 
 Jenkins finalization exports Gatling PDFs from completed HTML reports in the `post` block before generating the final pipeline report. PDF export uses a temporary Playwright Docker Pipeline container because it is administrative report generation, not application validation.
 
-Local `./scripts/export-gatling-pdfs` remains strict and requires all three Gatling reports. Jenkins runs the same script with `GATLING_PDF_REQUIRE_ALL=false` so normal builds that skip Gatling can still finish cleanly, while explicit `RUN_GATLING_TESTS=true` evidence builds export the Gatling PDFs that were produced in that build.
+Local `./scripts/export-gatling-pdfs` remains strict and requires all three Gatling reports. Jenkins runs the same script with `GATLING_PDF_REQUIRE_ALL=false` so normal builds that skip Gatling can still finish cleanly, while explicit Gatling evidence builds export the Gatling PDFs that were produced in that build.
 
 ## Graph Explanations
 
