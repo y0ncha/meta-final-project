@@ -36,11 +36,11 @@ The target can be overridden when a real environment changes:
 APP_BASE_URL=http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/ ./scripts/run-gatling-load-5m
 ```
 
-The maintained simulation uses closed virtual-user profiles:
+The maintained simulation uses two workload models:
 
 - Load: 60 seconds ramping from 0 to `GATLING_LOAD_USERS`, 180 seconds holding that level, then 60 seconds ramping back down to 0.
 - Stress: five 60-second staircase levels from `GATLING_STRESS_START_USERS` to `GATLING_STRESS_TARGET_USERS`. Jenkins defaults run from `5` to `50` virtual users, rounded across five levels.
-- Max-limit: one bounded staircase simulation from `GATLING_MAX_BASE_USERS` through `GATLING_MAX_LIMIT_USERS`, with optional short ramps controlled by `GATLING_MAX_RAMP_SECONDS`.
+- Max-limit: one bounded open users/sec arrival-rate staircase from `GATLING_MAX_BASE_USERS` through `GATLING_MAX_LIMIT_USERS`, with optional short ramps controlled by `GATLING_MAX_RAMP_SECONDS`.
 
 For max-limit staircase evidence, raise or bound the tested range with environment variables:
 
@@ -55,21 +55,21 @@ GATLING_MAX_LIMIT_USERS=8350 \
 
 ## Max-Limit Method
 
-The max-limit wrapper runs one Gatling simulation. Inside that simulation, one closed workload profile applies each staircase level sequentially, so the active-users graph increases from `GATLING_MAX_BASE_USERS` through `GATLING_MAX_LIMIT_USERS` without overlapping separate populations. The scenario uses `exitHereIfFailed` after each request so a failed virtual user stops its remaining flow instead of continuing through follow-up requests that no longer add useful boundary evidence. The max-limit setup also applies `.maxDuration(...)` from the configured schedule plus a short grace window, so a bad run stays bounded. By default, Jenkins keeps `GATLING_MAX_RAMP_SECONDS=0` so current evidence remains comparable. Set a small ramp, for example `1` or `2` seconds, when you want a smoother active-users graph and can afford the added runtime.
+The max-limit wrapper runs one bounded Gatling simulation. Inside that simulation, the max-limit branch applies stepped `constantUsersPerSec(...)` levels, so `GATLING_MAX_BASE_USERS`, `GATLING_MAX_STEP_USERS`, and `GATLING_MAX_LIMIT_USERS` are interpreted as users/sec values even though the compatibility variable names still contain `USERS`. If `GATLING_MAX_RAMP_SECONDS` is greater than `0`, transitions use `rampUsersPerSec(current).to(next)`; when it is `0`, levels switch directly. The scenario uses `exitHereIfFailed` after each request so a failed virtual user stops its remaining flow instead of continuing through follow-up requests that no longer add useful boundary evidence. The max-limit setup also applies `.maxDuration(...)` from the configured schedule plus a short grace window, so a bad run stays bounded. Set a small ramp, for example `1` or `2` seconds, when you want a smoother arrival-rate graph and can afford the added runtime.
 
 Each staircase level runs for `GATLING_MAX_DURATION_SECONDS`. If `GATLING_MAX_STEP_USERS` does not land exactly on `GATLING_MAX_LIMIT_USERS`, the final level is the configured limit and still runs for the full duration. If ramps are enabled, the wrapper records both ramp windows and hold windows in the discovery log; a KO during a ramp is mapped conservatively to the next level. Gatling assertions are evaluated after the simulation, not at the moment the first request fails, so the run must use a safe configured ceiling. The wrapper keeps the single staircase report and does not run repeated flat single-level attempts.
 
-The default `10` seconds per level is a practical confirmation setting for the known local boundary. The default range is targeted around the packaged evidence where `8300` virtual users passed and `8350` first failed, instead of sweeping all the way to `12000`. For a stronger steady-state capacity claim, keep the same targeted range and increase `GATLING_MAX_DURATION_SECONDS` to `60`-`120`; do not combine long holds with a broad range unless the Jenkins timeout has been raised.
+The default `10` seconds per level is a practical confirmation setting for a targeted users/sec boundary search. Choose a narrow range around the expected failure region instead of sweeping far past it. For a stronger steady-state capacity claim, keep the same targeted range and increase `GATLING_MAX_DURATION_SECONDS` to `60`-`120`; do not combine long holds with a broad range unless the Jenkins timeout has been raised.
 
 The class PDFs show Gatling evidence in terms of users, successes, failures, and graphs. They do not define a `p95 <= 2000 ms` service-level rule. For this project, max-limit pass/fail therefore follows the course-facing rule: a tested level passes only when Gatling reports `KO=0`. Response-time percentiles remain graph evidence for explaining degradation, especially p95, but latency alone does not define the max-limit failure point.
 
 The main controls are:
 
-- `GATLING_MAX_BASE_USERS`: first virtual-user level to test.
-- `GATLING_MAX_STEP_USERS`: virtual-user increment after each passing level.
-- `GATLING_MAX_DURATION_SECONDS`: how long each virtual-user level is held.
+- `GATLING_MAX_BASE_USERS`: first users/sec level to test.
+- `GATLING_MAX_STEP_USERS`: users/sec increment after each level.
+- `GATLING_MAX_DURATION_SECONDS`: how long each users/sec level is held.
 - `GATLING_MAX_RAMP_SECONDS`: optional ramp time from 0 to the first level and between staircase levels. `0` means instant transitions.
-- `GATLING_MAX_LIMIT_USERS`: highest virtual-user level to test before reporting a lower bound.
+- `GATLING_MAX_LIMIT_USERS`: highest users/sec level to test before reporting a lower bound.
 - `GATLING_RESTART_TOMCAT_BEFORE_RUN`: optional `true` / `false` switch for restarting Tomcat immediately before the max-limit run.
 - `GATLING_PUBLIC_TOMCAT_SSH_TARGET`: SSH target used only when `GATLING_RESTART_TOMCAT_BEFORE_RUN=true` and `APP_BASE_URL` points at the public EC2 host.
 
@@ -87,13 +87,13 @@ GATLING_PUBLIC_TOMCAT_SSH_TARGET=ubuntu@51.84.219.74 \
 ./scripts/run-gatling-max-limit
 ```
 
-With Jenkins defaults, max-limit evidence tests a targeted staircase from `8250` through `8350` virtual users in `50`-user steps, holding each level for `10` seconds with no extra ramp time. Choose tighter local or public ranges when you already know the failure region; do not run a broad public staircase far past the expected failure point.
+With Jenkins defaults, max-limit evidence tests a targeted staircase from `8250` through `8350` users/sec in `50` users/sec steps, holding each level for `10` seconds with no extra ramp time. Choose tighter local or public ranges when you already know the failure region; do not run a broad public staircase far past the expected failure point.
 
-Legacy users/sec-named variables are accepted by the shell wrappers only as compatibility aliases for older local commands. The Jenkins UI and current documentation use virtual-user terminology.
+Legacy users/sec-named variables are accepted by the shell wrappers only as compatibility aliases for older local commands. The Jenkins UI and current documentation keep the stable `GATLING_MAX_*_USERS` variable names but define their max-limit units as users/sec.
 
 A tested level is treated as passing only when Gatling reports zero failed requests/checks/timeouts.
 
-The max limit is the highest tested virtual-user level that passes before the first tested level that fails. If a run fails after a report is normalized, the wrapper treats that assertion failure as usable staircase evidence, preserves the report under `output/gatling/max-limit/`, and exits successfully so Jenkins can publish the evidence. The summary prints exact cutoff values only when they can be derived safely from the report; otherwise, inspect the report's time-based failure/error graphs and map the first KO timestamp to the `level schedule` lines in `output/gatling/max-limit/raw/max-limit-discovery.log`. If no tested level fails, the result is a tested lower bound, not the true application maximum.
+The max limit is the highest tested users/sec level that passes before the first tested users/sec level that fails. If a run fails after a report is normalized, the wrapper treats that assertion failure as usable staircase evidence, preserves the report under `output/gatling/max-limit/`, and exits successfully so Jenkins can publish the evidence. The summary prints exact cutoff values only when they can be derived safely from the report; otherwise, inspect the report's time-based failure/error graphs and map the first KO timestamp to the `level schedule` lines in `output/gatling/max-limit/raw/max-limit-discovery.log`. If no tested level fails, the result is a tested lower bound, not the true application maximum.
 
 ## Evidence Files
 
@@ -139,7 +139,7 @@ For Jenkins max-limit staircase evidence, the build parameters expose the main b
 - `GATLING_MAX_RAMP_SECONDS=0`
 - `GATLING_MAX_LIMIT_USERS=8350`
 
-With those defaults, Jenkins runs one targeted staircase from 8250 through 8350 virtual users in 50-user steps. When any request/check/timeout fails, the console shows Gatling's native summary followed by the wrapper staircase summary. The tested range, exact command parameters, level-to-time schedule, ramp schedule when enabled, KO cutoff rule, p95 review note, and report path are also recorded in `output/gatling/max-limit/raw/max-limit-discovery.log`.
+With those defaults, Jenkins runs one targeted staircase from 8250 through 8350 users/sec in 50 users/sec steps. When any request/check/timeout fails, the console shows Gatling's native summary followed by the wrapper staircase summary. The tested range, exact command parameters, level-to-time schedule, ramp schedule when enabled, KO cutoff rule, p95 review note, and report path are also recorded in `output/gatling/max-limit/raw/max-limit-discovery.log`.
 
 Monitoring is handled by the separate Jenkins Freestyle job `meta-monitoring`, which runs `./scripts/run-monitoring-check`; the Gatling stages are not part of that scheduled job. Jenkins publishes Gatling HTML/PDF evidence through HTML Publisher when `index.html` exists under `output/gatling/max-limit/`, `output/gatling/load-5m/`, or `output/gatling/stress-5m/`.
 
@@ -151,7 +151,7 @@ Local `./scripts/export-gatling-pdfs` remains strict and requires all three Gatl
 
 ### Max Limit
 
-The current packaged max-limit evidence must be refreshed after profile changes by the user or Jenkins. The refreshed max-limit PDF should show the active-users staircase increasing through the tested range. The max-limit conclusion must name the highest tested virtual-user level with `KO=0` and the first tested virtual-user level where Gatling reports any KO, using the discovery-log schedule to map report timestamps to levels when exact per-level counters are unavailable.
+The current packaged max-limit evidence must be refreshed after profile changes by the user or Jenkins. The refreshed max-limit PDF should show the users/sec arrival-rate staircase increasing through the tested range. The max-limit conclusion must name the highest tested users/sec level with `KO=0` and the first tested users/sec level where Gatling reports any KO, using the discovery-log schedule to map report timestamps to levels when exact per-level counters are unavailable.
 
 ### Load 5m
 

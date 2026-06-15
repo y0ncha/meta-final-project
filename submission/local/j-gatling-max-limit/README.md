@@ -1,11 +1,18 @@
 # Item J - Gatling Max-Limit Result
 
-- Status: ready
+- Status: pending users/sec refresh
 - Assignment item: `j) Write in the email what is your app max limit, explain why this is the limit and how you found it`
 - Packaged files: `max-limit-explanation.md`, `max-limit-discovery.log`
-- Source: Jenkins `MeTA/meta-ci-cd` build `#260`, archived from `output/gatling/max-limit/`
+- Source: refresh with Jenkins after the users/sec max-limit refactor
 
-The max-limit run found a local boundary: `8300` virtual users passed with `KO=0`, and the next tested level, `8350` virtual users, failed. Under the project rule, the app's local tested max limit is therefore `8300` virtual users for this Jenkins/Tomcat container setup.
+The previous packaged max-limit boundary was measured with concurrent virtual-user levels. The implementation now measures max-limit as users/sec arrival rate, so this item must be refreshed before submission.
+
+After the refresh, record:
+
+- the tested users/sec range
+- the step size in users/sec
+- the highest tested users/sec level with `KO=0`
+- the first tested users/sec level with `KO>0`
 
 The explanation requested by the assignment is in `max-limit-explanation.md`.
 

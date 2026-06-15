@@ -4,9 +4,9 @@ Source: Jenkins local build `#260`.
 
 ## Max Limit
 
-The local max-limit run tested the local Tomcat target from `8100` to `12000` virtual users in `50`-user steps, with `10` seconds per level. The highest tested level with `KO=0` was `8300` virtual users. The next tested level, `8350`, was the first failing tested level, so the local tested max limit is `8300` virtual users under the project `KO=0` rule.
+Pending refresh: the local max-limit PDF and graph explanation must be regenerated after the users/sec max-limit refactor.
 
-The final staircase Gatling report has `1,621,128` total requests, `1,029,510 OK`, and `591,618 KO`. Response times degraded heavily after the boundary: mean `4416 ms`, p95 `12987 ms`, and p99 `18527 ms`. All reported errors were `Address not available` socket errors against the local Tomcat container.
+The refreshed max-limit graph explanation should describe the users/sec arrival-rate staircase, the tested users/sec range, the highest tested users/sec level with `KO=0`, and the first tested users/sec level with `KO>0`. Do not reuse the previous concurrent-user boundary as the users/sec result.
 
 ## Load 5m
 

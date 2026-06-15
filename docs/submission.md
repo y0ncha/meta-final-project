@@ -27,7 +27,7 @@ Attached are the 12 required items for the MTA 2026 Semester B DevOps final proj
 7. Browser automation passed-run evidence and validation explanation: `submission/local/g-browser-test-passed-run/`
 8. HAR scenario description: `submission/local/h-har-scenario/scenario-description.md`
 9. HAR file: `submission/local/i-har-file/meta-functional-flow.har`
-10. Max-limit result and explanation: `submission/local/j-gatling-max-limit/max-limit-explanation.md` (`8300` virtual users passed; `8350` was the first failing tested level)
+10. Max-limit result and explanation: `submission/local/j-gatling-max-limit/max-limit-explanation.md` (pending users/sec evidence refresh after the max-limit methodology change)
 11. Gatling CMD summary screenshots: `submission/local/k-gatling-cmd-screenshots/`
 12. Gatling result PDFs and graph explanations: `submission/local/l-gatling-result-pdfs/`
 
@@ -35,13 +35,13 @@ Browser automation note: the assignment names Selenium IDE `.side`; this project
 
 Gatling/HAR note: the HAR records the browser scenario. Gatling HAR Converter generated a reference Scala simulation, and the maintained `MetaSimulation.scala` is the cleaned HAR-derived version used for repeatable max-limit, load, and stress runs. Gatling does not load the HAR file at runtime.
 
-Max-limit note: Gatling tested the local Tomcat target from `8100` to `12000` virtual users in `50`-user steps. `8300` passed with `KO=0`; `8350` was the first failing tested level. Under the project rule, the local tested max limit is `8300` virtual users.
+Max-limit note: the max-limit methodology now uses users/sec arrival-rate levels. Refresh this evidence with Jenkins before submission, then state the highest tested users/sec level with `KO=0` and the first tested users/sec level with `KO>0`. Do not reuse the older concurrent-user boundary as the users/sec result.
 
 Optional public-IP bonus evidence, if submitted, is kept separately under `submission/public/` and uses:
 
 `http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`
 
-Public Gatling bonus note: the public-target load and stress runs both completed with `0 KO`. The public max-limit run did not prove a passing public max-limit value because the first tested level, `8100` virtual users, already failed with `KO>0`.
+Public Gatling bonus note: the public-target load and stress runs both completed with `0 KO`. Refresh public max-limit evidence separately if submitting a public users/sec max-limit claim.
 
 Regards,
 
@@ -62,7 +62,7 @@ These are the 12 items requested by `docs/final-project.txt`.
 | g | Browser automation passed-run screenshot and validation explanation | `submission/local/g-browser-test-passed-run/` | ready for screenshot/PDF capture | Includes run log, native Playwright HTML report, Jenkins-safe HTML report, app screenshots, and `validation-explanation.md`. Capture the final passed-report screenshot/PDF from the HTML report before sending. |
 | h | Written HAR scenario | `submission/local/h-har-scenario/scenario-description.md` | ready | Describes the browser scenario in words. |
 | i | HAR file | `submission/local/i-har-file/meta-functional-flow.har` | packaged; sensitivity review recommended | HAR validation passed, but the file contains local `JSESSIONID` cookie evidence. Review before external sharing. |
-| j | Max-limit result, why it is the limit, and how it was found | `submission/local/j-gatling-max-limit/` | ready | Explanation is in `max-limit-explanation.md`. `8300` passed with `KO=0`; `8350` first failed. |
+| j | Max-limit result, why it is the limit, and how it was found | `submission/local/j-gatling-max-limit/` | pending refresh | Refresh after the users/sec refactor, then record the highest passing users/sec level and first failing users/sec level. |
 | k | Three Gatling CMD summary screenshots | `submission/local/k-gatling-cmd-screenshots/` | ready | Contains max-limit, load, and stress summary screenshots. |
 | l | Three Gatling result PDFs with graph explanations | `submission/local/l-gatling-result-pdfs/` | ready | Contains max-limit, load, and stress PDFs plus `graph-explanations.md`. |
 
@@ -101,14 +101,13 @@ The HAR was used as the recording/reference source for the Gatling scenario. Gat
 
 ### Local Gatling Max Limit
 
-The local Gatling max-limit run is the base submission evidence.
+The local Gatling max-limit evidence must be refreshed after the users/sec refactor.
 
-- Tested range: `8100` to `12000` virtual users
-- Step: `50` virtual users
+- Workload knob: users/sec arrival rate
 - Passing rule: `KO=0`
-- Highest passing tested level: `8300` virtual users
-- First failing tested level: `8350` virtual users
-- Conclusion: the local tested max limit is `8300` virtual users
+- Required result after refresh: highest tested users/sec level with `KO=0`
+- Required boundary after refresh: first tested users/sec level with `KO>0`
+- Do not reuse the previous concurrent-user `8300` / `8350` evidence as the users/sec answer
 
 A failed tested level is not the max limit. The max limit is the previous tested level that still had `KO=0`.
 
@@ -116,7 +115,7 @@ A failed tested level is not the max limit. The max limit is the previous tested
 
 The local graph explanations are packaged in `submission/local/l-gatling-result-pdfs/graph-explanations.md`.
 
-- Max-limit graphs show the system crossing the failure boundary after `8300`; `8350` is the first failing tested level.
+- Max-limit graphs must be refreshed to show the users/sec arrival-rate staircase and the updated `KO=0` boundary.
 - Load-test graphs show a fixed 5-minute run with `2336 OK` and `0 KO`.
 - Stress-test graphs show a 5-minute ramp with `15892 OK` and `0 KO`.
 
@@ -143,7 +142,7 @@ The public-target Gatling run targeted:
 
 Results:
 
-- Public max-limit: no passing public max-limit level was proven; `8100` virtual users was already failing with `KO>0`.
+- Public max-limit: refresh separately before claiming a public users/sec max-limit value.
 - Public load 5m: `1900 OK`, `0 KO`.
 - Public stress 5m: `15368 OK`, `0 KO`.
 

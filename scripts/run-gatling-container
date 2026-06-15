@@ -4,7 +4,7 @@ set -eu
 # Optional environment variables:
 # GATLING_IMAGE, GATLING_PLATFORM, APP_BASE_URL, GATLING_CONTAINER_NAME,
 # GATLING_SIMULATION_CLASS, GATLING_DOCKER_NETWORK, GATLING_DOCKER_PIPELINE,
-# GATLING_BIN, GATLING_CONSOLE_MODE, GATLING_* virtual-user load values.
+# GATLING_BIN, GATLING_CONSOLE_MODE, GATLING_* load values.
 
 SCRIPT_DIR=$(dirname "$0")
 PROJECT_ROOT=$(cd "$SCRIPT_DIR/.." && pwd -P)
@@ -93,7 +93,7 @@ print_test_parameters() {
       ;;
     max-limit)
       if [ "${GATLING_MAX_DISCOVERY_WRAPPER:-0}" != "1" ]; then
-        printf '%s\n' "max limit staircase started : base ${GATLING_MAX_BASE_USERS} virtual users | step ${GATLING_MAX_STEP_USERS} virtual users | limit ${GATLING_MAX_LIMIT_USERS} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s per level | ramp: ${GATLING_MAX_RAMP_SECONDS}s"
+        printf '%s\n' "max limit staircase started : base ${GATLING_MAX_BASE_USERS} users/sec | step ${GATLING_MAX_STEP_USERS} users/sec | limit ${GATLING_MAX_LIMIT_USERS} users/sec | duration: ${GATLING_MAX_DURATION_SECONDS}s per level | ramp: ${GATLING_MAX_RAMP_SECONDS}s"
       fi
       ;;
   esac

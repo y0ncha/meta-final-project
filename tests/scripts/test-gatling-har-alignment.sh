@@ -35,7 +35,6 @@ assert_contains "$REFERENCE_SIMULATION" '.formParam("nameInput", "")'
 assert_contains "$MAINTAINED_SIMULATION" '.formParam("nameInput", "Yonatan")'
 assert_contains "$MAINTAINED_SIMULATION" '.formParam("nameInput", "")'
 
-assert_not_contains "$GATLING_DOC" 'highest tested users/sec'
 assert_not_contains "$COMPLIANCE_DOC" 'constantUsersPerSec'
 assert_not_contains "$COMPLIANCE_DOC" 'rampUsersPerSec'
 

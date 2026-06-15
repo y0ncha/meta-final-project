@@ -154,19 +154,19 @@ print_test_summary() {
 
   final_summary_log "Max-limit test summary:"
   final_summary_log "  app base URL: ${APP_BASE_URL}"
-  final_summary_log "  tested range: ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} virtual users"
-  final_summary_log "  step: ${GATLING_MAX_STEP_USERS} virtual users"
+  final_summary_log "  tested range: ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} users/sec"
+  final_summary_log "  step: ${GATLING_MAX_STEP_USERS} users/sec"
   final_summary_log "  duration: ${GATLING_MAX_DURATION_SECONDS}s per level"
   final_summary_log "  ramp: ${GATLING_MAX_RAMP_SECONDS}s between levels"
   final_summary_log "  cutoff rule: highest tested level with KO=0; first failing level has KO>0"
   final_summary_log "  latency review: use Gatling p95 and response-time graphs as supporting evidence, not as the cutoff"
   if [ -n "$highest_passing" ]; then
-    final_summary_log "  highest passing tested level: $highest_passing"
+    final_summary_log "  highest passing tested level: $highest_passing users/sec"
   else
     final_summary_log "  highest passing tested level: inspect staircase report"
   fi
   if [ -n "$first_failing" ]; then
-    final_summary_log "  first failing tested level: $first_failing"
+    final_summary_log "  first failing tested level: $first_failing users/sec"
   else
     final_summary_log "  first failing tested level: inspect staircase report"
   fi
@@ -279,12 +279,12 @@ write_level_schedule() {
   starts_at=0
   if [ "$GATLING_MAX_RAMP_SECONDS" -gt 0 ]; then
     ends_at="$GATLING_MAX_RAMP_SECONDS"
-    summary_log "ramp schedule: 0-${level} virtual users | report time window: ${starts_at}-${ends_at}s"
+    summary_log "ramp schedule: 0-${level} users/sec | report time window: ${starts_at}-${ends_at}s"
     starts_at="$ends_at"
   fi
   while :; do
     ends_at=$((starts_at + GATLING_MAX_DURATION_SECONDS))
-    summary_log "level schedule: ${level} virtual users | report time window: ${starts_at}-${ends_at}s"
+    summary_log "level schedule: ${level} users/sec | report time window: ${starts_at}-${ends_at}s"
     if [ "$level" -eq "$GATLING_MAX_LIMIT_USERS" ]; then
       break
     fi
@@ -295,7 +295,7 @@ write_level_schedule() {
     if [ "$GATLING_MAX_RAMP_SECONDS" -gt 0 ]; then
       ramp_starts_at="$ends_at"
       ramp_ends_at=$((ramp_starts_at + GATLING_MAX_RAMP_SECONDS))
-      summary_log "ramp schedule: ${level}-${next_level} virtual users | report time window: ${ramp_starts_at}-${ramp_ends_at}s"
+      summary_log "ramp schedule: ${level}-${next_level} users/sec | report time window: ${ramp_starts_at}-${ramp_ends_at}s"
       starts_at="$ramp_ends_at"
     else
       starts_at="$ends_at"
@@ -304,7 +304,7 @@ write_level_schedule() {
   done
 }
 
-summary_log "max limit staircase started : ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} virtual users | step: ${GATLING_MAX_STEP_USERS} virtual users | duration: ${GATLING_MAX_DURATION_SECONDS}s per level | ramp: ${GATLING_MAX_RAMP_SECONDS}s"
+summary_log "max limit staircase started : ${GATLING_MAX_BASE_USERS}-${GATLING_MAX_LIMIT_USERS} users/sec | step: ${GATLING_MAX_STEP_USERS} users/sec | duration: ${GATLING_MAX_DURATION_SECONDS}s per level | ramp: ${GATLING_MAX_RAMP_SECONDS}s"
 summary_log "command parameters: GATLING_RUN_TYPE=max-limit APP_BASE_URL=${APP_BASE_URL} GATLING_MAX_BASE_USERS=${GATLING_MAX_BASE_USERS} GATLING_MAX_STEP_USERS=${GATLING_MAX_STEP_USERS} GATLING_MAX_LIMIT_USERS=${GATLING_MAX_LIMIT_USERS} GATLING_MAX_DURATION_SECONDS=${GATLING_MAX_DURATION_SECONDS} GATLING_MAX_RAMP_SECONDS=${GATLING_MAX_RAMP_SECONDS}"
 restart_tomcat_before_run
 write_level_schedule

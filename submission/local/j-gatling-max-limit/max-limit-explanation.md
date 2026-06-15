@@ -1,20 +1,21 @@
 # Gatling Max-Limit Explanation
 
-Our app's local tested max limit is `8300` virtual users on the local Jenkins/Tomcat Docker setup.
+Pending refresh: the app's local tested max limit must be measured again as users/sec after the max-limit methodology refactor.
 
-This is the limit because the project pass rule is `KO=0`: a tested level passes only when Gatling reports zero failed requests.
+This is required because the previous packaged boundary was measured with concurrent virtual-user levels. The current max-limit method uses users/sec arrival-rate levels, so the old `8300` / `8350` concurrent-user result must not be reused as the users/sec answer.
+
+The project pass rule remains `KO=0`: a tested users/sec level passes only when Gatling reports zero failed requests/checks/timeouts.
 
 How it was found:
 
-- Gatling max-limit discovery ran against the local Tomcat target.
-- The tested range was `8100` to `12000` virtual users.
-- The step size was `50` virtual users.
-- Each level ran for `10` seconds.
+- Run Gatling max-limit discovery against the local Tomcat target after the refactor.
+- Use a bounded users/sec range close to the expected failure region.
+- Record the tested users/sec range, step size, hold duration, and optional ramp duration.
 
 Result:
 
-- `8300` virtual users passed with `KO=0`.
-- `8350` virtual users was the first failing tested level.
-- The final staircase report shows `1,621,128` total requests, `1,029,510 OK`, and `591,618 KO`; the failures were `Address not available` socket errors against the local Tomcat container.
+- Highest passing tested level: pending refresh.
+- First failing tested level: pending refresh.
+- Final users/sec conclusion: pending refresh.
 
-Therefore, `8350` is beyond the passing boundary, and the previous passing tested level, `8300`, is the max limit we found.
+After the refresh, the max limit is the highest tested users/sec level with `KO=0`; the next tested users/sec level with `KO>0` is the failure boundary.

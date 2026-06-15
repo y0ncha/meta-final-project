@@ -27,6 +27,10 @@ assert_contains "string(name: 'GATLING_MAX_DURATION_SECONDS', defaultValue: '10'
 assert_contains "string(name: 'GATLING_MAX_RAMP_SECONDS', defaultValue: '0'"
 assert_contains "string(name: 'GATLING_MAX_LIMIT_USERS', defaultValue: '8350'"
 assert_contains "choice(name: 'GATLING_CONSOLE_MODE', choices: ['summary', 'full']"
+assert_contains "description: 'First users/sec level for targeted Gatling max-limit confirmation'"
+assert_contains "description: 'Users/sec increase between Gatling max-limit levels'"
+assert_contains "description: 'Seconds to hold each Gatling max-limit users/sec level'"
+assert_contains "description: 'Highest users/sec level to test before reporting a lower bound'"
 
 assert_contains 'GATLING_MAX_BASE_USERS = "${params.GATLING_MAX_BASE_USERS}"'
 assert_contains 'GATLING_MAX_STEP_USERS = "${params.GATLING_MAX_STEP_USERS}"'
@@ -62,6 +66,9 @@ assert_contains "expression { params.RUN_GATLING_STRESS_TEST }"
 assert_not_contains "RUN_GATLING_TESTS"
 assert_not_contains "defaultValue: '200'"
 assert_not_contains "defaultValue: '1050'"
+assert_not_contains "description: 'First virtual-user level for targeted Gatling max-limit confirmation'"
+assert_not_contains "description: 'Virtual-user increase between Gatling max-limit levels'"
+assert_not_contains "description: 'Highest virtual-user level to test before reporting a lower bound'"
 
 run_max_limit_count=$(grep -F "expression { params.RUN_GATLING_MAX_LIMIT }" "$JENKINSFILE" | wc -l | tr -d ' ')
 if [ "$run_max_limit_count" != "1" ]; then

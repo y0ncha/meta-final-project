@@ -1,5 +1,39 @@
 # 12 - Max-Limit Staircase Refactor Changelog
 
+## 2026-06-15 Users/Sec Max-Limit Refactor
+
+## Summary
+
+Changed only the Gatling max-limit workload from a closed concurrent-user staircase to an open users/sec arrival-rate staircase. The existing `GATLING_MAX_*_USERS` variable names remain for compatibility, but wrapper output, Jenkins parameter descriptions, docs, tests, and submission notes now define those max-limit values as users/sec. Existing concurrent-user max-limit evidence is marked pending refresh instead of being reused as users/sec evidence.
+
+## Files Changed
+
+- `src/gatling/user-files/simulations/MetaSimulation.scala`: Replaced max-limit `constantConcurrentUsers` / `rampConcurrentUsers` injectors with `constantUsersPerSec` / `rampUsersPerSec`; load and stress profiles remain concurrent-user based.
+- `scripts/run-gatling-max-limit` and `scripts/run-gatling-container`: Relabeled max-limit tested range, step, schedules, and parsed boundary summaries as users/sec while preserving stable output paths and environment variable names.
+- `Jenkinsfile`: Updated max-limit parameter descriptions to users/sec terminology without renaming parameters.
+- `tests/scripts/test-gatling-assertions.sh`, `tests/scripts/test-run-gatling-max-limit.sh`, `tests/test_gatling_max_limit_summary.sh`, `tests/scripts/test-jenkinsfile-gatling-params.sh`, `tests/scripts/test-gatling-har-alignment.sh`, and `tests/scripts/test-submission-readiness.sh`: Enforce users/sec max-limit behavior and keep HAR/load/stress/submission guardrails aligned.
+- `docs/gatling.md`, `docs/jenkins.md`, `docs/submission.md`, `submission/local/j-gatling-max-limit/README.md`, `submission/local/j-gatling-max-limit/max-limit-explanation.md`, and `submission/local/l-gatling-result-pdfs/graph-explanations.md`: Document users/sec methodology and mark max-limit submission evidence pending refresh.
+
+## Validation
+
+- `sh -n scripts/run-gatling-container scripts/run-gatling-max-limit scripts/run-gatling-load-5m scripts/run-gatling-stress-5m scripts/export-gatling-pdfs scripts/generate-pipeline-report`: passed.
+- `sh tests/scripts/test-gatling-assertions.sh`: passed.
+- `sh tests/scripts/test-run-gatling-max-limit.sh`: passed.
+- `sh tests/test_gatling_max_limit_summary.sh`: passed.
+- `sh tests/scripts/test-jenkinsfile-gatling-params.sh`: passed.
+- `sh tests/scripts/test-gatling-har-alignment.sh`: passed.
+- `sh tests/scripts/test-submission-readiness.sh`: passed.
+- `sh tests/scripts/test-run-gatling-console-mode.sh`: passed.
+- `git diff --check`: passed.
+
+## Not Run
+
+- Gatling max-limit, load, and stress evidence runs were not executed. The refreshed users/sec boundary must come from a later user/Jenkins evidence run.
+
+## Remaining Risks
+
+- Submission item `j`, the max-limit terminal/Jenkins screenshot, the max-limit PDF, and max-limit graph explanation must be refreshed together before final submission.
+
 ## 2026-06-15 Final Max-Limit Hardening
 
 ## Summary
