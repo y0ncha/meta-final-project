@@ -21,9 +21,11 @@ assert_not_contains() {
 }
 
 assert_contains 'Max-limit note: the local max-limit evidence uses users/sec arrival-rate levels from Jenkins build `#12`.'
-assert_contains '| g | Browser automation passed-run screenshot and validation explanation | `submission/local/g-browser-test-passed-run/` | ready for screenshot/PDF capture |'
+assert_contains '| g | Browser automation passed-run screenshot and validation explanation | `submission/local/g-browser-test-passed-run/` | ready for screenshot/PDF export | Refreshed from Jenkins `MeTA/meta-container-ci-cd` build `#20`'
 assert_contains '- Native Playwright HTML report: `submission/local/g-browser-test-passed-run/playwright-run-report.html`'
 assert_contains '- Jenkins-safe Playwright HTML report: `submission/local/g-browser-test-passed-run/index.html`'
+assert_contains '- JUnit result: `submission/local/g-browser-test-passed-run/junit.xml`'
+assert_contains '- Source build: Jenkins `MeTA/meta-container-ci-cd` build `#20`, targeting `http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`'
 assert_contains '| Public Playwright | `submission/public/public-browser-test-passed-run/` | Public-target Jenkins artifacts | ready for screenshot/PDF capture |'
 assert_contains '- Tested range: `250` to `550 users/sec`, step `25 users/sec`, `10s/level`, `1s` ramp'
 assert_contains '- Result: `475 users/sec` is the highest tested level with `KO=0`'
@@ -33,10 +35,11 @@ assert_contains '| Load profile | `GATLING_LOAD_USERS=250` users/sec | About hal
 assert_contains '| Stress profile | `GATLING_STRESS_START_USERS=250`, `GATLING_STRESS_TARGET_USERS=475` users/sec | Exercises up to the local passing boundary without crossing the known local failure point. |'
 assert_contains '| Max-limit confirmation | `450-550` users/sec, step `25`, `10s/level`, ramp `1s` | Covers local `475/500` and public `525/550` pass/fail boundaries with a focused range. |'
 assert_contains '- Public max-limit: build `#13` found `525 users/sec` as the highest passing tested level and `550 users/sec` as the first failing tested level.'
-assert_contains '- Public load 5m: refresh after the users/sec load-profile change before claiming current public evidence.'
-assert_contains '- Public stress 5m: refresh after the users/sec stress-profile change before claiming current public evidence.'
-assert_contains '| Public Gatling load 5m | `submission/public/public-gatling-load-5m/` | Public-target Jenkins artifacts | stale after profile change |'
-assert_contains '| Public Gatling stress 5m | `submission/public/public-gatling-stress-5m/` | Public-target Jenkins artifacts | stale after profile change |'
+assert_contains '- Public load 5m: build `#18`, `5 users/sec`, `4800 OK`, `0 KO`, p95 `58 ms`.'
+assert_contains '- Public stress 5m: build `#18`, `5-50 users/sec`, `33120 OK`, `0 KO`, p95 `67 ms`.'
+assert_contains '| Public Gatling load 5m | `submission/public/public-gatling-load-5m/` | Public-target Jenkins build `#18` | ready |'
+assert_contains '| Public Gatling stress 5m | `submission/public/public-gatling-stress-5m/` | Public-target Jenkins build `#18` | ready |'
+assert_contains '| l | Three Gatling result PDFs with graph explanations | `submission/local/l-gatling-result-pdfs/` | partial |'
 assert_not_contains 'Local Jenkins build `#224`'
 assert_not_contains 'Jenkins public build `#225`'
 

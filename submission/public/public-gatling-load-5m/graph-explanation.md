@@ -1,9 +1,7 @@
 # Public Gatling Load-Test Graph Explanation
 
-Source: Jenkins `MeTA/meta-ci-cd` build `#261`.
+Source: Jenkins `MeTA/meta-container-ci-cd` build `#18`.
 
-This is historical evidence from before the users/sec SLA-profile refresh. The public 5-minute load test used the EC2 Tomcat URL with a fixed `5` virtual users for about `300` seconds. The run completed with `1900` requests, `1900 OK`, and `0 KO`.
+The public 5-minute load test used the EC2 Tomcat URL with `5 users/sec` for about `300` seconds. The run completed with `4800` requests, `4800 OK`, and `0 KO`.
 
-In the Gatling report graphs, active users stay stable around the configured load. The request-rate graph shows steady throughput at about `6.529` requests per second. The response-time graph is slower than local but still passes with `0 KO`: mean response time `124 ms`, p95 `805 ms`, and p99 `1412 ms`.
-
-For current public load-SLA evidence, rerun with `GATLING_LOAD_USERS=250` users/sec and require both `KO=0` and p95 `< 2000ms`.
+In the Gatling report graphs, traffic stays stable around the configured load. The request-rate graph averages `16.107` requests/sec. Response time remains low for the public EC2 target: mean `23 ms`, p95 `58 ms`, and p99 `120 ms`.

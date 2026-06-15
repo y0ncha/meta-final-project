@@ -121,7 +121,7 @@ class MetaSimulation extends Simulation {
         )
 
     case "max-limit" =>
-      val maxBaseUsers = intEnv("GATLING_MAX_BASE_USERS", intEnv("GATLING_MAX_USERS", 250))
+      val maxBaseUsers = nonNegativeIntEnv("GATLING_MAX_BASE_USERS", nonNegativeIntEnv("GATLING_MAX_USERS", 0))
       val maxStepUsers = intEnv("GATLING_MAX_STEP_USERS", 25)
       val maxLimitUsers = intEnv("GATLING_MAX_LIMIT_USERS", 550)
       val maxDurationSeconds = intEnv("GATLING_MAX_DURATION_SECONDS", 10)
@@ -130,10 +130,10 @@ class MetaSimulation extends Simulation {
       val maxScheduleSeconds = maxRampSeconds + (levels.size * maxDurationSeconds) + ((levels.size - 1) * maxRampSeconds)
       val maxRunSeconds = maxScheduleSeconds + 30
       val levelHolds = levels.zipWithIndex.flatMap { case (level, index) =>
-        val hold = Seq(constantUsersPerSec(level.toDouble).during(maxDurationSeconds.seconds))
+        val hold = Seq(constantConcurrentUsers(level).during(maxDurationSeconds.seconds))
         val rampToNext = levels.lift(index + 1).toSeq.flatMap { nextLevel =>
           if (maxRampSeconds > 0) {
-            Seq(rampUsersPerSec(level.toDouble).to(nextLevel.toDouble).during(maxRampSeconds.seconds))
+            Seq(rampConcurrentUsers(level).to(nextLevel).during(maxRampSeconds.seconds))
           } else {
             Seq.empty
           }
@@ -142,7 +142,7 @@ class MetaSimulation extends Simulation {
       }
       val staircaseProfile = {
         if (maxRampSeconds > 0) {
-          Seq(rampUsersPerSec(0.0).to(levels.head.toDouble).during(maxRampSeconds.seconds)) ++ levelHolds
+          Seq(rampConcurrentUsers(0).to(levels.head).during(maxRampSeconds.seconds)) ++ levelHolds
         } else {
           levelHolds
         }

@@ -33,7 +33,7 @@ Attached are the 12 required items for the MTA 2026 Semester B DevOps final proj
 
 Browser automation note: the assignment names Selenium IDE `.side`; this project uses Playwright as the Selenium IDE or similar browser automation tool. The Playwright test file and passed-run evidence are attached.
 
-Gatling/HAR note: the HAR records the browser scenario. Gatling HAR Converter generated a reference Scala simulation, and the maintained `MetaSimulation.scala` is the cleaned HAR-derived version used for repeatable max-limit, load, and stress runs. Gatling does not load the HAR file at runtime. The current hard Gatling SLA is `KO=0`; recommended refreshed load/stress evidence should also use `p95 < 2000ms`.
+Gatling/HAR note: the HAR records the browser scenario. Gatling HAR Converter generated a reference Scala simulation, and the maintained `MetaSimulation.scala` is the cleaned HAR-derived version used for repeatable max-limit, load, and stress runs. Gatling does not load the HAR file at runtime. The current hard Gatling pass rule is `KO=0`.
 
 Max-limit note: the local max-limit evidence uses users/sec arrival-rate levels from Jenkins build `#12`. `475 users/sec` passed with `KO=0`; `500 users/sec` was the first failing tested level. The local failure was `Address not available`, meaning the local Docker/Gatling networking path could no longer allocate or open enough client-side connections at that load. Because Gatling counted those failures as `KO`, the local tested max limit is `475 users/sec`.
 
@@ -41,7 +41,7 @@ Optional public-IP bonus evidence, if submitted, is kept separately under `submi
 
 `http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`
 
-Public Gatling bonus note: the refreshed public max-limit run from Jenkins build `#13` found `525 users/sec` as the highest passing tested level and `550 users/sec` as the first failing tested level. Public load and stress evidence were not rerun in this max-limit-only refresh.
+Public Gatling bonus note: the refreshed public max-limit run from Jenkins build `#13` found `525 users/sec` as the highest passing tested level and `550 users/sec` as the first failing tested level. Public load and stress were refreshed from Jenkins build `#18` and both completed with `0 KO`.
 
 Regards,
 
@@ -59,12 +59,12 @@ These are the 12 items requested by `docs/final-project.txt`.
 | d | Link to public GitHub repo | `submission/local/d-github-public-link/github-public-repo.link` | ready, final browser check recommended | Link file contains `https://github.com/y0ncha/meta-final-project`; open once without authentication before sending. |
 | e | Monitor tool name, monitored target, and passed monitor screenshot | `submission/local/e-monitoring-evidence/` | ready | Jenkins `meta-monitoring` screenshots show scheduled monitoring evidence. Public UptimeRobot bonus evidence is under `submission/public/public-monitoring-evidence/`. |
 | f | Selenium IDE file `.side` | `submission/local/f-browser-test-file/meta-functional.spec.js` | ready with approved substitute risk | The project uses Playwright as the browser automation substitute; keep the substitution note in the email. |
-| g | Browser automation passed-run screenshot and validation explanation | `submission/local/g-browser-test-passed-run/` | ready for screenshot/PDF capture | Includes run log, native Playwright HTML report, Jenkins-safe HTML report, app screenshots, and `validation-explanation.md`. Capture the final passed-report screenshot/PDF from the HTML report before sending. |
+| g | Browser automation passed-run screenshot and validation explanation | `submission/local/g-browser-test-passed-run/` | ready for screenshot/PDF export | Refreshed from Jenkins `MeTA/meta-container-ci-cd` build `#20`: includes run log, JUnit XML, native Playwright HTML report, Jenkins-safe HTML report, app screenshots, and `validation-explanation.md`. Export the final passed-report HTML to PDF before sending. |
 | h | Written HAR scenario | `submission/local/h-har-scenario/scenario-description.md` | ready | Describes the browser scenario in words. |
 | i | HAR file | `submission/local/i-har-file/meta-functional-flow.har` | packaged; sensitivity review recommended | HAR validation passed, but the file contains local `JSESSIONID` cookie evidence. Review before external sharing. |
 | j | Max-limit result, why it is the limit, and how it was found | `submission/local/j-gatling-max-limit/` | ready | Local build `#12`: `475 users/sec` passed, `500 users/sec` first failed under `KO=0`. |
-| k | Three Gatling CMD summary screenshots | `submission/local/k-gatling-cmd-screenshots/` | ready | Contains max-limit, load, and stress summary screenshots. |
-| l | Three Gatling result PDFs with graph explanations | `submission/local/l-gatling-result-pdfs/` | ready with caveat | Max-limit was refreshed from build `#12`; load/stress PDFs are older-profile evidence and should be refreshed with the SLA-oriented users/sec parameters before being claimed as current. |
+| k | Three Gatling CMD summary screenshots | `submission/local/k-gatling-cmd-screenshots/` | ready | Max-limit screenshot is from local build `#12`; load/stress screenshots are from local build `#17` and show `0 KO`. |
+| l | Three Gatling result PDFs with graph explanations | `submission/local/l-gatling-result-pdfs/` | partial | Max-limit PDF is ready from build `#12`. Matching local build `#17` load/stress graph PDFs were generated but not retained in Jenkins build artifacts, so rerun/re-export before claiming local load/stress PDFs as build `#17` evidence. |
 
 ## Required Explanations
 
@@ -77,14 +77,17 @@ Passed-run evidence:
 - Native Playwright HTML report: `submission/local/g-browser-test-passed-run/playwright-run-report.html`
 - Jenkins-safe Playwright HTML report: `submission/local/g-browser-test-passed-run/index.html`
 - Console log: `submission/local/g-browser-test-passed-run/playwright-run.log`
+- JUnit result: `submission/local/g-browser-test-passed-run/junit.xml`
 - Screenshots: `submission/local/g-browser-test-passed-run/screenshots/valid-submit.png` and `submission/local/g-browser-test-passed-run/screenshots/empty-submit.png`
+- Source build: Jenkins `MeTA/meta-container-ci-cd` build `#20`, targeting `http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`
 
 Validation types used:
 
-- Positive validation: submits a valid name and asserts the success message appears.
-- Negative validation: submits an empty name and asserts the validation message appears.
-- Page-content checks: verifies the page title, form controls, and important supporting text.
-- Smart assert/verify split: blocking behaviors use hard assertions; supporting text and non-blocking checks use softer verification so the report shows useful context without hiding the main functional result.
+- Positive strict assert: app identity/title.
+- Positive soft verify: supporting About content.
+- Positive strict assert: valid-name submit returns the expected success message.
+- Negative soft verify: empty submit does not show the positive success message.
+- Negative strict assert: empty-submit validation text is shown.
 
 ### HAR Scenario
 
@@ -116,8 +119,8 @@ A failed tested level is not the max limit. The max limit is the previous tested
 The local graph explanations are packaged in `submission/local/l-gatling-result-pdfs/graph-explanations.md`.
 
 - Max-limit graphs were refreshed from build `#12` and show the users/sec arrival-rate staircase plus the updated `KO=0` boundary.
-- Load-test graphs must be refreshed after the users/sec profile change; the previous `2336 OK` / `0 KO` run used the older concurrent-user profile.
-- Stress-test graphs must be refreshed after the users/sec profile change; the previous `15892 OK` / `0 KO` run used the older concurrent-user profile.
+- Local build `#17` load screenshot shows `4800 OK` / `0 KO` at `5 users/sec`, p95 `13 ms`; the matching graph PDF was not retained.
+- Local build `#17` stress screenshot shows `33120 OK` / `0 KO` at `5-50 users/sec`, p95 `8 ms`; the matching graph PDF was not retained.
 
 ### Gatling SLA Recommendations
 
@@ -140,8 +143,8 @@ Public evidence is optional and does not replace the required local evidence.
 | Public script check | `submission/public/public-jenkins-monitoring-check/` | `output/public-app/monitoring/`, `output/monitoring/` | ready | Script checks show `status=up` for the public URL. |
 | Public Playwright | `submission/public/public-browser-test-passed-run/` | Public-target Jenkins artifacts | ready for screenshot/PDF capture | Packaged log shows `1 passed`; target is the public EC2 URL. Includes native and Jenkins-safe HTML reports. |
 | Public Gatling max-limit | `submission/public/public-gatling-max-limit/` | Public-target Jenkins build `#13` | ready | Includes screenshot, PDF report, and graph explanation. `525 users/sec` passed; `550 users/sec` first failed. |
-| Public Gatling load 5m | `submission/public/public-gatling-load-5m/` | Public-target Jenkins artifacts | stale after profile change | Refresh after the users/sec load-profile change before submitting as current public evidence. |
-| Public Gatling stress 5m | `submission/public/public-gatling-stress-5m/` | Public-target Jenkins artifacts | stale after profile change | Refresh after the users/sec stress-profile change before submitting as current public evidence. |
+| Public Gatling load 5m | `submission/public/public-gatling-load-5m/` | Public-target Jenkins build `#18` | ready | Screenshot and PDF match the refreshed public run: `4800 OK`, `0 KO`, p95 `58 ms`. |
+| Public Gatling stress 5m | `submission/public/public-gatling-stress-5m/` | Public-target Jenkins build `#18` | ready | Screenshot and PDF match the refreshed public run: `33120 OK`, `0 KO`, p95 `67 ms`. |
 | AWS cleanup | `submission/public/aws-cleanup-verification/` | Manual verification after review | deferred | Keep EC2 running through the review window; record cleanup after termination. |
 
 ### Public Gatling Results
@@ -153,8 +156,8 @@ The public-target Gatling run targeted:
 Results:
 
 - Public max-limit: build `#13` found `525 users/sec` as the highest passing tested level and `550 users/sec` as the first failing tested level.
-- Public load 5m: refresh after the users/sec load-profile change before claiming current public evidence.
-- Public stress 5m: refresh after the users/sec stress-profile change before claiming current public evidence.
+- Public load 5m: build `#18`, `5 users/sec`, `4800 OK`, `0 KO`, p95 `58 ms`.
+- Public stress 5m: build `#18`, `5-50 users/sec`, `33120 OK`, `0 KO`, p95 `67 ms`.
 
 ## Final Checks Before Sending
 

@@ -315,11 +315,11 @@ cat > "$REPORT_FILE" <<EOF
             </tr>
           </thead>
           <tbody>
-            <tr><td>1</td><td>Open app and assert page title</td><td>Assert the app identity before trusting later evidence.</td><td>Positive assert</td></tr>
-            <tr><td>2</td><td>Verify required link, button, and text box are present</td><td>Verify assignment-required UI elements are present, like Selenium IDE <code>verifyElementPresent</code>.</td><td>Positive verify</td></tr>
-            <tr><td>3</td><td>Click the about link and verify about text is present</td><td>Verify independent navigation/text behavior, like Selenium IDE <code>click</code> plus <code>verifyTextPresent</code>.</td><td>Positive verify</td></tr>
-            <tr><td>4</td><td>Positive scenario: type a name, submit, and assert success text</td><td>Assert the final success outcome because a wrong success message means the positive path failed.</td><td>Positive assert plus verify</td></tr>
-            <tr><td>5</td><td>Negative scenario: submit empty input and verify the error text</td><td>Verify the error message, matching the lecture's negative-test rationale.</td><td>Negative verify</td></tr>
+            <tr><td>1</td><td>Assert the app identity</td><td>Assert the browser loaded the MeTA app before trusting later evidence.</td><td>Positive assert, strict</td></tr>
+            <tr><td>2</td><td>Verify supporting About content</td><td>Verify visible product context while still allowing the core form result to run.</td><td>Positive verify, soft</td></tr>
+            <tr><td>3</td><td>Assert valid submit succeeds</td><td>Assert the success message because treating valid input as valid is core business logic.</td><td>Positive assert, strict</td></tr>
+            <tr><td>4</td><td>Verify empty submit does not show success</td><td>Verify negative-path evidence without hiding the explicit validation-message result.</td><td>Negative verify, soft</td></tr>
+            <tr><td>5</td><td>Assert empty submit shows validation text</td><td>Assert the rejection text because wrong feedback means invalid-input handling is unreliable.</td><td>Negative assert, strict</td></tr>
           </tbody>
         </table>
       </div>

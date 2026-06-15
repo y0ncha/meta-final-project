@@ -85,12 +85,12 @@ assert_not_contains() {
 }
 
 assert_contains "---- Global Information"
-assert_not_contains "max limit staircase started : 10-30 users/sec | step: 10 users/sec | duration: 5s per level"
+assert_not_contains "max limit staircase started : 10-30 virtual users | step: 10 virtual users | duration: 5s per level"
 assert_not_contains "max limit level finished :"
 assert_contains "Max-limit test summary:"
 assert_contains "  app base URL: http://example.test/meta/"
-assert_contains "  parameters: range 10-30 users/sec | step 10 users/sec | duration 5s/level | ramp 0s"
-assert_contains "  key result: highest passing 10 users/sec | first failing 20 users/sec"
+assert_contains "  parameters: range 10-30 virtual users | step 10 virtual users | duration 5s/level | ramp 0s"
+assert_not_contains "  key result:"
 assert_not_contains "Max-limit testing level"
 assert_not_contains "Max-limit level"
 assert_not_contains "  cutoff rule:"
@@ -105,23 +105,23 @@ if ! grep -Fq "  app base URL: http://example.test/meta/" output/gatling/max-lim
   printf '%s\n' "expected app base URL in discovery log summary" >&2
   exit 1
 fi
-if ! grep -Fq "  parameters: range 10-30 users/sec | step 10 users/sec | duration 5s/level | ramp 0s" output/gatling/max-limit/raw/max-limit-discovery.log; then
+if ! grep -Fq "  parameters: range 10-30 virtual users | step 10 virtual users | duration 5s/level | ramp 0s" output/gatling/max-limit/raw/max-limit-discovery.log; then
   printf '%s\n' "expected concise parameters in discovery log summary" >&2
   exit 1
 fi
-if ! grep -Fq "  key result: highest passing 10 users/sec | first failing 20 users/sec" output/gatling/max-limit/raw/max-limit-discovery.log; then
-  printf '%s\n' "expected parsed key result in discovery log" >&2
+if grep -Fq "  key result:" output/gatling/max-limit/raw/max-limit-discovery.log; then
+  printf '%s\n' "wrapper summary should not print a key result in discovery log" >&2
   exit 1
 fi
-if ! grep -Fq "command parameters: GATLING_RUN_TYPE=max-limit APP_BASE_URL=http://example.test/meta/ GATLING_MAX_START_USERS_PER_SEC=10 GATLING_MAX_STEP_USERS_PER_SEC=10 GATLING_MAX_END_USERS_PER_SEC=30 GATLING_MAX_DURATION_SECONDS=5 GATLING_MAX_RAMP_SECONDS=0" output/gatling/max-limit/raw/max-limit-discovery.log; then
+if ! grep -Fq "command parameters: GATLING_RUN_TYPE=max-limit APP_BASE_URL=http://example.test/meta/ GATLING_MAX_START_USERS=10 GATLING_MAX_STEP_USERS=10 GATLING_MAX_END_USERS=30 GATLING_MAX_DURATION_SECONDS=5 GATLING_MAX_RAMP_SECONDS=0" output/gatling/max-limit/raw/max-limit-discovery.log; then
   printf '%s\n' "expected exact staircase command parameters in discovery log" >&2
   exit 1
 fi
-if ! grep -Fq "level schedule: 10 users/sec | report time window: 0-5s" output/gatling/max-limit/raw/max-limit-discovery.log; then
+if ! grep -Fq "level schedule: 10 virtual users | report time window: 0-5s" output/gatling/max-limit/raw/max-limit-discovery.log; then
   printf '%s\n' "expected first staircase time window in discovery log" >&2
   exit 1
 fi
-if ! grep -Fq "level schedule: 30 users/sec | report time window: 10-15s" output/gatling/max-limit/raw/max-limit-discovery.log; then
+if ! grep -Fq "level schedule: 30 virtual users | report time window: 10-15s" output/gatling/max-limit/raw/max-limit-discovery.log; then
   printf '%s\n' "expected final staircase time window in discovery log" >&2
   exit 1
 fi
@@ -150,16 +150,16 @@ if [ "$RAMP_STATUS" -ne 0 ]; then
   exit 1
 fi
 
-if ! printf '%s\n' "$RAMP_OUTPUT" | grep -Fq "  key result: highest passing 10 users/sec | first failing 20 users/sec"; then
+if printf '%s\n' "$RAMP_OUTPUT" | grep -Fq "  key result:"; then
   printf '%s\n' "$RAMP_OUTPUT"
-  printf '%s\n' "expected ramp transition KO to preserve boundary key result" >&2
+  printf '%s\n' "ramped max-limit summary should not print a boundary key result" >&2
   exit 1
 fi
-if ! grep -Fq "ramp schedule: 0-10 users/sec | report time window: 0-2s" output/gatling/max-limit/raw/max-limit-discovery.log; then
+if ! grep -Fq "ramp schedule: 0-10 virtual users | report time window: 0-2s" output/gatling/max-limit/raw/max-limit-discovery.log; then
   printf '%s\n' "expected initial ramp schedule in discovery log" >&2
   exit 1
 fi
-if ! grep -Fq "ramp schedule: 10-20 users/sec | report time window: 7-9s" output/gatling/max-limit/raw/max-limit-discovery.log; then
+if ! grep -Fq "ramp schedule: 10-20 virtual users | report time window: 7-9s" output/gatling/max-limit/raw/max-limit-discovery.log; then
   printf '%s\n' "expected inter-level ramp schedule in discovery log" >&2
   exit 1
 fi

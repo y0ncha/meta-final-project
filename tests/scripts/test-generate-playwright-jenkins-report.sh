@@ -24,9 +24,9 @@ printf '%s\n' '<!doctype html><title>native</title><script type="module"></scrip
 printf '%s\n' 'png' > "$TEST_ROOT/output/playwright/screenshots/valid-submit.png"
 printf '%s\n' 'png' > "$TEST_ROOT/output/playwright/screenshots/empty-submit.png"
 
-JOB_NAME="meta-ci-cd" \
+JOB_NAME="MeTA/meta-container-ci-cd" \
 BUILD_NUMBER="164" \
-BUILD_URL="http://localhost:8081/job/meta-ci-cd/164/" \
+BUILD_URL="http://localhost:8081/job/MeTA/job/meta-container-ci-cd/164/" \
 BRANCH_NAME="main" \
   sh -c 'cd "$1" && "$2/scripts/generate-playwright-jenkins-report"' sh "$TEST_ROOT" "$PROJECT_ROOT" >/tmp/generate-playwright-jenkins-report-test.log
 
@@ -56,11 +56,15 @@ assert_contains '>JUnit</a>'
 assert_contains '>Run log</a>'
 assert_contains '>Valid submit</a>'
 assert_contains 'Course Rationale Map'
-assert_contains 'Assert the app identity before trusting later evidence.'
-assert_contains '<code>verifyElementPresent</code>'
-assert_contains 'Negative scenario: submit empty input and verify the error text'
+assert_contains 'Assert the app identity'
+assert_contains 'Positive verify, soft'
+assert_contains 'Verify empty submit does not show success'
+assert_contains 'Negative assert, strict'
+assert_not_contains '<code>verifyElementPresent</code>'
+assert_not_contains 'Positive assert plus verify'
+assert_not_contains 'Negative scenario: submit empty input and verify the error text'
 assert_not_contains '>Native HTML</a>'
-assert_not_contains 'href="http://localhost:8081/job/meta-ci-cd/164/artifact/output/playwright/playwright-report/index.html"'
+assert_not_contains 'href="http://localhost:8081/job/MeTA/job/meta-container-ci-cd/164/artifact/output/playwright/playwright-report/index.html"'
 assert_contains 'native Playwright HTML report is archived under build artifacts but is not linked here'
 assert_not_contains '<script'
 assert_not_contains '>output/playwright/playwright-report/index.html</a>'
