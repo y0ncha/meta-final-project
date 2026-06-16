@@ -87,31 +87,23 @@ assert_not_contains() {
 assert_contains "---- Global Information"
 assert_not_contains "max limit staircase started : 10-30 users/sec | step: 10 users/sec | duration: 5s per level"
 assert_not_contains "max limit level finished :"
-assert_contains "Max-limit test summary:"
-assert_contains "  app base URL: http://example.test/meta/"
-assert_contains "  tested range: 10-30 users/sec"
-assert_contains "  step: 10 users/sec"
-assert_contains "  duration: 5s per level"
-assert_contains "  ramp: 0s between levels"
-assert_contains "  cutoff rule: highest tested level with KO=0; first failing level has KO>0"
-assert_contains "  native metrics note: Gatling request-rate and active-user metrics are observed results, not the configured users/sec cutoff"
-assert_contains "  highest passing tested level: 10 users/sec"
-assert_contains "  first failing tested level: 20 users/sec"
-assert_contains "  result: inspect staircase report for first KO level"
+assert_contains "URL: http://example.test/meta/ | range: 10-30 users/sec | step: 10 users/sec | duration: 5s per level | ramp: 0s between levels"
+assert_not_contains "Max-limit test summary:"
+assert_not_contains "  cutoff rule:"
+assert_not_contains "  native metrics note:"
+assert_not_contains "  highest passing tested level:"
+assert_not_contains "  first failing tested level:"
+assert_not_contains "  result:"
 assert_not_contains "  key result:"
 assert_not_contains "Max-limit testing level"
 assert_not_contains "Max-limit level"
 
-if ! grep -Fq "Max-limit test summary:" output/gatling/max-limit/raw/max-limit-discovery.log; then
-  printf '%s\n' "expected wrapper summary in discovery log" >&2
-  exit 1
-fi
-if ! grep -Fq "  app base URL: http://example.test/meta/" output/gatling/max-limit/raw/max-limit-discovery.log; then
-  printf '%s\n' "expected app base URL in discovery log summary" >&2
-  exit 1
-fi
-if ! grep -Fq "  tested range: 10-30 users/sec" output/gatling/max-limit/raw/max-limit-discovery.log; then
+if ! grep -Fq "URL: http://example.test/meta/ | range: 10-30 users/sec | step: 10 users/sec | duration: 5s per level | ramp: 0s between levels" output/gatling/max-limit/raw/max-limit-discovery.log; then
   printf '%s\n' "expected concise parameters in discovery log summary" >&2
+  exit 1
+fi
+if grep -Fq "Max-limit test summary:" output/gatling/max-limit/raw/max-limit-discovery.log; then
+  printf '%s\n' "wrapper summary should not print the old verbose header in discovery log" >&2
   exit 1
 fi
 if grep -Fq "  key result:" output/gatling/max-limit/raw/max-limit-discovery.log; then
@@ -155,13 +147,13 @@ if [ "$RAMP_STATUS" -ne 0 ]; then
   exit 1
 fi
 
-if ! printf '%s\n' "$RAMP_OUTPUT" | grep -Fq "  highest passing tested level: 10 users/sec"; then
+if ! printf '%s\n' "$RAMP_OUTPUT" | grep -Fq "URL: http://example.test/meta/ | range: 10-30 users/sec | step: 10 users/sec | duration: 5s per level | ramp: 2s between levels"; then
   printf '%s\n' "$RAMP_OUTPUT"
-  printf '%s\n' "expected ramp transition KO to preserve boundary summary" >&2
+  printf '%s\n' "expected ramped run to print concise parameter summary" >&2
   exit 1
 fi
-if ! grep -Fq "  first failing tested level: 20 users/sec" output/gatling/max-limit/raw/max-limit-discovery.log; then
-  printf '%s\n' "expected ramp transition KO to preserve boundary in discovery log" >&2
+if grep -Fq "  first failing tested level:" output/gatling/max-limit/raw/max-limit-discovery.log; then
+  printf '%s\n' "expected ramped discovery log to omit verbose boundary summary" >&2
   exit 1
 fi
 if ! grep -Fq "ramp schedule: 0-10 users/sec | report time window: 0-2s" output/gatling/max-limit/raw/max-limit-discovery.log; then

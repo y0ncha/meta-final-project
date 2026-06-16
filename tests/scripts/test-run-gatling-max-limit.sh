@@ -181,20 +181,26 @@ assert_file_equals "max-limit|5|5|20|1|0|http://example.test/meta/" "$CALL_LOG"
 
 assert_file_equals "max-limit|100|25|175|7|2|http://example.test/meta/" "$CALL_LOG"
 
-if ! grep -Fq 'Max-limit test summary:' "$TEST_ROOT/single-level.log"; then
-  printf '%s\n' 'wrapper summary should print to stdout' >&2
-  exit 1
-fi
-if ! grep -Fq '  tested range: 100-175 users/sec' "$TEST_ROOT/single-level.log"; then
+if ! grep -Fq 'URL: http://example.test/meta/ | range: 100-175 users/sec | step: 25 users/sec | duration: 7s per level | ramp: 2s between levels' "$TEST_ROOT/single-level.log"; then
   printf '%s\n' 'concise parameter summary should print to stdout' >&2
   exit 1
 fi
-grep -Fq '  step: 25 users/sec' "$TEST_ROOT/single-level.log"
-grep -Fq '  duration: 7s per level' "$TEST_ROOT/single-level.log"
-grep -Fq '  ramp: 2s between levels' "$TEST_ROOT/single-level.log"
-grep -Fq '  highest passing tested level: inspect staircase report' "$TEST_ROOT/single-level.log"
-grep -Fq '  first failing tested level: inspect staircase report' "$TEST_ROOT/single-level.log"
-grep -Fq '  result: inspect staircase report for first KO level' "$TEST_ROOT/single-level.log"
+if grep -Fq 'Max-limit test summary:' "$TEST_ROOT/single-level.log"; then
+  printf '%s\n' 'wrapper summary should not print the old verbose header' >&2
+  exit 1
+fi
+if grep -Fq '  highest passing tested level:' "$TEST_ROOT/single-level.log"; then
+  printf '%s\n' 'wrapper summary should not print boundary lines' >&2
+  exit 1
+fi
+if grep -Fq '  first failing tested level:' "$TEST_ROOT/single-level.log"; then
+  printf '%s\n' 'wrapper summary should not print boundary lines' >&2
+  exit 1
+fi
+if grep -Fq '  result:' "$TEST_ROOT/single-level.log"; then
+  printf '%s\n' 'wrapper summary should not print result lines' >&2
+  exit 1
+fi
 if grep -Fq '  key result:' "$TEST_ROOT/single-level.log"; then
   printf '%s\n' 'max-limit wrapper summary should not print a key result' >&2
   exit 1
@@ -205,7 +211,6 @@ if grep -Fq 'max limit level finished :' "$TEST_ROOT/single-level.log"; then
 fi
 grep -Fq 'max limit staircase started : 100-175 users/sec | step: 25 users/sec | duration: 7s per level | ramp: 2s' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
 grep -Fq 'command parameters: GATLING_RUN_TYPE=max-limit APP_BASE_URL=http://example.test/meta/ GATLING_MAX_START_USERS=100 GATLING_MAX_STEP_USERS=25 GATLING_MAX_END_USERS=175 GATLING_MAX_DURATION_SECONDS=7 GATLING_MAX_RAMP_SECONDS=2' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
-grep -Fq '  app base URL: http://example.test/meta/' "$TEST_ROOT/single-level.log"
 grep -Fq 'ramp schedule: 0-100 users/sec | report time window: 0-2s' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
 grep -Fq 'level schedule: 100 users/sec | report time window: 2-9s' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
 grep -Fq 'ramp schedule: 100-125 users/sec | report time window: 9-11s' "$TEST_ROOT/output/gatling/max-limit/raw/max-limit-discovery.log"
