@@ -1,8 +1,6 @@
 # MTA DevOps Final Project
 
-This repository answers the MTA 2026 Semester B DevOps final project for the MeTA corporate scenario. The assignment source is `final-project.pdf`; `docs/final-project.txt` is the searchable text extract used by the project docs.
-
-The project is a simple JSP application delivered to Tomcat through Jenkins, with monitoring, browser automation, HAR evidence, and Gatling performance evidence. The default runtime is the approved containerized track: Tomcat, Jenkins, Playwright, and Gatling run through Docker instead of host-installed coursework tools. The main CI/CD implementation is the Jenkins Pipeline job `meta-ci-cd`. Monitoring is intentionally split into the separate Jenkins Freestyle job `meta-monitoring`, following the documented instructor clarification in `rules/compliance.md`.
+The project is a simple JSP application delivered to Tomcat through Jenkins, with monitoring, browser automation, HAR evidence, and Gatling performance evidence. The default runtime is the approved containerized track: Tomcat, Jenkins, Playwright, and Gatling run through Docker instead of host-installed coursework tools. The main CI/CD implementation is the Jenkins Pipeline job `meta-ci-cd`. Monitoring is intentionally split into the separate Jenkins Freestyle job `meta-monitoring`.
 
 ## Project Links
 
@@ -63,7 +61,7 @@ Run Gatling evidence flows only when intentionally refreshing performance eviden
 ./scripts/export-gatling-pdfs
 ```
 
-Do not run Gatling casually; the load and stress tests are intentionally heavier than normal smoke checks.
+Do not run Gatling casually - the load and stress tests are intentionally heavier than normal smoke checks.
 
 ## Documentation Map
 
