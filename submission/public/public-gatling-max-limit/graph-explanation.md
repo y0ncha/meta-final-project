@@ -1,7 +1,5 @@
 # Public Gatling Max-Limit Graph Explanation
 
-Source: `builds/max-limit-public/`.
-
 The public max-limit run tested the EC2 Tomcat URL with a `50-700 users/sec` generator sweep in `50 users/sec` steps. Each level ran for `10` seconds with a `1` second ramp.
 
 The Gatling graphs show active users rising cleanly at first, then failures appearing as the public host stops accepting or completing all requests. The run completed with `201518` total requests, `192205 OK`, and `9313 KO`.

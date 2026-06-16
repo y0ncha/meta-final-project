@@ -1,25 +1,23 @@
 # Gatling Graph Explanations
 
-This folder should contain three PDFs exported from Gatling `index.html`: max-limit, load, and stress.
-
 ## Max Limit
 
-The max-limit run intentionally pushes the app until it breaks.
+The run reached `201304` requests: `191872 OK` and `9432 KO`. The selected clean graph point is `2340 active users`, `1399 OK`, and `0 KO`, so that is the submitted max-limit value.
 
-The local report reached `201304` requests: `191872 OK` and `9432 KO`. The main error was `Address not available` against `tomcat:8080`. That means the Gatling client/local network path ran out of available connections before every request could be opened successfully.
-
-Use the graph point before the failure region as the limit. The selected local tooltip shows `2340 active users`, `1399 OK`, and `0 KO`.
+After that point, failures appear and response times spread out (`p95=530 ms`, `p99=1175 ms`, max `5597 ms`). The main error was `Address not available` against `tomcat:8080`, which suggests local Docker/Jenkins/Gatling/Tomcat connection exhaustion under extreme load, not a JSP logic failure.
 
 ## Load 5m
 
-The load test is the normal steady run. It should show stable traffic, low response times, and `0 KO`. That means the app handles normal expected traffic without errors.
+The load run completed cleanly: `4800` requests, `4800 OK`, `0 KO`, all below `800 ms`, with `p95=13 ms` and max `81 ms`.
+
+This shows the normal `5 users/sec` profile is comfortably inside the app's capacity.
 
 ## Stress 5m
 
-The stress test increases traffic gradually. It should still stay at `0 KO`, but response times can rise because more users are active at the same time.
+The stress run also completed cleanly: `33120` requests, `33120 OK`, `0 KO`, all below `800 ms`, with `p95=8 ms` and max `396 ms`.
+
+The higher max response time is expected with more traffic, but the zero-KO result shows this stress range did not break the system.
 
 ## What Happened
 
-The system works under the normal load and stress profiles. In the max-limit run, the generator pushed beyond the local environment's connection capacity, so connection allocation started failing. This is why the max-limit report has KO errors while the regular load/stress reports should not.
-
-Jenkins uses one shared `output/gatling/` workspace, so each new Gatling run can overwrite the previous HTML report. Export the PDF immediately after the intended run.
+Load and stress stayed healthy. The max-limit run pushed past the clean operating range and exposed the local environment's connection limit.
