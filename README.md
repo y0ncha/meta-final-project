@@ -73,9 +73,3 @@ Do not run Gatling casually - the load and stress tests are intentionally heavie
 - `docs/monitoring.md` - five-minute monitoring job setup.
 - `docs/har-scenario.md` - HAR scenario and validation notes.
 - `docs/public-app-bonus.md` - optional public-IP bonus target and cleanup notes.
-
-## Evidence Policy
-
-Generated evidence is written under ignored `output/` paths and reviewed or copied into `submission/` only when it is fresh. Do not commit fake screenshots, guessed Gatling numbers, secrets, Jenkins passwords, unreviewed HAR data, or placeholder evidence.
-
-Before final submission, refresh `docs/submission.md` and make sure every required item from `docs/final-project.txt` is backed by real artifacts or screenshots.
