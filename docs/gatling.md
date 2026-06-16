@@ -40,7 +40,7 @@ The maintained simulation uses two workload models:
 
 - Load: 60 seconds ramping from 0 to `GATLING_LOAD_USERS` users/sec, 180 seconds holding that arrival rate, then 60 seconds ramping back down to 0.
 - Stress: five 60-second users/sec staircase levels from `GATLING_STRESS_START_USERS` to `GATLING_STRESS_TARGET_USERS`. Jenkins defaults run from `5` to `50` users/sec, rounded across five levels.
-- Max-limit: one bounded open users/sec arrival-rate staircase from `GATLING_MAX_START_USERS` through `GATLING_MAX_END_USERS`, with optional short ramps controlled by `GATLING_MAX_RAMP_SECONDS`.
+- Max-limit: one bounded open users/sec arrival-rate generator sweep from `GATLING_MAX_START_USERS` through `GATLING_MAX_END_USERS`, with optional short ramps controlled by `GATLING_MAX_RAMP_SECONDS`. For submission, the max-limit answer is read from the active-users count at a zero-KO `Number of responses per second` tooltip, not from the configured users/sec value.
 
 For max-limit staircase evidence, raise or bound the tested range with environment variables:
 
@@ -61,19 +61,21 @@ Each staircase level runs for `GATLING_MAX_DURATION_SECONDS`. If `GATLING_MAX_ST
 
 The default `10` seconds per level is a practical confirmation setting for a targeted users/sec boundary search. Choose a narrow range around the expected failure region instead of sweeping far past it. For a stronger steady-state capacity claim, keep the same targeted range and increase `GATLING_MAX_DURATION_SECONDS` to `60`-`120`; do not combine long holds with a broad range unless the Jenkins timeout has been raised.
 
-The class PDFs show Gatling evidence in terms of users, successes, failures, and graphs. They do not define a `p95 <= 2000 ms` service-level rule. For this project, max-limit pass/fail therefore follows the course-facing rule: a tested level passes only when Gatling reports `KO=0`. Response-time percentiles remain graph evidence for explaining degradation, especially p95, but latency alone does not define the max-limit failure point.
+The class PDFs show Gatling evidence in terms of users, successes, failures, and graphs. They do not define a `p95 <= 2000 ms` service-level rule. For this project, max-limit pass/fail therefore follows the course-facing rule: `KO=0`. Response-time percentiles remain graph evidence for explaining degradation, especially p95, but latency alone does not define the max-limit failure point.
+
+For the submission max-limit wording, use the active-users graph and the `Number of responses per second` tooltip: state the selected active-users count at a response graph point where the tooltip shows `KO=0`. Do not report the configured users/sec generator level as the app max limit.
 
 ## SLA And Evidence Parameters
 
 | Area | Current recommendation | Reason |
 |---|---|---|
-| Hard pass/fail SLA | `KO=0` for max-limit, load, and stress | Any failed request/check/timeout makes the tested max-limit users/sec level unacceptable. |
-| Latency SLA for load/stress evidence | `p95 < 2000 ms` | Public build `#13` reached global p95 `1812 ms` near the public failure boundary, so `1000 ms` would be too brittle for public evidence. |
-| Load evidence profile | `GATLING_LOAD_USERS=250` users/sec | Keeps the five-minute load evidence on the arrival-rate model. |
-| Stress evidence profile | `GATLING_STRESS_START_USERS=250`, `GATLING_STRESS_TARGET_USERS=475` users/sec | Shows arrival-rate degradation over five minutes while the request arrival rate increases. |
-| Max-limit confirmation profile | `0-550` users/sec, step `25`, `10s/level`, ramp `1s` | Searches the users/sec failure boundary without relying on request-throughput side effects. |
+| Hard pass/fail SLA | `KO=0` for max-limit, load, and stress | Any failed request/check/timeout means active-users values after that point are not acceptable max-limit evidence. |
+| Latency note for load/stress evidence | report p95 as observed evidence | The refreshed max-limit run is failure-discovery evidence, not a clean latency-SLA source. |
+| Load evidence profile | use the packaged/rerun load setting explicitly | Do not derive a refreshed load setting from an invalid or mismatched max-limit PDF. |
+| Stress evidence profile | use the packaged/rerun stress range explicitly | Do not derive a refreshed stress setting from an invalid or mismatched max-limit PDF. |
+| Max-limit confirmation profile | Targeted users/sec sweep around the expected failure region | Produces the response graph and active-users overlay used for the zero-KO tooltip evidence. |
 
-Older concurrent-user evidence is historical after the max-limit profile change. Refresh max-limit evidence before claiming a current capacity number.
+Older users/sec boundary evidence is historical after the active-users submission-methodology change. Refresh max-limit evidence before claiming a current capacity number.
 
 The local wrapper's normalized controls are:
 
@@ -97,11 +99,11 @@ With Jenkins defaults, max-limit evidence tests a staircase from `0` through `55
 
 The names `GATLING_MAX_START_USERS_PER_SEC`, `GATLING_MAX_STEP_USERS_PER_SEC`, `GATLING_MAX_END_USERS_PER_SEC`, `GATLING_MAX_BASE_USERS`, and `GATLING_MAX_LIMIT_USERS` are accepted as compatibility aliases for local commands.
 
-A tested level is treated as passing only when Gatling reports zero failed requests/checks/timeouts.
+A selected max-limit graph point is treated as acceptable only when the `Number of responses per second` tooltip shows `KO=0`.
 
-The max limit is the highest tested users/sec level that passes before the first tested users/sec level that fails. If a run fails after a report is normalized, the wrapper treats that assertion failure as usable staircase evidence, preserves the report under `output/gatling/max-limit/`, and exits successfully so Jenkins can publish the evidence. The summary prints exact cutoff values only when they can be derived safely from the report; otherwise, inspect the report's time-based failure/error graphs and map the first KO timestamp to the `level schedule` lines in `output/gatling/max-limit/raw/max-limit-discovery.log`. If no tested level fails, the result is a tested lower bound, not the true application maximum.
+The max limit is the selected active-users count from a `Number of responses per second` tooltip where `KO=0`. If a run fails after a report is normalized, the wrapper treats that assertion failure as usable evidence, preserves the report under `output/gatling/max-limit/`, and exits successfully so Jenkins can publish the evidence. Inspect the report's active-users graph and response tooltip, and keep a screenshot of the exact selected point. If no request/check/timeout fails anywhere in the run, the result is a tested lower bound, not the true application maximum.
 
-Do not use Gatling's final `mean requests/sec` value as the max-limit level. That value is observed request throughput. Likewise, the active-users graph is an observed result of the open workload and response times. The configured max-limit levels are the users/sec staircase entries recorded in `max-limit-discovery.log`.
+Do not use Gatling's final `mean requests/sec` value as the max-limit level. That value is observed request throughput. Do not use the configured users/sec sweep as the final app limit either; it is the generator input that creates the report. The submission-facing max-limit value is the active-users count at the zero-KO response tooltip.
 
 ## Evidence Files
 
@@ -159,22 +161,22 @@ Local `./scripts/export-gatling-pdfs` remains strict and requires all three Gatl
 
 ### Max Limit
 
-After the users/sec profile change, rerun the max-limit evidence before packaging final screenshots/PDFs. Explain the users/sec injection graph as the configured arrival-rate staircase, the active-users graph as Gatling's resulting active users over time, the request-rate graph and final `mean requests/sec` line as observed throughput, and the response-time/KO graphs as system behavior at each users/sec level.
+For final submission, rerun or inspect the max-limit evidence before packaging screenshots/PDFs. Explain the users/sec injection graph as the configured generator sweep, the active-users graph as the source for the submitted max-limit value, the request-rate graph and final `mean requests/sec` line as observed throughput, and the response-time/KO graphs as system behavior around the first failure.
 
 ### Load 5m
 
-The 5-minute load test ramps from 0 to `GATLING_LOAD_USERS` users/sec for 60 seconds, holds that arrival rate for 180 seconds, and ramps down to 0 for 60 seconds. For refreshed SLA evidence, use `GATLING_LOAD_USERS=250`, require `KO=0`, and treat `p95 < 2000 ms` as the latency SLA. Explain the active-users graph as Gatling's resulting active users over time, the request-rate graph as resulting throughput, and the response-time/KO graphs as system behavior under that arrival rate.
+The 5-minute load test ramps from 0 to `GATLING_LOAD_USERS` users/sec for 60 seconds, holds that arrival rate for 180 seconds, and ramps down to 0 for 60 seconds. For evidence, record the exact `GATLING_LOAD_USERS` value used, require `KO=0`, and report p95 as observed graph evidence. Explain the active-users graph as Gatling's resulting active users over time, the request-rate graph as resulting throughput, and the response-time/KO graphs as system behavior under that arrival rate.
 
 ### Stress 5m
 
-The 5-minute stress test uses five 60-second users/sec staircase levels from `GATLING_STRESS_START_USERS` to `GATLING_STRESS_TARGET_USERS`. For refreshed SLA evidence, use `GATLING_STRESS_START_USERS=250` and `GATLING_STRESS_TARGET_USERS=475`, require `KO=0`, and treat `p95 < 2000 ms` as the latency SLA. Explain the active-users graph as Gatling's resulting active users over time, the request-rate graph as resulting throughput, and the response-time/KO graphs as the system response while the arrival rate increases.
+The 5-minute stress test uses five 60-second users/sec staircase levels from `GATLING_STRESS_START_USERS` to `GATLING_STRESS_TARGET_USERS`. For evidence, record the exact start and target users/sec values used, require `KO=0`, and report p95 as observed graph evidence. Explain the active-users graph as Gatling's resulting active users over time, the request-rate graph as resulting throughput, and the response-time/KO graphs as the system response while the arrival rate increases.
 
 ## Submission Notes
 
 - Attach the three terminal or Jenkins-console screenshots.
 - Attach the three generated Gatling PDFs.
 - Include the max-limit conclusion and graph explanations in the final submission package.
-- Do not claim a precise max limit unless the run shows a zero-KO passing level followed by a tested level with at least one KO.
+- Do not claim a precise max limit unless the original report or graph screenshot identifies a `Number of responses per second` tooltip with `KO=0` and its active-users count.
 - The max-limit, load, and stress terminal screenshots are packaged under `submission/local/k-gatling-cmd-screenshots/`.
 
 ## Troubleshooting

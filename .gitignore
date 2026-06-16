@@ -70,3 +70,7 @@ temp/
 .rtk/
 *.tmp
 
+# Builds
+builds/
+max-limit-36/
+max-limit-37/

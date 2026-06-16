@@ -1,22 +1,24 @@
 # Gatling Graph Explanations
 
-Source: Jenkins local build `#12` for max-limit. Local build `#17` load/stress screenshots are packaged under item `k`; the matching build `#17` graph PDFs were not retained in the Jenkins build archive.
+Source checked: `builds/max-limit-local/` for the refreshed max-limit HTML/PDF report and graph screenshot. Local build `#17` load/stress screenshots are packaged under item `k`; the matching build `#17` graph PDFs were not retained in the Jenkins build archive.
 
 ## Max Limit
 
-The local max-limit run used a users/sec arrival-rate staircase from `250` to `550 users/sec`, stepping by `25 users/sec`. Each level ran for `10` seconds with a `1` second ramp.
+The refreshed local max-limit console run used a users/sec arrival-rate generator sweep from `50` to `700 users/sec`, stepping by `50 users/sec`. Each level ran for `10` seconds with a `1` second ramp.
 
-The Gatling graphs show the configured users/sec arrival-rate staircase increasing until the local Docker/Tomcat path starts producing failures. The run completed with `217272` total requests, `213804 OK`, and `3468 KO`. The request-rate and active-users metrics are observed results of the run, not the configured max-limit levels. The dominant error was `Address not available` against `tomcat:8080`, which means the local client/network path could not allocate or open enough connections at the failing load.
+The local max-limit report shows the full run eventually failed with `201304` total requests, `191872 OK`, and `9432 KO`. The dominant error was `Address not available` against `tomcat:8080`, which means the local client/network path could not allocate or open enough connections at the failing load.
 
-Under the project `KO=0` rule, the graph supports a local tested max limit of `475 users/sec`; `500 users/sec` is the first failing tested level.
+The `Number of responses per second` hover screenshot shows the selected zero-KO tooltip before the visible failure region: `2340 active users`, `1399 OK`, and `0 KO`.
+
+Under the response-tooltip `KO=0` rule, the local max-limit value to state is `2340 active users`. The users/sec sweep is the generator input, not the max-limit answer.
 
 ## Current SLA-Oriented Parameters
 
 | Test | Recommended parameters | SLA / pass rule |
 | --- | --- | --- |
-| Load 5m | `GATLING_LOAD_USERS=250` users/sec | `KO=0`, p95 `< 2000ms` |
-| Stress 5m | `GATLING_STRESS_START_USERS=250`, `GATLING_STRESS_TARGET_USERS=475` users/sec | `KO=0`, p95 `< 2000ms` |
-| Max limit | `450-550` users/sec, step `25`, `10s/level`, ramp `1s` | Highest passing users/sec level before first `KO>0` |
+| Load 5m | Current packaged screenshot: `5 users/sec` | `KO=0`; report p95 as observed graph evidence |
+| Stress 5m | Current packaged screenshot: `5-50 users/sec` | `KO=0`; report p95 as observed graph evidence |
+| Max limit | Targeted users/sec sweep around the expected failure region | Active-users count from a zero-KO response tooltip |
 
 ## Load 5m
 

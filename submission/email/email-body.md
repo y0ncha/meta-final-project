@@ -8,7 +8,7 @@ Subject: `Final Exercise from: Yonatan Csasznik, Yoed Halberstam, Niv Levin`
 
 Hello Moshe,
 
-Attached are our 12 required submission items for the MTA 2026 Semester B DevOps final project.
+Attached is `final-project-submission-2026-06-16.zip`, which contains our 12 required submission items for the MTA 2026 Semester B DevOps final project.
 
 Team members:
 
@@ -47,11 +47,11 @@ The HAR file records the browser scenario: open the application, submit a valid 
 
 Application max limit:
 
-The tested local application max limit is `475 users/sec`.
+The tested local application max limit is `2340 active users` with `KO=0`.
 
-This is the limit because Gatling's pass rule for this project is `KO=0`: a tested level passes only when Gatling reports zero failed requests, checks, or timeouts. The local max-limit run tested the Tomcat deployment from `250` to `550 users/sec` in `25 users/sec` steps. Each level ran for `10` seconds with a `1` second ramp.
+This is the limit because the reported max-limit point must show `KO=0` on the Gatling `Number of responses per second` tooltip. The local max-limit run tested the Tomcat deployment with a users/sec generator sweep, but the submitted max-limit value is read from the Gatling active-users graph, not from the generator setting.
 
-`475 users/sec` was the highest tested level that still passed with `KO=0`. `500 users/sec` was the first tested level that failed. At `500 users/sec`, Gatling reported `3468` `KO` failures with `Address not available`, meaning the local Docker/Gatling networking path could no longer allocate or open enough client-side connections at that load. Therefore, the tested max limit is the previous passing level: `475 users/sec`.
+The local max-limit graph screenshot shows `2340 active users`, `1399 OK`, and `0 KO` at the selected response tooltip. The later failing region shows the system exceeded the safe boundary, so the defended local max-limit evidence is the selected active-users count with response-tooltip `KO=0`, not the later peak and not the users/sec generator level.
 
 Optional public-IP bonus evidence:
 
@@ -59,7 +59,7 @@ We also include optional public-IP bonus evidence under `submission/public/`. Th
 
 `http://51.84.219.74:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`
 
-The public max-limit evidence found `525 users/sec` as the highest passing tested level and `550 users/sec` as the first failing tested level. Public load and stress evidence were refreshed separately and completed with `0 KO`.
+The public max-limit graph screenshot shows `6718 active users`, `301 OK`, and `0 KO` at the selected response tooltip. Public load and stress evidence were refreshed separately and completed with `0 KO`.
 
 Regards,
 

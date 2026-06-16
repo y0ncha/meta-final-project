@@ -2,11 +2,11 @@
 
 - Status: ready
 - Assignment item: `j) Write in the email what is your app max limit, explain why this is the limit and how you found it`
-- Packaged files: `max-limit-explanation.md`, `max-limit-discovery.log`
-- Source: Jenkins `MeTA/meta-ci-cd` build `#12`
-- Local tested max limit: `475 users/sec`
-- First failing tested level: `500 users/sec`
+- Packaged files: `max-limit-explanation.md`, `max-limit-local.png`
+- Source checked: `builds/max-limit-local/`
+- Local graph point: `2340 active users`, `1399 OK`, `0 KO`
+- Local generator sweep: `50-700 users/sec`, step `50 users/sec`, `10s/level`, `1s` ramp
 
-The explanation requested by the assignment is in `max-limit-explanation.md`.
+The assignment max-limit value should be stated as the active-users count at a `Number of responses per second` tooltip with `KO=0`, not as a users/sec generator setting.
 
-The Gatling graph report PDF for this max-limit run is packaged with the other Gatling PDFs under `../l-gatling-result-pdfs/max-limit-report.pdf`.
+The graph hover screenshot is packaged as `max-limit-local.png`.

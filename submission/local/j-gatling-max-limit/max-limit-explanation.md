@@ -1,10 +1,12 @@
 # Gatling Max-Limit Explanation
 
-- Gatling tested the local Tomcat target from `250` to `550 users/sec`.
-- Step size was `25 users/sec`; each level ran for `10` seconds with a `1` second ramp.
-- Pass rule is `KO=0`: a tested level passes only when Gatling reports zero failed requests/checks/timeouts.
-- Gatling's final request-rate and active-user metrics are observed results, not the configured max-limit level.
-- `475 users/sec` was the highest tested level before failure.
-- `500 users/sec` was the first failing tested level.
+Current local max-limit value: `2340 active users` with `0 KO`.
 
-At `500 users/sec`, the tested local deployment setup could no longer sustain the requested rate with zero failures. Gatling reported `3468` `KO` failures with `Address not available`.
+- The local max-limit report in `builds/max-limit-local/` targeted `http://tomcat:8080/yonatan-csasznik-yoed-halberstam-niv-levin/`.
+- The report uses a `50-700 users/sec` generator sweep, step `50 users/sec`, `10s/level`, `1s` ramp.
+- The report shows the full run eventually failed with `201304` total requests, `191872 OK`, and `9432 KO`.
+- The error shown in the local report is `Address not available` against `tomcat:8080`.
+- The `Number of responses per second` graph screenshot `max-limit-local.png` shows the selected zero-KO tooltip: `2340 active users`, `1399 OK`, `0 KO`.
+- The submission max-limit value should therefore be written as `2340 active users` with `0 KO`.
+
+Do not write this as `users/sec`. The users/sec sweep is only the Gatling generator input used to create the graph.

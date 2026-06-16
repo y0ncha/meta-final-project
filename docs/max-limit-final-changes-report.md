@@ -1,5 +1,7 @@
 # Max-Limit Final Changes Report
 
+Current status: superseded for final submission wording. The current submission methodology states the max-limit result as an active-users count from a `Number of responses per second` graph tooltip with `KO=0`, not as a users/sec generator boundary. Keep this file only as historical context for the earlier users/sec refactor.
+
 ## Scope
 
 This update keeps the max-limit methodology as one bounded users/sec arrival-rate staircase. It does not replace the model with separate single-level runs or an unbounded stress run.
@@ -13,8 +15,8 @@ This update keeps the max-limit methodology as one bounded users/sec arrival-rat
 - Kept `GATLING_MAX_DURATION_SECONDS=10` as the default. Longer `60-120` second holds should be used only after narrowing the range and accepting the longer runtime.
 - Kept optional ramp support through `GATLING_MAX_RAMP_SECONDS`, defaulting to `1` so the active-users graph has short transitions between levels.
 - Kept p95 and response-time graphs as supporting evidence. The cutoff rule remains `KO=0`.
-- After Jenkins build `#12` local and build `#13` public, recommended SLA evidence values are load `250 users/sec`, stress `250-475 users/sec`, and max-limit confirmation `450-550 users/sec` in `25` users/sec steps.
-- Recommended load/stress SLA gates are `KO=0` and global p95 `< 2000ms`; the p95 threshold comes from public build `#13` reaching p95 `1812ms` near its `550 users/sec` failure boundary.
+- Historical note: Jenkins build `#12` local and build `#13` public were used for the earlier users/sec-boundary recommendation. Do not reuse those values as the current final max-limit answer.
+- Current submission note: require a `Number of responses per second` graph tooltip with `KO=0`; report max-limit as the active-users count at that selected point; report p95 as observed graph evidence, not as the max-limit cutoff.
 
 ## Deferred
 
@@ -33,7 +35,7 @@ GATLING_MAX_LIMIT_USERS=550 \
 ./scripts/run-gatling-max-limit
 ```
 
-The result is submission-ready only if the report and wrapper summary show a zero-KO passing level followed by a failing level. If the run uses these new defaults, refresh the max-limit screenshot, PDF, discovery log, and submission text together.
+The result is submission-ready only if the original report or graph screenshot identifies the selected active-users count with `KO=0`. If the run uses these historical defaults, refresh the max-limit screenshot, PDF, discovery log, and submission text together.
 
 For refreshed load/stress evidence, use:
 
@@ -42,7 +44,7 @@ GATLING_LOAD_USERS=250 ./scripts/run-gatling-load-5m
 GATLING_STRESS_START_USERS=250 GATLING_STRESS_TARGET_USERS=475 ./scripts/run-gatling-stress-5m
 ```
 
-Treat `KO=0` as mandatory and p95 `< 2000ms` as the recommended latency SLA for those refreshed runs.
+Treat `KO=0` as mandatory and p95 as observed graph evidence for those refreshed runs.
 
 ## Validation
 
