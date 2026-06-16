@@ -64,7 +64,7 @@ These are the 12 items requested by `docs/final-project.txt`.
 | i | HAR file | `submission/local/i-har-file/meta-functional-flow.har` | packaged; sensitivity review recommended | HAR validation passed, but the file contains local `JSESSIONID` cookie evidence. Review before external sharing. |
 | j | Max-limit result, why it is the limit, and how it was found | `submission/local/j-gatling-max-limit/` | ready | Local max-limit graph screenshot shows `2340 active users`, `1399 OK`, `0 KO`. |
 | k | Three Gatling CMD summary screenshots | `submission/local/k-gatling-cmd-screenshots/` | ready for CMD evidence with max-limit graph note | The max-limit CMD screenshot is terminal summary evidence for a local max-limit run, but the submitted active-users value comes from the separate `Number of responses per second` graph screenshot. Load/stress screenshots are from local build `#17` and show `0 KO`. |
-| l | Three Gatling result PDFs with graph explanations | `submission/local/l-gatling-result-pdfs/` | ready for max-limit PDF; load/stress caveat remains | The local max-limit PDF matches `builds/max-limit-local/max-limit-report.pdf`; matching local build `#17` load/stress graph PDFs were generated but not retained in Jenkins build artifacts. |
+| l | Three Gatling result PDFs with graph explanations | `submission/local/l-gatling-result-pdfs/` | needs final load/stress PDF refresh | Export/print the intended Gatling `index.html` files to PDF immediately after each run, because Jenkins reuses `output/gatling/` and later runs can overwrite earlier reports. |
 
 ## Required Explanations
 
@@ -120,8 +120,8 @@ A failed run does not make the peak active-users count the max limit. The max li
 The local graph explanations are packaged in `submission/local/l-gatling-result-pdfs/graph-explanations.md`.
 
 - Max-limit PDF and graph screenshot evidence was refreshed from `builds/max-limit-local/`; the selected response tooltip shows `2340 active users`, `1399 OK`, and `0 KO`.
-- Local build `#17` load screenshot shows `4800 OK` / `0 KO` at `5 users/sec`, p95 `13 ms`; the matching graph PDF was not retained.
-- Local build `#17` stress screenshot shows `33120 OK` / `0 KO` at `5-50 users/sec`, p95 `8 ms`; the matching graph PDF was not retained.
+- Load PDF: export from the intended load `index.html` before another Gatling run overwrites the shared workspace.
+- Stress PDF: export from the intended stress `index.html` before another Gatling run overwrites the shared workspace.
 
 ### Gatling SLA Recommendations
 
